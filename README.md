@@ -18,20 +18,20 @@
 - Holidays: 25.11.2026, 08.12.2026, 24.12.2026 - 03.01.2027.
 
 1. :white_check_mark: 07.10, Wednesday, 7:15 pm, 326
-2. 14.10, Wednesday, 7:15 pm, **326?**
-3. 21.10, Wednesday, 7:15 pm, **326?**
-4. 28.10, Wednesday, 7:15 pm, **326?**
-5. **30.10, Friday, 5:15 pm, ???**
-6. 04.11, Wednesday, 7:15 pm, **326?**
-7. 11.11, Wednesday, 7:15 pm, **326?**
-8. **13.11, Friday, 5:15 pm, ???**
-9. 18.11, Wednesday, 7:15 pm, **326?**
-10. 02.12, Wednesday, 7:15 pm, **326?**
-11. 09.12, Wednesday, 7:15 pm, **326?**
-12. **12.12, Saturday, 10:15 am, ???**
-13. 16.12, Wednesday, 7:15 pm, **326?**
-14. 13.01, Wednesday, 7:15 pm, **326?**
-15. 20.01, Wednesday, 7:15 pm, **326?**
+2. 14.10, Wednesday, 7:15 pm, 107
+3. 21.10, Wednesday, 7:15 pm, 107
+4. 28.10, Wednesday, 7:15 pm, 107
+5. **30.10, Friday, 5:15 pm, 217**
+6. 04.11, Wednesday, 7:15 pm, 107
+7. 11.11, Wednesday, 7:15 pm, 107
+8. **13.11, Friday, 5:15 pm, 217**
+9. 18.11, Wednesday, 7:15 pm, 107
+10. 02.12, Wednesday, 7:15 pm, 107
+11. 09.12, Wednesday, 7:15 pm, 107
+12. **12.12, Saturday, 10:15 am, 107**
+13. 16.12, Wednesday, 7:15 pm, 107
+14. 13.01, Wednesday, 7:15 pm, 107
+15. 20.01, Wednesday, 7:15 pm, 107
 
 ## ⏰ Schedules
 

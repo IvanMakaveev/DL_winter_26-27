@@ -518,7 +518,10 @@ Open the file `cheat_sheet.md` and answer the following question.
 
 A NumPy array is the building block for every later week - PyTorch tensors, model weights, and datasets are all arrays underneath.
 
-Create a script `weeks/week1/task06.py` that builds a 1D array (a vector), a 2D array (a matrix), and a 3D array (a small volume), and prints each array's `shape`, `dtype`, `ndim`, and `size` alongside the array itself.
+Create a script `weeks/week01/task06.py` that builds a 1D array (a vector), a 2D array (a matrix), and a 3D array (a small volume), and prints each array's `shape`, `dtype`, `ndim`, and `size` alongside the array itself.
+
+> [!NOTE]
+> Since in `.covergerc` we are only checking the directory `dl_lib` and the script `weeks.main.py` you needn't write tests for any of the scripts in `weeks/weekXX` - we'll treat them as something that the client writes and we'll assume that since they'll be mainly using `dl_lib` and `weeks.main.py` it is enough to guarantee that they work as expected.
 
 **Acceptance criteria:**
 
@@ -565,7 +568,7 @@ No - a comparison like `matrix > 6` produces a same-shaped array of `True`/`Fals
 
 **Description:**
 
-Create a script `weeks/week1/task07.py` that builds a small 2D matrix and prints:
+Create a script `weeks/week01/task07.py` that builds a small 2D matrix and prints:
 
 - one row;
 - one column;
@@ -620,7 +623,7 @@ Let's measure that difference.
 
 Let's compute the same sum two ways on a large array and time both.
 
-Create a script `weeks/week1/task08.py` that:
+Create a script `weeks/week01/task08.py` that:
 
 1. Generates a large 1D array of random values.
 2. Sums it with an explicit Python `for` loop.
@@ -667,7 +670,7 @@ If the shapes cannot be lined up this way, NumPy raises an error instead of gues
 
 **Description:**
 
-Create a script `weeks/week1/task09.py` that adds a scalar, a row vector, and a column vector to the same matrix, printing each pair of shapes and the result. It then attempts to add a vector whose shape cannot be broadcast against the matrix and prints the resulting error.
+Create a script `weeks/week01/task09.py` that adds a scalar, a row vector, and a column vector to the same matrix, printing each pair of shapes and the result. It then attempts to add a vector whose shape cannot be broadcast against the matrix and prints the resulting error.
 
 **Acceptance criteria:**
 
@@ -710,7 +713,7 @@ operands could not be broadcast together with shapes (2,3) (2,)
 
 **Description:**
 
-Create a script `weeks/week1/task10.py` that builds two small square matrices and prints their elementwise product, their matrix product, and the transpose of the first matrix.
+Create a script `weeks/week01/task10.py` that builds two small square matrices and prints their elementwise product, their matrix product, and the transpose of the first matrix.
 
 **Acceptance criteria:**
 
@@ -756,7 +759,7 @@ Let's practice creating that shape now with a dataset whose "correct" relationsh
 
 **Description:**
 
-Create a script `weeks/week1/task11.py` that generates `x` values on a fixed range, computes `y` from a linear relationship with added Gaussian noise, prints the size of the dataset and the range of `x` and `y`, then shows a scatter plot of `x` against `y`.
+Create a script `weeks/week01/task11.py` that generates `x` values on a fixed range, computes `y` from a linear relationship with added Gaussian noise, prints the size of the dataset and the range of `x` and `y`, then shows a scatter plot of `x` against `y`.
 
 **Acceptance criteria:**
 
@@ -764,6 +767,9 @@ Create a script `weeks/week1/task11.py` that generates `x` values on a fixed ran
 - The script shows a scatter plot of `x` against `y`.
 
 **Example output:**
+
+> [!NOTE]
+> This output is an **example**. It was generated with the seed `42` but even if you do not set a seed or use another one, I'll still treat your solution as a valid one!
 
 ```bash
 python run.py -w 1 -t 11
@@ -814,7 +820,7 @@ The distribution of the class labels in a classification problem.
 
 **Description:**
 
-Create a script `weeks/week1/task12.py` that draws two line plots (`sin(x)` and `cos(x)`) on one set of axes with a legend, and a histogram of `1,000` samples from a normal distribution on a second set of axes, each with a title, axis labels, and a grid. Show the two side by side.
+Create a script `weeks/week01/task12.py` that draws two line plots (`sin(x)` and `cos(x)`) on one set of axes with a legend, and a histogram of `1,000` samples from a normal distribution on a second set of axes, each with a title, axis labels, and a grid. Show the two side by side.
 
 **Acceptance criteria:**
 
@@ -868,7 +874,7 @@ It is lopsided: many small values and a long tail of rare large ones.
 
 **Description:**
 
-Create a script `weeks/week1/task13.py` that:
+Create a script `weeks/week01/task13.py` that:
 
 1. Draws `10,000` samples each from a uniform, a normal, and an exponential distribution.
 2. Prints the mean, standard deviation, min, and max of each.
@@ -965,7 +971,7 @@ Define in `dl_lib.preprocessing.functional`:
 - **`min_max_normalize`**: rescales an array's values into `[0, 1]` using its own min and max. Takes an array; returns the rescaled array, or an all-zero array (instead of dividing by zero) when every value is identical.
 - **`standardize`**: centers an array to zero mean and scales it to unit standard deviation. Takes an array; returns the standardized array, or an all-zero array (instead of dividing by zero) when every value is identical.
 
-Create a script `weeks/week1/task14.py` that applies both functions to a small hand-checkable array and prints the original values alongside each rescaled version.
+Create a script `weeks/week01/task14.py` that applies both functions to a small hand-checkable array and prints the original values alongside each rescaled version.
 
 **Acceptance criteria:**
 
@@ -1006,7 +1012,7 @@ What PyTorch adds is automatic differentiation and a `device`: an attribute of e
 
 **Description:**
 
-Create a script `weeks/week1/task15.py` that builds a NumPy array, converts it to a PyTorch tensor, prints both arrays' `dtype` and `shape` alongside the tensor's `device`, then selects the GPU device if available (`mps` on this machine, otherwise `cpu`) and moves the tensor there, printing the tensor's device and dtype after the move.
+Create a script `weeks/week01/task15.py` that builds a NumPy array, converts it to a PyTorch tensor, prints both arrays' `dtype` and `shape` alongside the tensor's `device`, then selects the GPU device if available (`mps` on this machine, otherwise `cpu`) and moves the tensor there, printing the tensor's device and dtype after the move.
 
 **Acceptance criteria:**
 
