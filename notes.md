@@ -2,6 +2,7 @@
 
 - [Introduction to Deep Learning](#introduction-to-deep-learning)
   - [Week 01 - Introduction to NumPy, Matplotlib and PyTorch](#week-01---introduction-to-numpy-matplotlib-and-pytorch)
+    - [Administrative - week 1](#administrative---week-1)
     - [Creating the task runway](#creating-the-task-runway)
       - [Task 01](#task-01)
       - [Task 02](#task-02)
@@ -21,8 +22,32 @@
       - [Task 14](#task-14)
     - [PyTorch](#pytorch)
       - [Task 15](#task-15)
+  - [Week 02 - Predictions, losses, metrics, and activations](#week-02---predictions-losses-metrics-and-activations)
+    - [Administrative - week 2](#administrative---week-2)
+    - [Regression](#regression)
+      - [Task 01](#task-01-1)
+      - [Task 02](#task-02-1)
+      - [Task 03](#task-03-1)
+      - [Task 04](#task-04-1)
+    - [Classification](#classification)
+      - [Task 05](#task-05-1)
+      - [Task 06](#task-06-1)
+      - [Task 07](#task-07-1)
+      - [Task 08](#task-08-1)
+      - [Task 09](#task-09-1)
+      - [Task 10](#task-10-1)
+      - [Task 11](#task-11-1)
+      - [Task 12](#task-12-1)
+      - [Task 13](#task-13-1)
+  - [\\frac{y\_i}{p\_i}](#fracy_ip_i)
+    - [Derivative formulas](#derivative-formulas)
 
 ## Week 01 - Introduction to NumPy, Matplotlib and PyTorch
+
+### Administrative - week 1
+
+- [X] Get the know the GitHub repo - schedules and grading.
+- [X] Create a chat in messenger.
 
 ### Creating the task runway
 
@@ -1039,3 +1064,2307 @@ dtype=torch.float32, shape=torch.Size([2, 3]), device=cpu
 Selected device: mps
 Tensor moved to device: mps:0, dtype=torch.float32
 ```
+
+## Week 02 - Predictions, losses, metrics, and activations
+
+### Administrative - week 2
+
+- [ ] New room!
+- [ ] Moving some lessons.
+
+### Regression
+
+<details>
+
+<summary>What is the difference between machine learning and deep learning?</summary>
+
+- In machine learning we look at the data and create features you think would be most useful for solving your task. Then, we pass those features to the model and it uses them to make predictions.
+- In deep learning we pass the data to the model. It creates the features it "thinks" would be most useful and uses them to make predictions.
+
+</details>
+
+<details>
+
+<summary>What is supervised learning?</summary>
+
+Uncovering patterns in labeled data. Here all possible values to be predicted are already known, and a model is built with the aim of accurately predicting those values on new data.
+
+</details>
+
+<details>
+
+<summary>Can you give an example?</summary>
+
+- Given a labelled set of images (cat or dog), output a label of a new image, not present in the labelled set.
+- Given the transactional history of a person, output the likelihood of them being able to pay out their loan.
+
+</details>
+
+</details>
+
+<details>
+
+<summary>What are the main methods of supervised learning?</summary>
+
+- Regression.
+- Classification.
+
+</details>
+
+<details>
+
+<summary>What is unsupervised learning?</summary>
+
+Uncovering patterns in unlabeled data.
+
+</details>
+
+</details>
+
+<details>
+
+<summary>Can you give some examples?</summary>
+
+- Clustering books into different categories/genres based on their content.
+- Grouping customers into categories based on their purchasing behavior without knowing in advance what those categories are.
+
+</details>
+
+<details>
+
+<summary>What is classification?</summary>
+
+Classification is used to predict the label, or category, of an observation.
+
+</details>
+
+<details>
+
+<summary>What are some examples of classification?</summary>
+
+- Predict whether a bank transaction is fraudulent or not. As there are two outcomes here - a fraudulent transaction, or non-fraudulent transaction, this is known as **binary classification**.
+- Same is true for spam detection in emails.
+
+</details>
+
+<details>
+
+<summary>What is regression?</summary>
+
+Regression is used to predict numbers.
+
+</details>
+
+<details>
+
+<summary>What are some examples of regression?</summary>
+
+- A model can use features such as the number of bedrooms, and the size of a property, to predict the target variable - the price of that property.
+- Predicting the amount of electricity used in a city based on the day of the year and the events, happening in the city.
+- Predicting the amount of rain based on pictures of clouds.
+
+</details>
+
+<details>
+<summary>When we say we have a classification model what data type does it return and what is its range?</summary>
+
+A probability between $0$ and $1$.
+
+</details>
+
+<details>
+<summary>But wait - didn't we say just now that the model returns a label: which one is it - a label or a probability?</summary>
+
+The model itself always returns probabilities for all possible labels. We can then inspect those probabilities and choose the label with the highest probability.
+
+</details>
+
+<details>
+<summary>When we say we have a regression model what data type does it return and what is its range?</summary>
+
+Any number.
+
+</details>
+
+Today we're going to explore the following question:
+
+> Given a model's predictions and the true values, how do we put a single honest number on how wrong the model is - and how does that number change with the choices we make (which error to measure, which threshold to apply)?
+
+Ok - let's try to "peel" this question from top to bottom.
+
+<details>
+<summary>How are the functions that take a raw output from a model and turn it into a probability called?</summary>
+
+Activation functions.
+
+</details>
+
+<details>
+<summary>What activation functions have you heard about?</summary>
+
+- Rectified linear unit.
+- Sigmoid.
+- Hyperbolic tangent.
+
+</details>
+
+<details>
+<summary>How does the ReLU function look like on a graph?</summary>
+
+![w02_relu.png](assets/w02_relu.png "w02_relu.png")
+
+</details>
+
+<details>
+<summary>How does the sigmoid function look like on a graph?</summary>
+
+![w02_sigmoid.png](assets/w02_sigmoid.png "w02_sigmoid.png")
+
+</details>
+
+<details>
+<summary>How does the hyperbolic tangent look like on a graph?</summary>
+
+![w02_sigmoid.png](assets/w02_tanh.png "w02_sigmoid.png")
+
+</details>
+
+<details>
+<summary>If we treat the model as a black box, how does the architecture of a classification process look like?</summary>
+
+![w02_cls_arch.svg](assets/w02_cls_arch.svg "w02_cls_arch.svg")
+
+</details>
+
+<details>
+<summary>If we treat the model as a black box, how does the architecture of a regression process look like?</summary>
+
+![w02_reg_arch.svg](assets/w02_reg_arch.svg "w02_reg_arch.svg")
+
+</details>
+
+<details>
+<summary>Given the above what should be the range of a function that is regarded as a loss function?</summary>
+
+$[0 \dots \inf]$
+
+</details>
+
+<details>
+<summary>What value are we aiming for?</summary>
+
+$0$
+
+</details>
+
+<details>
+<summary>What loss functions have you heard about that can be used for classification tasks?</summary>
+
+- Binary cross entropy.
+- Categorical cross entropy.
+
+</details>
+
+<details>
+<summary>What is the difference between the two?</summary>
+
+- BCE is used when the number of classes is $2$.
+- CCE is used when the number of classes is $>2$.
+
+</details>
+
+<details>
+<summary>What loss functions have you heard about that can be used for regression tasks?</summary>
+
+- Mean absolute error.
+- Mean squared error.
+- Root mean squared error.
+
+</details>
+
+#### Task 01
+
+**Description:**
+
+Given four true values and four predictions, work out the error, the absolute error, and the squared error for each pair, then their means. For each example \(i\), define the signed, absolute, and squared errors as
+
+$$
+e_i = \hat{y}_i - y_i,
+\qquad
+|e_i| = |\hat{y}_i-y_i|,
+\qquad
+e_i^2 = (\hat{y}_i-y_i)^2.
+$$
+
+Their batch summaries are
+
+$$
+\operatorname{ME}
+= \frac{1}{N}\sum_{i=1}^{N} e_i,
+\qquad
+\operatorname{MAE}
+= \frac{1}{N}\sum_{i=1}^{N}|e_i|,
+$$
+
+$$
+\operatorname{MSE}
+= \frac{1}{N}\sum_{i=1}^{N}e_i^2,
+\qquad
+\operatorname{RMSE}
+= \sqrt{\operatorname{MSE}}.
+$$
+
+Create a script `weeks/week2/task01.py` that prints `y_true`, `y_pred`, the elementwise errors, absolute errors, and squared errors, then the mean error, the mean absolute error, the mean squared error, and its square root.
+
+**Acceptance criteria:**
+
+- Calculations are done via `numpy`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 1
+```
+
+```text
+y_true:          [3 5 7 9]
+y_pred:          [2 6 8 7]
+errors:          [-1  1  1 -2]
+absolute errors: [1 1 1 2]
+squared errors:  [1 1 1 4]
+
+mean error: -0.2500
+MAE (mean absolute error): 1.2500
+MSE (mean squared error):  1.7500
+RMSE (root mean squared error): 1.3229
+```
+
+<details>
+<summary>The mean error is negative (<code>-0.25</code>) but the mean absolute error is positive (<code>1.25</code>) - why do they disagree?</summary>
+
+The plain mean error lets positive and negative errors cancel - two predictions that are too high and two that are too low can average out to something small even if every individual prediction is off.
+
+Taking the absolute value (or squaring) before averaging removes the sign, so overestimates and underestimates both count as error instead of canceling.
+
+</details>
+
+<details>
+<summary>Is the mean error a loss function?</summary>
+
+No, because it does not follow the criteria for range.
+
+</details>
+
+#### Task 02
+
+**Description:**
+
+Define **`mae`** in `dl_lib.losses.functional`. Takes the true values and the predicted values as same-shaped arrays; returns the mean absolute error between them as a float.
+
+Create a script `weeks/week2/task02.py` that calls `mae` on Task 01's exact numbers and prints the result. It should then also run `torch.nn.functional.l1_loss` on the same inputs to demonstrate how PyTorch can be used to do this on the fly.
+
+**Acceptance criteria:**
+
+- Calculations are done via `numpy`.
+- PyTorch is used in the script to show the built-in way of calculating `mae`.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_losses/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 2
+```
+
+```text
+y_true: [3. 5. 7. 9.]
+y_pred: [2. 6. 8. 7.]
+MAE: 1.2500
+```
+
+<details>
+<summary>How do we calculate the loss for this example?</summary>
+
+For this task $y = [3,5,7,9]$, $\hat{y} = [2,6,8,7]$, $L = \frac{1}{N}\sum_{j=1}^{N}|\hat{y}_j-y_j|$
+
+Expanding the sum for these four examples gives
+
+$$
+L
+= \frac{1}{4}
+\left(
+|\hat{y}_1-y_1|
++|\hat{y}_2-y_2|
++|\hat{y}_3-y_3|
++|\hat{y}_4-y_4|
+\right)
+$$
+
+Substituting the numbers
+
+$$
+L
+= \frac{1}{4}
+\left(
+|2-3|+|6-5|+|8-7|+|7-9|
+\right)
+= \frac{5}{4}
+= 1.25.
+$$
+
+</details>
+
+<details>
+<summary>What is the gradient vector?</summary>
+
+The loss \(L\) is one scalar, but \(\hat{y}\) contains four predictions. Therefore, the derivative with respect to \(\hat{y}\) is a gradient containing four partial derivatives:
+
+$$
+\nabla_{\hat{y}}L
+= \begin{bmatrix}
+\frac{\partial L}{\partial \hat{y}_1}\\
+\frac{\partial L}{\partial \hat{y}_2}\\
+\frac{\partial L}{\partial \hat{y}_3}\\
+\frac{\partial L}{\partial \hat{y}_4}
+\end{bmatrix}
+$$
+
+We calculate these components one at a time, then put them together.
+
+</details>
+
+<details>
+<summary>How do we differentiate with respect to the first prediction?</summary>
+
+Start from the full sum rather than dropping it:
+
+$$
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{\partial}{\partial \hat{y}_1}
+\left[
+\frac{1}{4}
+\left(
+|\hat{y}_1-y_1|
++|\hat{y}_2-y_2|
++|\hat{y}_3-y_3|
++|\hat{y}_4-y_4|
+\right)
+\right].
+$$
+
+The factor \(1/4\) is constant, so it can be moved outside the derivative:
+
+$$
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{1}{4}
+\frac{\partial}{\partial \hat{y}_1}
+\left(
+|\hat{y}_1-y_1|
++|\hat{y}_2-y_2|
++|\hat{y}_3-y_3|
++|\hat{y}_4-y_4|
+\right).
+$$
+
+Now differentiate term by term. Only the first term contains \(\hat{y}_1\). The other predictions are independent coordinates, so their terms are constants with respect to \(\hat{y}_1\):
+
+$$
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{1}{4}
+\left[
+\frac{\partial}{\partial \hat{y}_1}|\hat{y}_1-y_1|
++0+0+0
+\right].
+$$
+
+For a scalar \(x\),
+
+$$
+\frac{d}{dx}|x|
+= \begin{cases}
+\frac{d}{dx}x=1, & x>0,\\
+\frac{d}{dx}(-x)=-1, & x<0.
+\end{cases}
+$$
+
+This is written compactly as
+
+$$
+\frac{d}{dx}|x|=\operatorname{sign}(x),
+\qquad x\ne0.
+$$
+
+> [!NOTE]
+> At \(x=0\) there is no actual derivative. Like most libraries, we'll consider the derivative $0$ when \(x=0\).
+
+Therefore,
+
+$$
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{1}{4}\operatorname{sign}(\hat{y}_1-y_1).
+$$
+
+For the actual values,
+
+$$
+\hat{y}_1-y_1=2-3=-1,
+$$
+
+so
+
+$$
+\boxed{
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{1}{4}(-1)
+=-0.25
+}.
+$$
+
+</details>
+
+<details>
+<summary>So what is the general pattern?</summary>
+
+For any component \(\hat{y}_i\), all terms in the sum except term \(i\) have derivative zero with respect to that component. Therefore,
+
+$$
+\boxed{
+\frac{\partial L}{\partial \hat{y}_i}
+= \frac{1}{N}\operatorname{sign}(\hat{y}_i-y_i)
+}
+\qquad
+\text{when }\hat{y}_i\ne y_i.
+$$
+
+For the complete prediction vector,
+
+$$
+\boxed{
+\nabla_{\hat{y}}L
+= \frac{1}{N}
+\operatorname{sign}(\hat{y}-y)
+},
+$$
+
+where the sign function is applied elementwise.
+
+At an exact prediction, \(\hat{y}_i=y_i\), MAE has a corner. Its subgradient for that component is any value in \([-1/N,1/N]\); automatic-differentiation systems conventionally use \(0\).
+
+</details>
+
+<details>
+<summary>So what are the values in the gradient vector?</summary>
+
+$$
+\frac{\partial L}{\partial \hat{y}_2}
+= \frac{1}{4}\operatorname{sign}(6-5)
+= 0.25.
+$$
+
+$$
+\frac{\partial L}{\partial \hat{y}_3}
+= \frac{1}{4}\operatorname{sign}(8-7)
+= 0.25.
+$$
+
+$$
+\frac{\partial L}{\partial \hat{y}_4}
+= \frac{1}{4}\operatorname{sign}(7-9)
+=-0.25.
+$$
+
+Put the four partial derivatives together:
+
+$$
+\boxed{
+\nabla_{\hat{y}}L
+= [-0.25,\ 0.25,\ 0.25,\ -0.25]
+}.
+$$
+
+</details>
+
+<details>
+<summary>What is the difference in behavior between MAE and MSE?</summary>
+
+- MAE treats every unit of error the same, whether it comes from many small mistakes or one large one.
+- MSE does not: it is much higher when we have extreme outliers.
+
+</details>
+
+#### Task 03
+
+**Description:**
+
+Define **`mse`** in `dl_lib.losses.functional`:
+
+$$
+\operatorname{MSE}(y,\hat{y})
+= \frac{1}{N}\sum_{i=1}^{N}(\hat{y}_i-y_i)^2.
+$$
+
+Create a script `weeks/week2/task03.py` that prints `mse` on Task 01's exact numbers, then replaces one prediction with an extreme outlier and prints how much `mae` and `mse` each change.
+
+Lastly, show how PyTorch can also be used to calculate `mse` via `torch.nn.functional.mse_loss`.
+
+**Acceptance criteria:**
+
+- Calculations are done via `numpy`.
+- PyTorch is used in the script to show the built-in way of calculating `mse`.
+- Comparison is shown between `mae` and `mse`.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_losses/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 3
+```
+
+```text
+y_true: [3. 5. 7. 9.]
+y_pred: [2. 6. 8. 7.]
+MSE: 1.7500
+
+y_pred with one extreme outlier: [  2.   6.   8. 100.]
+MAE with outlier: 23.5000
+MSE with outlier: 2071.0000
+```
+
+<details>
+<summary>How do we differentiate with respect to the first prediction?</summary>
+
+$$
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{\partial}{\partial \hat{y}_1}
+\left[
+\frac{1}{4}
+\left(
+(\hat{y}_1-y_1)^2
++(\hat{y}_2-y_2)^2
++(\hat{y}_3-y_3)^2
++(\hat{y}_4-y_4)^2
+\right)
+\right].
+$$
+
+Move the constant \(1/4\) outside and differentiate term by term:
+
+$$
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{1}{4}
+\left[
+\frac{\partial}{\partial \hat{y}_1}(\hat{y}_1-y_1)^2
++0+0+0
+\right].
+$$
+
+The last three derivatives are zero because those terms do not contain \(\hat{y}_1\).
+
+Therefore,
+
+$$
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{1}{4}\,2(\hat{y}_1-y_1).
+$$
+
+Using \(\hat{y}_1=2\) and \(y_1=3\),
+
+$$
+\boxed{
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{2}{4}(2-3)
+=-0.5
+}.
+$$
+
+</details>
+
+<details>
+<summary>So what is the general pattern?</summary>
+
+For a batch of \(N\) examples,
+
+$$
+\boxed{
+\frac{\partial L}{\partial \hat{y}_i}
+= \frac{2}{N}(\hat{y}_i-y_i)
+}.
+$$
+
+Unlike MAE, the gradient magnitude grows with the size of the error. In the outlier example, replacing the fourth prediction by \(100\) makes its residual \(100-9=91\), so that one gradient component becomes
+
+$$
+\frac{2}{4}(91)=45.5.
+$$
+
+</details>
+
+<details>
+<summary>So what are the values in the gradient vector of the non-outlier case?</summary>
+
+$$
+\frac{\partial L}{\partial \hat{y}_2}
+= \frac{2}{4}(6-5)
+=0.5.
+$$
+
+$$
+\frac{\partial L}{\partial \hat{y}_3}
+= \frac{2}{4}(8-7)
+=0.5.
+$$
+
+$$
+\frac{\partial L}{\partial \hat{y}_4}
+= \frac{2}{4}(7-9)
+=-1.0.
+$$
+
+$$
+\boxed{
+\nabla_{\hat{y}}L
+= [-0.5,\ 0.5,\ 0.5,\ -1.0]
+}.
+$$
+
+</details>
+
+#### Task 04
+
+**Description:**
+
+Let's plot the rate of change as one prediction's error grows from `0` to `10` while three other errors stay fixed.
+
+Define **`rmse`** in `dl_lib.losses.functional`:
+
+$$
+\operatorname{RMSE}(y,\hat{y})
+= \sqrt{\frac{1}{N}\sum_{i=1}^{N}(\hat{y}_i-y_i)^2}
+= \sqrt{\operatorname{MSE}(y,\hat{y})}.
+$$
+
+Create a script `weeks/week2/task04.py` that holds three prediction errors fixed and grows a fourth from `0` to `10`, computing `mae`, `mse`, and `rmse` at each step, printing the three values at a few sample points, and showing a plot of all three against the growing error.
+
+**Acceptance criteria:**
+
+- Calculations are done via `numpy`.
+- The rate of growth of each of the three loss functions is shown.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_losses/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 4
+```
+
+```text
+Growing error=1.0: MAE=0.8750, MSE=0.8125, RMSE=0.9014
+Growing error=5.0: MAE=1.8750, MSE=6.8125, RMSE=2.6101
+Growing error=10.0: MAE=3.1250, MSE=25.5625, RMSE=5.0559
+```
+
+![w02_task04_loss_comparison.png](assets/w02_task04_loss_comparison.png "w02_task04_loss_comparison.png")
+
+<details>
+<summary>What does this plot tell us?</summary>
+
+- MSE's curve visibly bends upward (it is quadratic);
+- MAE grows linearly (it forms a straight line);
+- RMSE sits between the two, curving slightly but staying close to MAE's scale, which is why RMSE is often reported instead of MSE **when the units of the original values matter**.
+
+</details>
+
+<details>
+<summary>How do we differentiate with respect to the first prediction?</summary>
+
+$$
+L
+= \sqrt{
+\frac{1}{N}
+\sum_{j=1}^{N}
+(\hat{y}_j-y_j)^2
+}.
+$$
+
+It is easier to see the chain rule if we separate the expression into two functions.
+
+$$
+M
+= \frac{1}{N}
+\sum_{j=1}^{N}
+(\hat{y}_j-y_j)^2,
+\qquad
+L=\sqrt{M},
+\qquad
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{\partial L}{\partial M}
+\frac{\partial M}{\partial \hat{y}_1}
+$$
+
+First, differentiate the outer square-root function:
+
+$$
+L=M^{1/2},
+\qquad
+\frac{\partial L}{\partial M}
+= \frac{1}{2}M^{-1/2},
+\qquad
+\boxed{
+\frac{\partial L}{\partial M}
+= \frac{1}{2\sqrt{M}}
+}.
+$$
+
+We already calculated the derivative of MSE:
+
+$$
+\frac{\partial M}{\partial \hat{y}_1}
+= \frac{1}{N}
+\frac{\partial}{\partial \hat{y}_1}
+(\hat{y}_1-y_1)^2
+= \boxed{\frac{2}{N}(\hat{y}_1-y_1)}
+$$
+
+Substitute the two derivatives:
+
+$$
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{1}{2\sqrt{M}}
+\cdot
+\frac{2}{N}(\hat{y}_1-y_1).
+$$
+
+The factors of \(2\) cancel:
+
+$$
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{\hat{y}_1-y_1}{N\sqrt{M}}.
+$$
+
+We get
+
+$$
+\sqrt{M}
+= \operatorname{RMSE}(y,\hat{y}),
+\qquad
+\boxed{
+\frac{\partial L}{\partial \hat{y}_1}
+= \frac{\hat{y}_1-y_1}
+{N\,\operatorname{RMSE}(y,\hat{y})}
+}
+$$
+
+</details>
+
+<details>
+<summary>So what is the general pattern?</summary>
+
+$$
+\boxed{
+\frac{\partial L}{\partial \hat{y}_i}
+= \frac{\hat{y}_i-y_i}
+{N\,\operatorname{RMSE}(y,\hat{y})}
+}
+$$
+
+whenever $\operatorname{RMSE}(y,\hat{y})>0$.
+
+</details>
+
+### Classification
+
+A classifier's raw output is usually a probability between $0$ and $1$, not a label. Turning it into a decision needs a threshold:
+
+- above it, predict positive;
+- at or below it, predict negative.
+
+Different thresholds can produce very different predictions from the exact same probabilities.
+
+#### Task 05
+
+**Description:**
+
+Define **`apply_threshold`** in `dl_lib.metrics.functional`. Takes an array of probabilities and a threshold; returns a same-shaped array of `0`/`1` predictions, `1` where the probability is at or above the threshold.
+
+For probability \(p_i\) and threshold \(\tau\),
+
+$$
+\hat{y}_i
+= \mathbb{1}[p_i\ge \tau] = \begin{cases}
+1, & p_i\ge \tau,\\
+0, & p_i<\tau.
+\end{cases}
+$$
+
+Create a script `weeks/week2/task05.py` that applies `apply_threshold` to a fixed set of probabilities (`[0.1, 0.8, 0.4, 0.7, 0.9]`) at several thresholds from `0.1` to `0.9` and prints the resulting predictions at each one.
+
+**Acceptance criteria:**
+
+- Calculations are done via `numpy`.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_metrics/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 5
+```
+
+```text
+Probabilities: [0.1 0.8 0.4 0.7 0.9]
+
+threshold=0.1: predictions=[1 1 1 1 1]
+threshold=0.3: predictions=[0 1 1 1 1]
+threshold=0.5: predictions=[0 1 0 1 1]
+threshold=0.7: predictions=[0 1 0 1 1]
+threshold=0.9: predictions=[0 0 0 0 1]
+```
+
+<details>
+<summary>Once predictions are <code>0</code>s and <code>1</code>s, how do we actually say whether they are good, beyond eyeballing them?</summary>
+
+***Metrics!***
+
+We start counting:
+
+- how many positives were correctly caught;
+- how many negatives were correctly caught;
+- the above two ways can be wrong (calling a negative positive, or calling a positive negative).
+
+</details>
+
+<details>
+<summary>What is the most popular metrics for binary classification?</summary>
+
+The $F_1$ score!
+
+</details>
+
+<details>
+<summary>Explain visually what precision and recall measure.</summary>
+
+![w02_pr_rec.png](assets/w02_pr_rec.png "w02_pr_rec.png")
+
+</details>
+
+<details>
+<summary>If we put these numbers in a table, what is this table called?</summary>
+
+A confusion matrix.
+
+In the binary case:
+
+![w02_cm_bin.png](assets/w02_cm_bin.png "w02_cm_bin.png")
+
+In the multiclass case:
+
+![w02_cm_mult.png](assets/w02_cm_mult.png "w02_cm_mult.png")
+
+</details>
+
+#### Task 06
+
+**Description:**
+
+Define **`confusion_matrix`** in `dl_lib.metrics.functional`. Takes true labels and predicted labels (both `0`/`1`); returns a dict with keys `tp`, `tn`, `fp`, `fn` counting each of the four outcomes.
+
+Using indicator notation,
+
+$$
+\begin{aligned}
+\operatorname{TP} &= \sum_{i=1}^{N}\mathbb{1}[y_i=1\ \land\ \hat{y}_i=1],\\
+\operatorname{TN} &= \sum_{i=1}^{N}\mathbb{1}[y_i=0\ \land\ \hat{y}_i=0],\\
+\operatorname{FP} &= \sum_{i=1}^{N}\mathbb{1}[y_i=0\ \land\ \hat{y}_i=1],\\
+\operatorname{FN} &= \sum_{i=1}^{N}\mathbb{1}[y_i=1\ \land\ \hat{y}_i=0].
+\end{aligned}
+$$
+
+Create a script `weeks/week2/task06.py` that builds a confusion matrix from a small hand-picked set of true labels and predictions and prints all four counts.
+
+**Acceptance criteria:**
+
+- Calculations are done via `numpy`.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_metrics/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 6
+```
+
+```text
+y_true: [1 0 1 0 1]
+y_pred: [1 0 0 1 1]
+
+True positives:  2
+True negatives:  1
+False positives: 1
+False negatives: 1
+```
+
+#### Task 07
+
+**Description:**
+
+The four confusion-matrix counts are rarely read directly - they are usually summarized into a single number. Build the four most common summaries and see how they behave once one class heavily outnumbers the other.
+
+Define in `dl_lib.metrics.functional`:
+
+- **`accuracy`**: fraction of predictions that match the true label. Takes true and predicted labels; returns a float.
+- **`precision`**: fraction of positive predictions that are actually positive. Takes true and predicted labels; returns `0.0` (instead of dividing by zero) when there are no positive predictions.
+- **`recall`**: fraction of actual positives that are correctly predicted. Takes true and predicted labels; returns `0.0` (instead of dividing by zero) when there are no actual positives.
+- **`f1_score`**: harmonic mean of precision and recall. Takes true and predicted labels; returns `0.0` when precision and recall are both zero.
+
+The four metrics are
+
+$$
+\operatorname{accuracy}
+= \frac{\operatorname{TP}+\operatorname{TN}}
+{\operatorname{TP}+\operatorname{TN}+\operatorname{FP}+\operatorname{FN}},
+$$
+
+$$
+\operatorname{precision}
+= \frac{\operatorname{TP}}{\operatorname{TP}+\operatorname{FP}},
+\qquad
+\operatorname{recall}
+= \frac{\operatorname{TP}}{\operatorname{TP}+\operatorname{FN}},
+$$
+
+$$
+\operatorname{F1}
+= \frac{2\,\operatorname{precision}\,\operatorname{recall}}
+{\operatorname{precision}+\operatorname{recall}}
+= \frac{2\operatorname{TP}}
+{2\operatorname{TP}+\operatorname{FP}+\operatorname{FN}}.
+$$
+
+Create a script `weeks/week2/task07.py` that prints all four metrics for a small balanced dataset, then for a deliberately imbalanced one (`990` negative examples, `10` positive), where a `3` of the rare positives are missed.
+
+**Acceptance criteria:**
+
+- Calculations are done via `numpy`.
+- Datasets are randomly generated using `numpy`.
+- A comparison between the values of the metrics on an imbalanced dataset is shown.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_metrics/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 7
+```
+
+```text
+Balanced dataset:
+  accuracy:  0.6000
+  precision: 0.6667
+  recall:    0.6667
+  f1:        0.6667
+
+Imbalanced dataset (990 negative, 10 positive):
+  accuracy:  0.9970
+  precision: 1.0000
+  recall:    0.7000
+  f1:        0.8235
+```
+
+<details>
+<summary>If a model predicts all observations in the imbalanced set as negative, what accuracy would it have?</summary>
+
+With `990` negatives and `10` positives, a model that predicts negative for every single input (**one that never looks at the input at all**) gets every negative right and this is already `99%` of the dataset!
+
+</details>
+
+#### Task 08
+
+**Description:**
+
+Create a script `weeks/week2/task08.py` that builds a 990-negative/10-positive dataset, predicts negative for every single example regardless of input, and prints its accuracy, precision, recall, and F1.
+
+**Acceptance criteria:**
+
+- The bias of accuracy is shown.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 8
+```
+
+```text
+Dataset: 990 negative, 10 positive
+Model: always predicts negative, never looks at the input
+
+accuracy:  0.9900
+precision: 0.0000
+recall:    0.0000
+f1:        0.0000
+```
+
+<details>
+<summary>So when should we use accuracy as the main metric?</summary>
+
+Never! It has a hidden bias when the dataset is imbalanced (which is usually the case). Therefore, let's stick to the F1 score.
+
+</details>
+
+#### Task 09
+
+**Description:**
+
+Let's now compare how precision and recall behave under different thresholds. At threshold \(\tau\), the predictions and metrics can be written as
+
+$$
+\hat{y}_i(\tau)=\mathbb{1}[p_i\ge\tau],
+\qquad
+P(\tau)=\frac{\operatorname{TP}(\tau)}{\operatorname{TP}(\tau)+\operatorname{FP}(\tau)},
+\qquad
+R(\tau)=\frac{\operatorname{TP}(\tau)}{\operatorname{TP}(\tau)+\operatorname{FN}(\tau)}.
+$$
+
+Create a script `weeks/week2/task09.py` that builds a dataset of probabilities with a separation between classes, sweeps the threshold from low to high, computes precision and recall at each step, prints a few sample points, and shows a plot of both against the threshold.
+
+**Acceptance criteria:**
+
+- Dataset is created via `numpy`.
+- A comparison between precision and recall against different thresholds is shown.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 9
+```
+
+```text
+threshold=0.2: precision=0.2353, recall=1.0000
+threshold=0.5: precision=0.5000, recall=0.7000
+threshold=0.8: precision=0.0000, recall=0.0000
+```
+
+![w02_task09_precision_recall_tradeoff.png](assets/w02_task09_precision_recall_tradeoff.png "w02_task09_precision_recall_tradeoff.png")
+
+Every probability used so far in this week was handed over ready-made. A probability actually comes from squashing a model's unbounded raw output into `(0, 1)` with an activation function - and sigmoid is the classic choice for that squashing.
+
+#### Task 10
+
+**Description:**
+
+Define **`sigmoid`** in `dl_lib.activations.functional`. Takes an array; returns an elementwise sigmoid.
+
+$$
+\sigma(x)=\frac{1}{1+e^{-x}}.
+$$
+
+Create a script `weeks/week2/task10.py` that prints `sigmoid` at `-10`, `0`, and `10`, prints the output range over `[-10, 10]`, and shows a plot of `sigmoid(x)` over that range.
+
+Lastly, show how PyTorch can also be used to calculate `sigmoid` via `torch.sigmoid`.
+
+**Acceptance criteria:**
+
+- Calculations are done via `numpy`.
+- PyTorch is used in the script to show the built-in way of calculating `sigmoid`.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_activations/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 10
+```
+
+```text
+sigmoid(-10) = 0.000045
+sigmoid(0)   = 0.500000
+sigmoid(10)  = 0.999955
+Output range: [0.000045, 0.999955]
+```
+
+![w02_task10_sigmoid.png](assets/w02_task10_sigmoid.png "w02_task10_sigmoid.png")
+
+> [!NOTE]
+> Sigmoid never quite reaches `0` or `1` - it approaches both asymptotically, which is why its practical range is written as the open interval `(0, 1)`.
+
+<details>
+<summary>How is the sigmoid derivative obtained for backpropagation?</summary>
+
+**Step 1: Start from the sigmoid definition.**
+
+For one scalar input \(x\),
+
+$$
+\sigma(x)
+= \frac{1}{1+e^{-x}}
+= (1+e^{-x})^{-1}.
+$$
+
+We want
+
+$$
+\frac{d\sigma}{dx}.
+$$
+
+**Step 2: Separate the inner and outer functions.**
+
+Let
+
+$$
+u(x)=1+e^{-x}.
+$$
+
+Then
+
+$$
+\sigma(x)=u(x)^{-1}.
+$$
+
+The outer derivative is
+
+$$
+\frac{d}{du}u^{-1}=-u^{-2}.
+$$
+
+Now derive the inner function. The derivative of the constant \(1\) is \(0\). For \(e^{-x}\), apply the chain rule:
+
+$$
+\frac{d}{dx}e^{-x}
+= e^{-x}\frac{d}{dx}(-x)
+= -e^{-x}.
+$$
+
+Therefore,
+
+$$
+\frac{du}{dx}=-e^{-x}.
+$$
+
+**Step 3: Apply the chain rule.**
+
+$$
+\frac{d\sigma}{dx}
+= \frac{d\sigma}{du}
+\frac{du}{dx}
+= \left[-u^{-2}\right]\left[-e^{-x}\right].
+$$
+
+Substitute \(u=1+e^{-x}\):
+
+$$
+\frac{d\sigma}{dx}
+= \frac{e^{-x}}{(1+e^{-x})^2}.
+$$
+
+**Step 4: Rewrite the result in terms of the sigmoid output itself.**
+
+One factor is already
+
+$$
+\frac{1}{1+e^{-x}}=\sigma(x).
+$$
+
+For the other factor,
+
+$$
+1-\sigma(x)
+= 1-\frac{1}{1+e^{-x}}
+= \frac{1+e^{-x}-1}{1+e^{-x}}
+= \frac{e^{-x}}{1+e^{-x}}.
+$$
+
+Multiplying these two expressions,
+
+$$
+\sigma(x)(1-\sigma(x))
+= \frac{1}{1+e^{-x}}
+\frac{e^{-x}}{1+e^{-x}}
+= \frac{e^{-x}}{(1+e^{-x})^2}.
+$$
+
+Therefore,
+
+$$
+\boxed{
+\sigma'(x)=\sigma(x)(1-\sigma(x))
+}.
+$$
+
+**Step 5: Evaluate the derivative at the task's sample inputs.**
+
+At \(x=0\),
+
+$$
+\sigma(0)=\frac{1}{2},
+$$
+
+so
+
+$$
+\sigma'(0)
+= \frac{1}{2}\left(1-\frac{1}{2}\right)
+= \frac{1}{4}
+=0.25.
+$$
+
+At \(x=10\), \(\sigma(10)\approx0.9999546\), so
+
+$$
+\sigma'(10)
+\approx
+0.9999546(1-0.9999546)
+\approx0.0000454.
+$$
+
+At \(x=-10\), the derivative has the same small magnitude.
+
+> [!WARNING]
+> The derivative is largest at \(x=0\) and **approaches \(0\) for inputs with large positive or negative magnitude**. Those saturated inputs therefore pass only a small gradient backward.
+
+</details>
+
+Sigmoid is one activation among several with genuinely different shapes. Let's add the two other classics - `ReLU` and `tanh` - and compare all three on the same plot.
+
+#### Task 11
+
+**Description:**
+
+Define in `dl_lib.activations.functional`:
+
+- **`relu`**: zeroes out negative values and passes positive values through unchanged.
+- **`tanh`**: squashes values into `(-1, 1)`, the zero-centered counterpart to sigmoid.
+
+$$
+\operatorname{ReLU}(x)=\max(0,x) = \begin{cases}
+0, & x\le 0,\\
+x, & x>0,
+\end{cases}
+$$
+
+$$
+\tanh(x) = \frac{e^x-e^{-x}}{e^x+e^{-x}}.
+$$
+
+Create a script `weeks/week2/task11.py` that prints the output range of `sigmoid`, `relu`, and `tanh` over `[-10, 10]`, prints all three at `x = -5, 0, 5`, and shows a plot of all three on the same axes.
+
+Show how `torch.relu` and `torch.tanh` can be used to obtain the same results.
+
+**Acceptance criteria:**
+
+- Calculations are done via `numpy`.
+- PyTorch is used to show the built-in way of calculating the same functions.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_activations/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 11
+```
+
+```text
+sigmoid range: [0.0000, 1.0000]
+relu range:    [0.0000, 10.0000]
+tanh range:    [-1.0000, 1.0000]
+
+At x=-5: sigmoid=0.0067, relu=0.0000, tanh=-0.9999
+At x=0:  sigmoid=0.5000, relu=0.0000, tanh=0.0000
+At x=5:  sigmoid=0.9933, relu=5.0000, tanh=0.9999
+```
+
+![w02_task11_activation_comparison.png](assets/w02_task11_activation_comparison.png "w02_task11_activation_comparison.png")
+
+<details>
+<summary>How is the ReLU derivative obtained for backpropagation?</summary>
+
+ReLU is piecewise linear:
+
+$$
+\operatorname{ReLU}(x)= \begin{cases}
+0, & x<0,\\
+x, & x>0.
+\end{cases}
+$$
+
+Differentiate each branch:
+
+$$
+\boxed{
+\operatorname{ReLU}'(x)= \begin{cases}
+0, & x<0,\\
+1, & x>0.
+\end{cases}
+}
+$$
+
+At $x=0$ we'll choose $0$ (like PyTorch).
+
+> [!WARNING]
+> The ReLU derivative acts like a mask during backpropagation: negative inputs destroy the gradient, while positive inputs pass it through unchanged.
+
+For the sample inputs $[-5,0,5]$, the usual derivative mask is
+
+$$
+[0,0,1].
+$$
+
+</details>
+
+<details>
+
+<summary>How is the tanh derivative obtained for backpropagation?</summary>
+
+**Step 1: Start from the exponential definition.**
+
+For one scalar input \(x\),
+
+$$
+\tanh(x)
+= \frac{e^x-e^{-x}}{e^x+e^{-x}}.
+$$
+
+This is a quotient, so we will derive the numerator and denominator separately and then use the quotient rule.
+
+**Step 2: Name the numerator and denominator.**
+
+Let
+
+$$
+u(x)=e^x-e^{-x}
+$$
+
+and
+
+$$
+v(x)=e^x+e^{-x}.
+$$
+
+Then
+
+$$
+\tanh(x)=\frac{u(x)}{v(x)}.
+$$
+
+**Step 3: Differentiate \(u\) and \(v\).**
+
+First,
+
+$$
+\frac{d}{dx}e^x=e^x.
+$$
+
+For \(e^{-x}\), the chain rule gives
+
+$$
+\frac{d}{dx}e^{-x}
+= -e^{-x}.
+$$
+
+Therefore,
+
+$$
+u'(x)
+= \frac{d}{dx}(e^x-e^{-x})
+= e^x+e^{-x}
+= v(x).
+$$
+
+Similarly,
+
+$$
+v'(x)
+= \frac{d}{dx}(e^x+e^{-x})
+= e^x-e^{-x}
+= u(x).
+$$
+
+**Step 4: Apply the quotient rule.**
+
+The quotient rule is
+
+$$
+\frac{d}{dx}\frac{u}{v}
+= \frac{u'v-uv'}{v^2}.
+$$
+
+Substitute \(u'=v\) and \(v'=u\):
+
+$$
+\frac{d}{dx}\tanh(x)
+= \frac{v\,v-u\,u}{v^2}
+= \frac{v^2-u^2}{v^2}.
+$$
+
+Split the fraction:
+
+$$
+\frac{v^2-u^2}{v^2}
+= 1-\frac{u^2}{v^2}
+= 1-\left(\frac{u}{v}\right)^2.
+$$
+
+Since \(u/v=\tanh(x)\),
+
+$$
+\boxed{
+\frac{d}{dx}\tanh(x)
+= 1-\tanh^2(x)
+}.
+$$
+
+> [!WARNING]
+> Like sigmoid, tanh has very small derivatives for inputs with large magnitude. Unlike sigmoid, its outputs are centered around zero.
+
+</details>
+
+<details>
+<summary>Sigmoid and tanh both squash one number - how does that generalize to a whole vector of class scores that need to become a probability distribution?</summary>
+
+Sigmoid answers "is this one thing true," which is enough for binary classification, but a multiclass problem needs a whole vector of scores to turn into a set of probabilities that sum to exactly `1`. That is a different function - softmax - and it comes with a numerical subtlety sigmoid and tanh do not have: exponentiating a large score can overflow before it is even divided by anything.
+
+</details>
+
+#### Task 12
+
+**Description:**
+
+Define **`softmax`** in `dl_lib.activations.functional`. Takes an array; returns a same-shaped array of probabilities that sum to `1` along the last axis, computed in the numerically stable way: subtracting the maximum value before exponentiating, which is mathematically identical to the plain formula but never overflows.
+
+For logits \(z_1,\ldots,z_C\), the probability of class \(i\) is
+
+$$
+p_i
+= \operatorname{softmax}(z)_i
+= \frac{e^{z_i}}{\sum_{j=1}^{C}e^{z_j}}
+= \frac{e^{z_i-m}}{\sum_{j=1}^{C}e^{z_j-m}},
+\qquad
+m=\max_j z_j.
+$$
+
+The last form is numerically stable, and
+
+$$
+\sum_{i=1}^{C}p_i=1.
+$$
+
+Create a script `weeks/week2/task12.py` that computes `softmax` on a small set of scores and confirms the probabilities sum to `1`, then computes a naive softmax (exponentiate first, no subtraction) on large scores and shows it producing `nan`, next to the stable version producing the identical, finite result.
+
+Show how `torch.softmax` can be used to obtain the same results.
+
+**Acceptance criteria:**
+
+- Calculations are done via `numpy`.
+- PyTorch is used to show the built-in way of calculating the same functions.
+- The script shows a naive softmax producing `nan` on large scores, next to `softmax` producing the same finite probabilities it would on the unshifted scores.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_activations/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 12
+```
+
+```text
+scores: [1. 2. 3.]
+softmax: [0.09003057 0.24472847 0.66524096]
+sum of probabilities: 1.0000
+
+Large scores: [1000. 1001. 1002.]
+Naive softmax (unstable): [nan nan nan]
+Stable softmax: [0.09003057 0.24472847 0.66524096]
+```
+
+`exp(1000)` alone is already far larger than a 64-bit float can represent, so the naive version divides infinity by infinity and gets `nan`. Subtracting the max first turns the largest score into `exp(0) = 1` before any division, which cannot overflow - and shifting every score by the same constant does not change the ratios softmax computes, so the result is identical to the small-scores case.
+
+A probability output calls for a loss that scores "how much probability mass landed on the correct answer" rather than numeric distance. Cross-entropy does this for both the binary case and the multiclass case, and it punishes confident wrong answers far more than uncertain ones.
+
+Suppose we want to classify images into three classes: `cat`, `dog`, `bird`.
+
+<details>
+
+<summary>How are labels represented in a multiclass classification problem?</summary>
+
+A dataset might store the true labels as integer class indices:
+
+- `0` = cat
+- `1` = dog
+- `2` = bird
+
+```text
+[0, 2, 1]
+```
+
+These integer labels are often the most convenient representation to store and pass to a loss function.
+
+</details>
+
+<details>
+
+<summary>What does the model predict for a multiclass problem?</summary>
+
+It usually produces one probability for every possible class. For the classes:
+
+```text
+[cat, dog, bird]
+```
+
+the model might predict:
+
+```text
+[0.8, 0.1, 0.1]
+```
+
+If the true class is `cat`, or class index `0`, the probability we care about for the cross-entropy loss is `0.8`.
+
+</details>
+
+<details>
+<summary>Why not take into account the other predicted probabilities?</summary>
+
+- We know that softmax has been applied. This means that we should expect the correct class to get `1.0` always.
+- The loss we would accumulate for the other mistakes (positive probabilities) would be the same as seeing the difference between `0.8` and `1.0`.
+
+</details>
+
+<details>
+
+<summary>What is another way of representing a class label?</summary>
+
+Instead of storing the class as a single integer, we create a vector containing one entry for every possible class. The correct class gets `1` and every other class gets `0`.
+
+For three classes:
+
+```text
+class 0 -> [1, 0, 0]
+class 1 -> [0, 1, 0]
+class 2 -> [0, 0, 1]
+```
+
+</details>
+
+<details>
+<summary>How is this called?</summary>
+
+One-hot encoding!
+
+</details>
+
+<details>
+
+<summary>Why is one-hot encoding useful for calculating the loss when we have more than 2 classes?</summary>
+
+Suppose the true class is class `1`, so its one-hot representation is:
+
+```text
+y = [0, 1, 0]
+```
+
+and the model predicts:
+
+```text
+p = [0.1, 0.7, 0.2]
+```
+
+Categorical cross-entropy for one example is
+
+$$
+L
+= -\sum_{c=1}^{C}
+y_c \log p_c.
+$$
+
+Substituting the values gives
+
+$$
+L
+= -\left[
+0\log(0.1)
++
+1\log(0.7)
++
+0\log(0.2)
+\right].
+$$
+
+The terms multiplied by zero disappear:
+
+$$
+L=-\log(0.7).
+$$
+
+So the one-hot vector acts like a **mask**: it keeps only the log-probability belonging to the true class.
+
+For a batch of $N$ examples,
+
+$$
+\boxed{
+L
+= -\frac{1}{N}
+\sum_{n=1}^{N}
+\log p_{n,t_n}
+},
+$$
+
+where $t_n$ is the true class index for example $n$.
+
+</details>
+
+<details>
+
+<summary>Do we need to create one-hot vectors to calculate categorical cross-entropy?</summary>
+
+Not necessarily.
+
+If we already know the true class index, we can directly select its predicted probability.
+
+For example:
+
+```text
+true class:       1
+predictions:      [0.1, 0.7, 0.2]
+                         ^
+                         |
+                  select class 1
+```
+
+So instead of explicitly computing
+
+```text
+-[0, 1, 0] * log([0.1, 0.7, 0.2])
+```
+
+we can simply compute
+
+```text
+-log(0.7)
+```
+
+For a batch, if
+
+```python
+y_true = [0, 1, 2]
+```
+
+and each row of `p` contains the predicted probabilities for one example, we select
+
+```text
+p[0, 0]
+p[1, 1]
+p[2, 2]
+```
+
+and calculate the negative mean of their logarithms.
+
+This is the approach used in the upcoming `categorical_cross_entropy` task: the function receives integer class indices, so there is no need to construct one-hot vectors explicitly.
+
+</details>
+
+#### Task 13
+
+**Description:**
+
+Define the following functions in `dl_lib.losses.functional`:
+
+- **`binary_cross_entropy`**: cross-entropy for binary true labels and predicted probabilities. It takes true labels containing `0` or `1` and predicted probabilities \(p\). Clip the probabilities away from exactly \(0\) and \(1\),
+
+  $$
+  \tilde p=\operatorname{clip}(p,\varepsilon,1-\varepsilon),
+  $$
+
+  so that `log` never receives zero.
+
+- **`categorical_cross_entropy`**: cross-entropy for integer class indices and predicted probability vectors. It takes:
+  - an array of integer class indices with shape `(N,)`;
+  - an array of predicted probabilities with shape `(N, num_classes)`.
+
+  For each example, select the probability assigned to its true class, take its negative logarithm, and return the mean across the batch. Apply the same clipping before taking the logarithm.
+
+For binary labels \(y_i\in\{0,1\}\) and predicted probabilities \(p_i\), let
+
+$$
+\tilde p_i=\operatorname{clip}(p_i,\varepsilon,1-\varepsilon).
+$$
+
+The binary cross-entropy is
+
+$$
+\operatorname{BCE}(y,p)
+= -\frac{1}{N}
+\sum_{i=1}^{N}
+\left[
+y_i\log \tilde p_i
++
+(1-y_i)\log(1-\tilde p_i)
+\right].
+$$
+
+For multiclass classification, let:
+
+- \(t_n\in\{0,\ldots,C-1\}\) be the integer index of the true class for example \(n\);
+- \(p_{n,c}\) be the predicted probability that example \(n\) belongs to class \(c\);
+- \(\tilde p_{n,c}\) be the clipped predicted probability.
+
+The categorical cross-entropy is
+
+$$
+\operatorname{CCE}(t,p)
+= -\frac{1}{N}
+\sum_{n=1}^{N}
+\log \tilde p_{n,t_n}.
+$$
+
+In other words, categorical cross-entropy selects one probability from each row—the probability assigned to that example's true class—and averages the negative logarithms of those probabilities.
+
+Create a script `weeks/week2/task13.py` that:
+
+1. Computes `binary_cross_entropy` on a small example.
+2. Compares the binary loss for a confidently right prediction, \(p=0.999\), against a confidently wrong prediction, \(p=0.001\), using the same true label.
+3. Computes `categorical_cross_entropy` on a small multiclass example.
+4. Compares the categorical loss for a confidently right prediction against a confidently wrong prediction using the same true class.
+
+A suitable multiclass example is
+
+$$
+t= \begin{bmatrix}
+0 & 1 & 2
+\end{bmatrix},
+$$
+
+with predicted probabilities
+
+$$
+p= \begin{bmatrix}
+0.7 & 0.2 & 0.1\\
+0.1 & 0.8 & 0.1\\
+0.2 & 0.2 & 0.6
+\end{bmatrix}.
+$$
+
+The selected true-class probabilities are therefore
+
+$$
+p_{0,0}=0.7,
+\qquad
+p_{1,1}=0.8,
+\qquad
+p_{2,2}=0.6.
+$$
+
+**Acceptance criteria:**
+
+- `binary_cross_entropy` matches `torch.nn.functional.binary_cross_entropy` on the supplied test inputs.
+- `categorical_cross_entropy` matches `torch.nn.functional.nll_loss` on the supplied test inputs.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_losses/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 2 -t 13
+```
+
+```text
+Binary cross-entropy on y_true=[1. 0. 1.], p=[0.9 0.2 0.6]: 0.2798
+
+y_true=1, p=0.999 (confidently right): loss=0.0010
+y_true=1, p=0.001 (confidently wrong): loss=6.9078
+
+Multiclass cross-entropy on y_true=[0 1 2]: 0.3635
+
+y_true=0, p_true=0.999 (confidently right): loss=0.0010
+y_true=0, p_true=0.001 (confidently wrong): loss=6.9078
+```
+
+<details>
+<summary>How is the binary cross-entropy derivative obtained?</summary>
+
+**Step 1: Start from the complete mean loss.**
+
+For binary targets \(y_i\in\{0,1\}\) and predicted probabilities \(p_i\),
+
+$$
+L
+= -\frac{1}{N}
+\sum_{j=1}^{N}
+\left[
+y_j\log p_j
++
+(1-y_j)\log(1-p_j)
+\right].
+$$
+
+We first derive the gradient with respect to the probabilities \(p\), then continue through sigmoid to the logits \(z\).
+
+**Step 2: Differentiate the full sum with respect to one probability.**
+
+Take one probability \(p_i\). Begin with the full sum:
+
+$$
+\frac{\partial L}{\partial p_i}
+= -\frac{1}{N}
+\frac{\partial}{\partial p_i}
+\sum_{j=1}^{N}
+\left[
+y_j\log p_j
++
+(1-y_j)\log(1-p_j)
+\right].
+$$
+
+Only the term with \(j=i\) contains \(p_i\). Every other term has derivative zero with respect to \(p_i\). Therefore,
+
+$$
+\frac{\partial L}{\partial p_i}
+= -\frac{1}{N}
+\frac{\partial}{\partial p_i}
+\left[
+y_i\log p_i
++
+(1-y_i)\log(1-p_i)
+\right].
+$$
+
+**Step 3: Differentiate the two logarithmic terms.**
+
+Because \(y_i\) is constant,
+
+$$
+\frac{\partial}{\partial p_i}
+\left(y_i\log p_i\right)
+= \frac{y_i}{p_i}.
+$$
+
+For the second term, apply the chain rule:
+
+$$
+\frac{\partial}{\partial p_i}\log(1-p_i)
+= \frac{1}{1-p_i}
+\frac{\partial}{\partial p_i}(1-p_i)
+= -\frac{1}{1-p_i}.
+$$
+
+Therefore,
+
+$$
+\frac{\partial}{\partial p_i}
+\left[
+(1-y_i)\log(1-p_i)
+\right]
+= -\frac{1-y_i}{1-p_i}.
+$$
+
+Substitute both derivatives:
+
+$$
+\frac{\partial L}{\partial p_i}
+= -\frac{1}{N}
+\left[
+\frac{y_i}{p_i}
+-
+\frac{1-y_i}{1-p_i}
+\right].
+$$
+
+Distribute the minus sign:
+
+$$
+\frac{\partial L}{\partial p_i}
+= \frac{1}{N}
+\left[
+-\frac{y_i}{p_i}
++
+\frac{1-y_i}{1-p_i}
+\right].
+$$
+
+**Step 4: Put the two fractions over one denominator.**
+
+$$
+-\frac{y_i}{p_i}
++
+\frac{1-y_i}{1-p_i}
+= \frac{
+-y_i(1-p_i)+p_i(1-y_i)
+}{
+p_i(1-p_i)
+}.
+$$
+
+Expand the numerator:
+
+$$
+-y_i+y_ip_i+p_i-p_iy_i
+= p_i-y_i.
+$$
+
+Thus,
+
+$$
+\boxed{
+\frac{\partial L}{\partial p_i}
+= \frac{p_i-y_i}{N\,p_i(1-p_i)}
+},
+\qquad
+0<p_i<1.
+$$
+
+**Step 5: Continue through a sigmoid output.**
+
+The sigmoid derivative is
+
+$$
+\frac{\partial p_i}{\partial z_i}
+= p_i(1-p_i).
+$$
+
+The chain rule gives
+
+$$
+\frac{\partial L}{\partial z_i}
+= \frac{\partial L}{\partial p_i}
+\frac{\partial p_i}{\partial z_i}.
+$$
+
+Substitute both factors:
+
+$$
+\frac{\partial L}{\partial z_i}
+= \frac{p_i-y_i}{N\,p_i(1-p_i)}
+\left[
+p_i(1-p_i)
+\right].
+$$
+
+The \(p_i(1-p_i)\) factors cancel:
+
+$$
+\boxed{
+\frac{\partial L}{\partial z_i}
+= \frac{p_i-y_i}{N}
+= \frac{\sigma(z_i)-y_i}{N}
+}.
+$$
+
+</details>
+
+<details>
+<summary>How is the softmax plus categorical cross-entropy derivative obtained using class indices?</summary>
+
+**Step 1: Start from categorical cross-entropy using class indices.**
+
+For \(N\) examples, let \(t_n\) be the integer index of the true class for example \(n\). If \(p_{n,c}\) is the predicted probability for class \(c\), the mean categorical cross-entropy is
+
+$$
+L
+= -\frac{1}{N}
+\sum_{n=1}^{N}
+\log p_{n,t_n}.
+$$
+
+For one example \(n\), its contribution to the mean loss is
+
+$$
+L_n
+= -\frac{1}{N}
+\log p_{n,t_n}.
+$$
+
+The loss directly contains only the probability assigned to the true class.
+
+**Step 2: Differentiate with respect to the predicted probabilities.**
+
+For the true-class probability,
+
+$$
+\frac{\partial L}{\partial p_{n,t_n}}
+= -\frac{1}{N}
+\frac{1}{p_{n,t_n}}.
+$$
+
+Therefore,
+
+$$
+\boxed{
+\frac{\partial L}{\partial p_{n,t_n}}
+= -\frac{1}{N p_{n,t_n}}
+}.
+$$
+
+For any incorrect class \(c\ne t_n\), the probability \(p_{n,c}\) does not appear directly in the loss. Therefore,
+
+$$
+\boxed{
+\frac{\partial L}{\partial p_{n,c}}
+= 0,
+\qquad
+c\ne t_n
+}.
+$$
+
+The probability-space derivative can be written in one expression using an indicator:
+
+$$
+\boxed{
+\frac{\partial L}{\partial p_{n,c}}
+= -\frac{\mathbf{1}[c=t_n]}{N p_{n,t_n}}
+},
+$$
+
+where
+
+$$
+\mathbf{1}[c=t_n]
+= \begin{cases}
+1, & c=t_n,\\
+0, & c\ne t_n.
+\end{cases}
+$$
+
+**Step 3: Continue through softmax.**
+
+The probabilities are produced from logits using softmax:
+
+$$
+p_{n,c}
+= \frac{e^{z_{n,c}}}
+{\sum_{j=1}^{C}e^{z_{n,j}}}.
+$$
+
+Although categorical cross-entropy directly selects only \(p_{n,t_n}\), that probability depends on every logit in the row.
+
+For one logit \(z_{n,k}\), apply the chain rule:
+
+$$
+\frac{\partial L}{\partial z_{n,k}}
+= \frac{\partial L}{\partial p_{n,t_n}}
+\frac{\partial p_{n,t_n}}{\partial z_{n,k}}.
+$$
+
+The softmax derivative is
+
+$$
+\frac{\partial p_{n,c}}{\partial z_{n,k}}
+= p_{n,c}
+\left(
+\mathbf{1}[c=k]-p_{n,k}
+\right).
+$$
+
+Set \(c=t_n\):
+
+$$
+\frac{\partial p_{n,t_n}}{\partial z_{n,k}}
+= p_{n,t_n}
+\left(
+\mathbf{1}[t_n=k]-p_{n,k}
+\right).
+$$
+
+Substitute this and the cross-entropy derivative:
+
+$$
+\frac{\partial L}{\partial z_{n,k}}
+= \left(
+-\frac{1}{N p_{n,t_n}}
+\right)
+p_{n,t_n}
+\left(
+\mathbf{1}[t_n=k]-p_{n,k}
+\right).
+$$
+
+The \(p_{n,t_n}\) terms cancel:
+
+$$
+\frac{\partial L}{\partial z_{n,k}}
+= -\frac{1}{N}
+\left(
+\mathbf{1}[t_n=k]-p_{n,k}
+\right).
+$$
+
+Therefore,
+
+$$
+\boxed{
+\frac{\partial L}{\partial z_{n,k}}
+= \frac{
+p_{n,k}-\mathbf{1}[k=t_n]
+}{N}
+}.
+$$
+
+Although this result is often written using a one-hot target vector as
+
+$$
+\nabla_{z_n}L
+= \frac{p_n-y_n}{N},
+$$
+
+the index-based expression
+
+$$
+\frac{\partial L}{\partial z_{n,k}}
+= \frac{
+p_{n,k}-\mathbf{1}[k=t_n]
+}{N}
+$$
+
+describes the same gradient without requiring the one-hot target vector to be explicitly constructed.
+
+</details>
+
+<details>
+<summary>PyTorch has both <code>nn.NLLLoss</code> and <code>nn.CrossEntropyLoss</code> - what is the difference between them?</summary>
+
+No. They calculate the same underlying negative log-likelihood of the true class, but they expect inputs at different stages.
+
+- `NLLLoss` expects log-probabilities and integer class indices:
+
+```python
+loss = torch.nn.functional.nll_loss(log_probabilities, targets)
+```
+
+It selects
+
+```text
+log_probabilities[n, targets[n]]
+```
+
+for each example, negates those values, and applies the requested reduction.
+
+- `CrossEntropyLoss` expects raw, unnormalized logits and integer class indices:
+
+```python
+loss = torch.nn.functional.cross_entropy(logits, targets)
+```
+
+It applies `log_softmax` internally and then performs the same negative log-likelihood operation. Combining these operations is more numerically stable than calculating softmax and logarithms separately.
+
+</details>
+
+### Derivative formulas
+
+**MAE**
+
+$$
+\boxed{
+\frac{\partial L}{\partial \hat{y}_i}
+= \frac{1}{N}\operatorname{sign}(\hat{y}_i-y_i)
+}
+\qquad
+\text{with }\operatorname{sign}(0)=0.
+$$
+
+**MSE**
+
+$$
+\boxed{
+\frac{\partial L}{\partial \hat{y}_i}
+= \frac{2}{N}(\hat{y}_i-y_i)
+}
+$$
+
+**RMSE**
+
+$$
+\boxed{
+\frac{\partial L}{\partial \hat{y}_i}
+= \frac{\hat{y}_i-y_i}
+{N\,\operatorname{RMSE}(y,\hat{y})}
+}
+\qquad
+\operatorname{RMSE}(y,\hat{y})>0.
+$$
+
+**Sigmoid**
+
+$$
+\boxed{
+\sigma'(x)
+= \sigma(x)(1-\sigma(x))
+}
+$$
+
+**ReLU**
+
+$$
+\boxed{
+\operatorname{ReLU}'(x)
+= \begin{cases}
+0, & x\le 0,\\
+1, & x>0,
+\end{cases}
+}
+$$
+
+**Tanh**
+
+$$
+\boxed{
+\frac{d}{dx}\tanh(x)
+= 1-\tanh^2(x)
+}
+$$
+
+**Binary cross-entropy with respect to probability**
+
+$$
+\boxed{
+\frac{\partial L}{\partial p_i}
+= \frac{p_i-y_i}
+{N\,p_i(1-p_i)}
+}
+\qquad
+0<p_i<1.
+$$
+
+**Sigmoid + binary cross-entropy with respect to logits**
+
+$$
+\boxed{
+\frac{\partial L}{\partial z_i}
+= \frac{p_i-y_i}{N}
+= \frac{\sigma(z_i)-y_i}{N}
+}
+$$
+
+**Softmax**
+
+$$
+\boxed{
+\frac{\partial p_c}{\partial z_k}
+= p_c(\delta_{ck}-p_k)
+}
+$$
+
+**Softmax + categorical cross-entropy with respect to logits**
+
+$$
+\boxed{
+\frac{\partial L}{\partial z_{n,k}}
+= \frac{p_{n,k}-y_{n,k}}{N}
+}
+$$
