@@ -3,6 +3,7 @@ import torch
 
 from dl_lib.losses import functional
 
+
 def main() -> int:
     y_true = np.array([3.0, 5.0, 7.0, 9.0])
     y_pred = np.array([2.0, 6.0, 8.0, 7.0])

@@ -10,7 +10,7 @@ def main() -> int:
 
     errors = y_pred - y_true
     absolute_errors = np.abs(errors)
-    squared_errors = errors**2
+    squared_errors = np.square(errors)
 
     print(f"errors:          {errors}")
     print(f"absolute errors: {absolute_errors}")

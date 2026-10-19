@@ -34,49 +34,51 @@ class TestMae(unittest.TestCase):
         self.assertAlmostEqual(actual, expected)
 
 
-#
-#
-# class TestMse(unittest.TestCase):
-#
-#     def test_when_called_then_matches_hand_calculation(self):
-#         # Arrange
-#         y_true = np.array([3.0, 5.0, 7.0, 9.0])
-#         y_pred = np.array([2.0, 6.0, 8.0, 7.0])
-#         expected = 1.75
-#
-#         # Act
-#         actual = functional.mse(y_true, y_pred)
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, expected)
-#
-#     def test_when_called_then_matches_torch_mse_loss(self):
-#         # Arrange
-#         y_true = np.array([3.0, 5.0, 7.0, 9.0])
-#         y_pred = np.array([2.0, 6.0, 8.0, 7.0])
-#         expected = torch.nn.functional.mse_loss(torch.from_numpy(y_pred),
-#                                                 torch.from_numpy(y_true)).item()
-#
-#         # Act
-#         actual = functional.mse(y_true, y_pred)
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, expected)
-#
-#     def test_when_one_prediction_is_far_off_then_penalizes_it_more_than_mae_does(self):
-#         # Arrange
-#         y_true = np.array([1.0, 1.0, 1.0, 1.0])
-#         y_pred_close = np.array([2.0, 1.0, 1.0, 1.0])
-#         y_pred_far = np.array([10.0, 1.0, 1.0, 1.0])
-#
-#         # Act
-#         mae_ratio = functional.mae(y_true, y_pred_far) / functional.mae(y_true, y_pred_close)
-#         mse_ratio = functional.mse(y_true, y_pred_far) / functional.mse(y_true, y_pred_close)
-#
-#         # Assert
-#         self.assertGreater(mse_ratio, mae_ratio)
-#
-#
+class TestMse(unittest.TestCase):
+    def test_when_called_then_matches_hand_calculation(self):
+        # Arrange
+        y_true = np.array([3.0, 5.0, 7.0, 9.0])
+        y_pred = np.array([2.0, 6.0, 8.0, 7.0])
+        expected = 1.75
+
+        # Act
+        actual = functional.mse(y_true, y_pred)
+
+        # Assert
+        self.assertAlmostEqual(actual, expected)
+
+    def test_when_called_then_matches_torch_mse_loss(self):
+        # Arrange
+        y_true = np.array([3.0, 5.0, 7.0, 9.0])
+        y_pred = np.array([2.0, 6.0, 8.0, 7.0])
+        expected = torch.nn.functional.mse_loss(
+            torch.from_numpy(y_pred), torch.from_numpy(y_true)
+        ).item()
+
+        # Act
+        actual = functional.mse(y_true, y_pred)
+
+        # Assert
+        self.assertAlmostEqual(actual, expected)
+
+    def test_when_one_prediction_is_far_off_then_penalizes_it_more_than_mae_does(self):
+        # Arrange
+        y_true = np.array([1.0, 1.0, 1.0, 1.0])
+        y_pred_close = np.array([2.0, 1.0, 1.0, 1.0])
+        y_pred_far = np.array([10.0, 1.0, 1.0, 1.0])
+
+        # Act
+        mae_ratio = functional.mae(y_true, y_pred_far) / functional.mae(
+            y_true, y_pred_close
+        )
+        mse_ratio = functional.mse(y_true, y_pred_far) / functional.mse(
+            y_true, y_pred_close
+        )
+
+        # Assert
+        self.assertGreater(mse_ratio, mae_ratio)
+
+
 # class TestRmse(unittest.TestCase):
 #
 #     def test_when_called_then_matches_hand_calculation(self):
