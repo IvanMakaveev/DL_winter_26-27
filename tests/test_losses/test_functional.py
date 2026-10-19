@@ -79,33 +79,32 @@ class TestMse(unittest.TestCase):
         self.assertGreater(mse_ratio, mae_ratio)
 
 
-# class TestRmse(unittest.TestCase):
-#
-#     def test_when_called_then_matches_hand_calculation(self):
-#         # Arrange
-#         y_true = np.array([3.0, 5.0, 7.0, 9.0])
-#         y_pred = np.array([2.0, 6.0, 8.0, 7.0])
-#         expected = 1.3229
-#
-#         # Act
-#         actual = functional.rmse(y_true, y_pred)
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, expected, places=4)
-#
-#     def test_when_called_then_equals_square_root_of_mse(self):
-#         # Arrange
-#         y_true = np.array([3.0, 5.0, 7.0, 9.0])
-#         y_pred = np.array([2.0, 6.0, 8.0, 7.0])
-#         expected = np.sqrt(functional.mse(y_true, y_pred))
-#
-#         # Act
-#         actual = functional.rmse(y_true, y_pred)
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, expected)
-#
-#
+class TestRmse(unittest.TestCase):
+    def test_when_called_then_matches_hand_calculation(self):
+        # Arrange
+        y_true = np.array([3.0, 5.0, 7.0, 9.0])
+        y_pred = np.array([2.0, 6.0, 8.0, 7.0])
+        expected = 1.3229
+
+        # Act
+        actual = functional.rmse(y_true, y_pred)
+
+        # Assert
+        self.assertAlmostEqual(actual, expected, places=4)
+
+    def test_when_called_then_equals_square_root_of_mse(self):
+        # Arrange
+        y_true = np.array([3.0, 5.0, 7.0, 9.0])
+        y_pred = np.array([2.0, 6.0, 8.0, 7.0])
+        expected = np.sqrt(functional.mse(y_true, y_pred))
+
+        # Act
+        actual = functional.rmse(y_true, y_pred)
+
+        # Assert
+        self.assertAlmostEqual(actual, expected)
+
+
 # class TestBinaryCrossEntropy(unittest.TestCase):
 #
 #     def test_when_called_then_matches_hand_calculation(self):
