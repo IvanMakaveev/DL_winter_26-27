@@ -50,75 +50,74 @@ class TestSigmoid(unittest.TestCase):
         np.testing.assert_allclose(actual, expected)
 
 
-# class TestRelu(unittest.TestCase):
-#
-#     def test_when_input_is_negative_then_returns_zero(self):
-#         # Arrange
-#         x = np.array([-5.0, -1.0])
-#         expected = np.array([0.0, 0.0])
-#
-#         # Act
-#         actual = functional.relu(x)
-#
-#         # Assert
-#         np.testing.assert_allclose(actual, expected)
-#
-#     def test_when_input_is_positive_then_returns_input_unchanged(self):
-#         # Arrange
-#         x = np.array([2.0, 7.5])
-#
-#         # Act
-#         actual = functional.relu(x)
-#
-#         # Assert
-#         np.testing.assert_allclose(actual, x)
-#
-#     def test_when_called_then_matches_torch_relu(self):
-#         # Arrange
-#         x = np.array([-3.0, -1.0, 0.0, 1.0, 3.0])
-#         expected = torch.nn.functional.relu(torch.from_numpy(x)).numpy()
-#
-#         # Act
-#         actual = functional.relu(x)
-#
-#         # Assert
-#         np.testing.assert_allclose(actual, expected)
-#
-#
-# class TestTanh(unittest.TestCase):
-#
-#     def test_when_input_is_zero_then_returns_zero(self):
-#         # Arrange
-#         x = np.array([0.0])
-#         expected = 0.0
-#
-#         # Act
-#         actual = functional.tanh(x)[0]
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, expected)
-#
-#     def test_when_input_is_very_negative_then_approaches_negative_one(self):
-#         # Arrange
-#         x = np.array([-100.0])
-#
-#         # Act
-#         actual = functional.tanh(x)[0]
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, -1.0)
-#
-#     def test_when_called_then_matches_torch_tanh(self):
-#         # Arrange
-#         x = np.array([-3.0, -1.0, 0.0, 1.0, 3.0])
-#         expected = torch.tanh(torch.from_numpy(x)).numpy()
-#
-#         # Act
-#         actual = functional.tanh(x)
-#
-#         # Assert
-#         np.testing.assert_allclose(actual, expected)
-#
+class TestRelu(unittest.TestCase):
+    def test_when_input_is_negative_then_returns_zero(self):
+        # Arrange
+        x = np.array([-5.0, -1.0])
+        expected = np.array([0.0, 0.0])
+
+        # Act
+        actual = functional.relu(x)
+
+        # Assert
+        np.testing.assert_allclose(actual, expected)
+
+    def test_when_input_is_positive_then_returns_input_unchanged(self):
+        # Arrange
+        x = np.array([2.0, 7.5])
+
+        # Act
+        actual = functional.relu(x)
+
+        # Assert
+        np.testing.assert_allclose(actual, x)
+
+    def test_when_called_then_matches_torch_relu(self):
+        # Arrange
+        x = np.array([-3.0, -1.0, 0.0, 1.0, 3.0])
+        expected = torch.nn.functional.relu(torch.from_numpy(x)).numpy()
+
+        # Act
+        actual = functional.relu(x)
+
+        # Assert
+        np.testing.assert_allclose(actual, expected)
+
+
+class TestTanh(unittest.TestCase):
+    def test_when_input_is_zero_then_returns_zero(self):
+        # Arrange
+        x = np.array([0.0])
+        expected = 0.0
+
+        # Act
+        actual = functional.tanh(x)[0]
+
+        # Assert
+        self.assertAlmostEqual(actual, expected)
+
+    def test_when_input_is_very_negative_then_approaches_negative_one(self):
+        # Arrange
+        x = np.array([-100.0])
+
+        # Act
+        actual = functional.tanh(x)[0]
+
+        # Assert
+        self.assertAlmostEqual(actual, -1.0)
+
+    def test_when_called_then_matches_torch_tanh(self):
+        # Arrange
+        x = np.array([-3.0, -1.0, 0.0, 1.0, 3.0])
+        expected = torch.tanh(torch.from_numpy(x)).numpy()
+
+        # Act
+        actual = functional.tanh(x)
+
+        # Assert
+        np.testing.assert_allclose(actual, expected)
+
+
 #
 # class TestSoftmax(unittest.TestCase):
 #
