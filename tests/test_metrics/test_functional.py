@@ -1,34 +1,35 @@
-# import unittest
-#
-# import numpy as np
-#
-# from dl_lib.metrics import functional
-#
-#
-# class TestApplyThreshold(unittest.TestCase):
-#
-#     def test_when_probabilities_straddle_threshold_then_splits_them(self):
-#         # Arrange
-#         probabilities = np.array([0.1, 0.8, 0.4, 0.7, 0.9])
-#         threshold = 0.5
-#         expected = np.array([0, 1, 0, 1, 1])
-#
-#         # Act
-#         actual = functional.apply_threshold(probabilities, threshold)
-#
-#         # Assert
-#         np.testing.assert_array_equal(actual, expected)
-#
-#     def test_when_threshold_rises_then_fewer_predictions_are_positive(self):
-#         # Arrange
-#         probabilities = np.array([0.1, 0.8, 0.4, 0.7, 0.9])
-#
-#         # Act
-#         low_threshold_positives = functional.apply_threshold(probabilities, 0.1).sum()
-#         high_threshold_positives = functional.apply_threshold(probabilities, 0.9).sum()
-#
-#         # Assert
-#         self.assertGreater(low_threshold_positives, high_threshold_positives)
+import unittest
+
+import numpy as np
+
+from dl_lib.metrics import functional
+
+
+class TestApplyThreshold(unittest.TestCase):
+    def test_when_probabilities_straddle_threshold_then_splits_them(self):
+        # Arrange
+        probabilities = np.array([0.1, 0.8, 0.4, 0.7, 0.9])
+        threshold = 0.5
+        expected = np.array([0, 1, 0, 1, 1])
+
+        # Act
+        actual = functional.apply_threshold(probabilities, threshold)
+
+        # Assert
+        np.testing.assert_array_equal(actual, expected)
+
+    def test_when_threshold_rises_then_fewer_predictions_are_positive(self):
+        # Arrange
+        probabilities = np.array([0.1, 0.8, 0.4, 0.7, 0.9])
+
+        # Act
+        low_threshold_positives = functional.apply_threshold(probabilities, 0.1).sum()
+        high_threshold_positives = functional.apply_threshold(probabilities, 0.9).sum()
+
+        # Assert
+        self.assertGreater(low_threshold_positives, high_threshold_positives)
+
+
 #
 #
 # class TestConfusionMatrix(unittest.TestCase):
