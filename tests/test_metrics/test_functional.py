@@ -30,23 +30,20 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertGreater(low_threshold_positives, high_threshold_positives)
 
 
-#
-#
-# class TestConfusionMatrix(unittest.TestCase):
-#
-#     def test_when_called_then_counts_each_quadrant(self):
-#         # Arrange
-#         y_true = np.array([1, 0, 1, 0, 1])
-#         y_pred = np.array([1, 0, 0, 1, 1])
-#         expected = {'tp': 2, 'tn': 1, 'fp': 1, 'fn': 1}
-#
-#         # Act
-#         actual = functional.confusion_matrix(y_true, y_pred)
-#
-#         # Assert
-#         self.assertEqual(actual, expected)
-#
-#
+class TestConfusionMatrix(unittest.TestCase):
+    def test_when_called_then_counts_each_quadrant(self):
+        # Arrange
+        y_true = np.array([1, 0, 1, 0, 1])
+        y_pred = np.array([1, 0, 0, 1, 1])
+        expected = {"tp": 2, "tn": 1, "fp": 1, "fn": 1}
+
+        # Act
+        actual = functional.confusion_matrix(y_true, y_pred)
+
+        # Assert
+        self.assertEqual(actual, expected)
+
+
 # class TestAccuracy(unittest.TestCase):
 #
 #     def test_when_called_then_matches_hand_calculation(self):
