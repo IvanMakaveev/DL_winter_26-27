@@ -1,56 +1,55 @@
-# import unittest
-#
-# import numpy as np
-# import torch
-#
-# from dl_lib.activations import functional
-#
-#
-# class TestSigmoid(unittest.TestCase):
-#
-#     def test_when_input_is_zero_then_returns_one_half(self):
-#         # Arrange
-#         x = np.array([0.0])
-#         expected = 0.5
-#
-#         # Act
-#         actual = functional.sigmoid(x)[0]
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, expected)
-#
-#     def test_when_input_is_very_negative_then_approaches_zero(self):
-#         # Arrange
-#         x = np.array([-100.0])
-#
-#         # Act
-#         actual = functional.sigmoid(x)[0]
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, 0.0)
-#
-#     def test_when_input_is_very_positive_then_approaches_one(self):
-#         # Arrange
-#         x = np.array([100.0])
-#
-#         # Act
-#         actual = functional.sigmoid(x)[0]
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, 1.0)
-#
-#     def test_when_called_then_matches_torch_sigmoid(self):
-#         # Arrange
-#         x = np.array([-3.0, -1.0, 0.0, 1.0, 3.0])
-#         expected = torch.sigmoid(torch.from_numpy(x)).numpy()
-#
-#         # Act
-#         actual = functional.sigmoid(x)
-#
-#         # Assert
-#         np.testing.assert_allclose(actual, expected)
-#
-#
+import unittest
+
+import numpy as np
+import torch
+
+from dl_lib.activations import functional
+
+
+class TestSigmoid(unittest.TestCase):
+    def test_when_input_is_zero_then_returns_one_half(self):
+        # Arrange
+        x = np.array([0.0])
+        expected = 0.5
+
+        # Act
+        actual = functional.sigmoid(x)[0]
+
+        # Assert
+        self.assertAlmostEqual(actual, expected)
+
+    def test_when_input_is_very_negative_then_approaches_zero(self):
+        # Arrange
+        x = np.array([-100.0])
+
+        # Act
+        actual = functional.sigmoid(x)[0]
+
+        # Assert
+        self.assertAlmostEqual(actual, 0.0)
+
+    def test_when_input_is_very_positive_then_approaches_one(self):
+        # Arrange
+        x = np.array([100.0])
+
+        # Act
+        actual = functional.sigmoid(x)[0]
+
+        # Assert
+        self.assertAlmostEqual(actual, 1.0)
+
+    def test_when_called_then_matches_torch_sigmoid(self):
+        # Arrange
+        x = np.array([-3.0, -1.0, 0.0, 1.0, 3.0])
+        expected = torch.sigmoid(torch.from_numpy(x)).numpy()
+
+        # Act
+        actual = functional.sigmoid(x)
+
+        # Assert
+        np.testing.assert_allclose(actual, expected)
+
+
 # class TestRelu(unittest.TestCase):
 #
 #     def test_when_input_is_negative_then_returns_zero(self):
