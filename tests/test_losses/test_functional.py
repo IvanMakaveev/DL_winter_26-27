@@ -1,37 +1,39 @@
-# import unittest
-#
-# import numpy as np
-# import torch
-#
-# from dl_lib.losses import functional
-#
-#
-# class TestMae(unittest.TestCase):
-#
-#     def test_when_called_then_matches_hand_calculation(self):
-#         # Arrange
-#         y_true = np.array([3.0, 5.0, 7.0, 9.0])
-#         y_pred = np.array([2.0, 6.0, 8.0, 7.0])
-#         expected = 1.25
-#
-#         # Act
-#         actual = functional.mae(y_true, y_pred)
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, expected)
-#
-#     def test_when_called_then_matches_torch_l1_loss(self):
-#         # Arrange
-#         y_true = np.array([3.0, 5.0, 7.0, 9.0])
-#         y_pred = np.array([2.0, 6.0, 8.0, 7.0])
-#         expected = torch.nn.functional.l1_loss(torch.from_numpy(y_pred),
-#                                                torch.from_numpy(y_true)).item()
-#
-#         # Act
-#         actual = functional.mae(y_true, y_pred)
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, expected)
+import unittest
+
+import numpy as np
+import torch
+
+from dl_lib.losses import functional
+
+
+class TestMae(unittest.TestCase):
+    def test_when_called_then_matches_hand_calculation(self):
+        # Arrange
+        y_true = np.array([3.0, 5.0, 7.0, 9.0])
+        y_pred = np.array([2.0, 6.0, 8.0, 7.0])
+        expected = 1.25
+
+        # Act
+        actual = functional.mae(y_true, y_pred)
+
+        # Assert
+        self.assertAlmostEqual(actual, expected)
+
+    def test_when_called_then_matches_torch_l1_loss(self):
+        # Arrange
+        y_true = np.array([3.0, 5.0, 7.0, 9.0])
+        y_pred = np.array([2.0, 6.0, 8.0, 7.0])
+        expected = torch.nn.functional.l1_loss(
+            torch.from_numpy(y_pred), torch.from_numpy(y_true)
+        ).item()
+
+        # Act
+        actual = functional.mae(y_true, y_pred)
+
+        # Assert
+        self.assertAlmostEqual(actual, expected)
+
+
 #
 #
 # class TestMse(unittest.TestCase):
