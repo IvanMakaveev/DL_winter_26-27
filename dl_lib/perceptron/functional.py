@@ -9,3 +9,18 @@ def forward(inputs: np.ndarray, weights: np.ndarray, bias:float = 0.0, activatio
     if activation:
         result = activation(result)
     return result
+
+def numerical_gradient(loss: callable, parameters: np.ndarray, epsilon: float = 1e-5) -> np.ndarray:
+    gradients = np.zeros_like(parameters)
+    for i in range(len(parameters)):
+        original_value = parameters[i]
+        parameters[i] = original_value + epsilon
+        loss_plus = loss(parameters)
+        parameters[i] = original_value - epsilon
+        loss_minus = loss(parameters)
+        gradients[i] = (loss_plus - loss_minus) / (2 * epsilon)
+        parameters[i] = original_value
+    return gradients
+
+def gradient_descent_step(parameters: np.ndarray, gradients: np.ndarray, learning_rate: float) -> np.ndarray:
+    return parameters - learning_rate * gradients
