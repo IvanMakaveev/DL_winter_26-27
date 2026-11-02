@@ -1,7 +1,5 @@
-from dl_lib.perceptron import datasets
-from dl_lib.perceptron import functional
+from dl_lib.perceptron import datasets, functional
 
-import numpy as np
 
 def main() -> int:
     dataset = datasets.create_dataset(4)
