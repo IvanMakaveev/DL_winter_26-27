@@ -1,4 +1,6 @@
+from dl_lib.losses.functional import mse
 import numpy as np
+
 
 def initialize_weights(low: float, high: float, size: int, seed: int) -> np.ndarray:
     generator = np.random.default_rng(seed)
@@ -24,3 +26,25 @@ def numerical_gradient(loss: callable, parameters: np.ndarray, epsilon: float = 
 
 def gradient_descent_step(parameters: np.ndarray, gradients: np.ndarray, learning_rate: float) -> np.ndarray:
     return parameters - learning_rate * gradients
+
+def dataset_loss(dataset: list[tuple[float, float]], targets: np.ndarray, weights: np.ndarray, bias: float = 0.0, activation: callable = None, loss: callable = mse) -> float:
+    inputs = np.array([x for x, _ in dataset])
+    predicted = np.array([forward(np.array([x]), weights, bias, activation) for x in inputs])
+    return loss(predicted, targets)
+
+def analytical_gradient(dataset: list[tuple[float, float]], weights: np.ndarray, bias: float = 0.0, activation: callable = None, activation_derivative: callable = None) -> np.ndarray:
+    inputs = np.array([x for x, _ in dataset])
+    targets = np.array([y for _, y in dataset])
+    predicted = np.array([forward(np.array([x]), weights, bias, activation) for x in inputs])
+    errors = predicted - targets
+    
+    if activation_derivative:
+        errors *= activation_derivative(predicted)
+
+    weight_grad = 2 * np.dot(errors, inputs) / len(dataset)
+    bias_grad = 2 * np.sum(errors) / len(dataset)
+
+    if weight_grad.ndim == 0:
+        weight_grad = np.array([weight_grad])
+
+    return weight_grad, bias_grad 
