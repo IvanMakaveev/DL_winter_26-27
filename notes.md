@@ -41,6 +41,59 @@
       - [Task 13](#task-13-1)
   - [\\frac{y\_i}{p\_i}](#fracy_ip_i)
     - [Derivative formulas](#derivative-formulas)
+  - [Week 03 - Building perceptrons](#week-03---building-perceptrons)
+    - [A model that can multiply by 2](#a-model-that-can-multiply-by-2)
+      - [Task 01](#task-01-2)
+      - [Task 02](#task-02-2)
+      - [Task 03](#task-03-2)
+      - [Task 04](#task-04-2)
+      - [Task 05](#task-05-2)
+    - [Logic gates](#logic-gates)
+      - [Task 06](#task-06-2)
+      - [Task 07](#task-07-2)
+      - [Task 08](#task-08-2)
+      - [Task 09](#task-09-2)
+      - [Task 10](#task-10-2)
+    - [Modelling XOR](#modelling-xor)
+      - [Task 11](#task-11-2)
+      - [Task 12](#task-12-2)
+      - [Task 13](#task-13-2)
+      - [Task 14](#task-14-1)
+  - [Week 04 - Building an Automatic Differentiation Engine](#week-04---building-an-automatic-differentiation-engine)
+    - [Backpropagation](#backpropagation)
+    - [Building the `Value` class](#building-the-value-class)
+      - [Task 01](#task-01-3)
+      - [Task 02](#task-02-3)
+      - [Task 03](#task-03-3)
+      - [Task 04](#task-04-3)
+    - [Backpropagation by hand](#backpropagation-by-hand)
+      - [Task 05](#task-05-3)
+      - [Task 06](#task-06-3)
+      - [Task 07](#task-07-3)
+      - [Task 08](#task-08-3)
+      - [Task 09](#task-09-3)
+    - [Automatic differentiation](#automatic-differentiation)
+      - [Task 10](#task-10-3)
+      - [Task 11](#task-11-3)
+      - [Task 12](#task-12-3)
+      - [Task 13](#task-13-3)
+      - [Task 14](#task-14-2)
+  - [Week 05 - Multilayer Perceptrons](#week-05---multilayer-perceptrons)
+    - [Task 01](#task-01-4)
+    - [Task 02](#task-02-4)
+    - [Task 03](#task-03-4)
+    - [Task 04](#task-04-4)
+    - [Task 05](#task-05-4)
+    - [Task 06](#task-06-4)
+    - [Task 07](#task-07-4)
+    - [Task 08](#task-08-4)
+    - [Task 09](#task-09-4)
+    - [Task 10](#task-10-4)
+    - [Task 11](#task-11-4)
+    - [Task 12](#task-12-4)
+    - [Task 13](#task-13-4)
+    - [Task 14](#task-14-3)
+    - [Task 15](#task-15-1)
 
 ## Week 01 - Introduction to NumPy, Matplotlib and PyTorch
 
@@ -3368,3 +3421,2353 @@ $$
 = \frac{p_{n,k}-y_{n,k}}{N}
 }
 $$
+
+## Week 03 - Building perceptrons
+
+Administrative - week 3: [ ] Nothing on my side.
+
+<details>
+
+<summary>What is a deep learning model?</summary>
+
+Set of parameters connected in various ways.
+
+</details>
+
+<details>
+<summary>What is a parameter?</summary>
+
+A floating point number.
+
+</details>
+
+<details>
+
+<summary>Hmm - so, how can a set of parameters solve a task?</summary>
+
+By assigning the optimal value to each of these parameters.
+
+</details>
+
+<details>
+
+<summary>But what is an optimal value?</summary>
+
+The value with which the model can *in most cases* solve a task.
+
+Notice then that a deep learning model is an automatic mathematical optimization model for a set of parameters. **`It solves tasks by approximation, not by building explicit logic`**.
+
+</details>
+
+<details>
+
+<summary>How is the process of parameter optimization called?</summary>
+
+Training.
+
+</details>
+
+<details>
+
+<summary>What is the first step in any processing task?</summary>
+
+The description of the desired model behavior is codified into input-output pairs.
+
+This description of the expected behavior is **implicitly** hidden in the data in the form of **patterns**. Thus, deep learning is uncovering those patterns and using them to solve various problems.
+
+</details>
+
+<details>
+
+<summary>What steps happen during training?</summary>
+
+1. You give the untrained model your data (your `description` of desired behavior).
+2. The model returns an answer.
+3. You calculate how far the model is from your ground truth answer.
+4. The model uses this information to tweak its parameters until it fits your description well enough.
+
+</details>
+
+And there you have it - a deep learning model that does what you want! Right?
+
+<details>
+
+<summary>When does a model become perfect?</summary>
+
+It can never be perfect. Because it solves the task by approximation it'll always be solving the task by simulating proficiency.
+
+</details>
+
+<details>
+
+<summary>What does it mean for a model to tweak its parameters?</summary>
+
+It's a process whereby:
+
+1. Multiple models are created each with slightly different values for their parameters.
+2. Their distance to the ground truth labels is measured.
+3. The model that is closest to the ground truth labels is taken to be the final model.
+
+</details>
+
+<details>
+
+<summary>What tasks can deep learning models solve?</summary>
+
+Here is the twist - they can solve `everything`! For any task as long as you have enough data, you can model it.
+
+</details>
+
+One of the things you can model is **the probability of the next word in a sentence**.
+
+<details>
+
+<summary>What class of models solves this task?</summary>
+
+Large Language Models!
+
+You have a partially written sentence and you can create a mathematical model that predicts how likely every possible word, in the language you're working in, is to be the next word in that sentence. And after you've selected the word, you can repeat the process on this extended sentence - that's how you get `ChatGPT`.
+
+</details>
+
+<details>
+
+<summary>What are the typical job roles related to AI and how do they work together?</summary>
+
+- Data Engineer: responsible for finding/producing/curating and labelling data.
+- Data Scientist: responsible for training the best model possible, given the available data.
+- Machine Learning Engineer: responsible for taking a trained model and wrapping it in a production system used by clients.
+
+![w03_ai_silos.png](assets/w03_ai_silos.png "w03_ai_silos.png")
+
+Lately, different types of combinations of these roles have popped up:
+
+- Machine Learning Scientist: responsible for building, training and deploying a model.
+- AI Engineer: responsible for using pre-trained models and already existing tools to build user-facing applications.
+
+</details>
+
+### A model that can multiply by 2
+
+<details>
+<summary>What is our first step?</summary>
+
+Data!
+
+This is rather simple since we only do one operation.
+
+</details>
+
+<details>
+<summary>How would it look like?</summary>
+
+| x | y |
+| --- | --- |
+| 1 | 2 |
+| 2 | 4 |
+| 3 | 6 |
+| 4 | 8 |
+
+</details>
+
+<details>
+<summary>How is each row called?</summary>
+
+An observation.
+
+</details>
+
+<details>
+<summary>What type of task are we solving?</summary>
+
+Regression.
+
+</details>
+
+<details>
+<summary>How many features does the above dataset have?</summary>
+
+The features are the inputs the user enters. We have only one - $x$.
+
+</details>
+
+The next step would be to figure out how we'll solve the task.
+
+<details>
+<summary>What would the architecture of this model be?</summary>
+
+It'd would be a single neuron with one weight - $w$.
+
+![w03_multiplier.png](assets/w03_multiplier.png "w03_multiplier.png")
+
+</details>
+
+<details>
+<summary>What is the next step?</summary>
+
+We start the training process.
+
+</details>
+
+<details>
+<summary>How does it start?</summary>
+
+We start with a random guess for $w$. For the sake of concreteness, let's say a random floating-point number in the interval `[0, 10)`.
+
+> [!NOTE]
+> The interval does not matter - even if it does not contain $2$ the training process would still converge towards it.
+
+![w03_multiplier_guess.png](assets/w03_multiplier_guess.png "w03_multiplier_guess.png")
+
+</details>
+
+#### Task 01
+
+**Description:**
+
+Define **`create_dataset`** in `dl_lib.perceptron.datasets`: builds the training data for the doubling problem. Takes a count `n`; returns the first `n` consecutive `(x, 2 * x)` pairs starting at `0`, as a list of tuples. This is the first of several small, named datasets we will collect in this module - the gates in the next section join it there.
+
+Also define **`initialize_weights`** in `dl_lib.perceptron.functional`: gives the model a starting guess. Takes a lower and upper bound and how many values to draw; returns that many values, each sampled uniformly at random from `[low, high)`, as a `numpy` array. An optional seed makes the draw reproducible.
+
+Then create a script that prints a dataset with the first four observations and two possible draws of a random starting weight.
+
+**Acceptance criteria:**
+
+- `numpy` is used for the implementation.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_datasets.py` and `tests/test_dl_lib/test_perceptron/test_functional.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 1
+```
+
+```text
+Dataset: [(0.0, 0.0), (1.0, 2.0), (2.0, 4.0), (3.0, 6.0)]
+initialize_weights(0, 100, 1): 77.39560485559633
+initialize_weights(0, 10, 1):  7.739560485559633
+```
+
+<details>
+<summary>What is the next step?</summary>
+
+We process of the training observations with this random weight and record what the model predicted.
+
+</details>
+
+<details>
+<summary>What is the next step?</summary>
+
+We now need to give information to the model about how wrong it is and how it can improve.
+
+</details>
+
+<details>
+<summary>How can we do that?</summary>
+
+The loss function!
+
+</details>
+
+Let's say we focus on a single sample:
+
+![w03_multiplier_loss.png](assets/w03_multiplier_loss.png "w03_multiplier_loss.png")
+
+<details>
+<summary>What would the model do with this value?</summary>
+
+It'll see what will happen to the output of the loss function when it "wiggles" $w$ by a tiny amount `eps`:
+
+![w03_multiplier_loss_wiggle.png](assets/w03_multiplier_loss_wiggle.png "w03_multiplier_loss_wiggle.png")
+
+As expected the value either goes up or down. This means that our loss function would represent a parabola.
+
+![w03_multiplier_loss_viz.png](assets/w03_multiplier_loss_viz.png "w03_multiplier_loss_viz.png")
+
+</details>
+
+But that's a problem - we don't always know in which direction the value would go down.
+
+<details>
+<summary>Right?</summary>
+
+We do, actually! It's the opposite direction of the one in which the derivative grows!
+
+![w03_derivative_values.gif](assets/w03_derivative_values.gif "w03_derivative_values.gif")
+
+For now, we won't calculate the exact derivative because we don't need to do that - we can use its general formula:
+
+$${\displaystyle L=\lim _{eps\to 0}{\frac {loss(w+eps)-loss(w)}{eps}}}$$
+
+</details>
+
+#### Task 02
+
+**Description:**
+
+Define **`forward`** in `dl_lib.perceptron.functional`: applies the model to one input. Takes an input array and the weights, plus an optional bias (defaulting to `0.0`) and an optional activation (defaulting to `None`, meaning none is applied); returns the weighted sum of the input and the weights, plus the bias, with the activation applied if one was given.
+
+Create a script that builds a `6`-sample dataset and a seeded weight (`seed=42`, range `[0, 10)`), then uses `forward` to get the model's predictions and computes the mean squared error between them and the true values. The script then nudges the weight by `+0.002`, `+0.001`, `-0.001`, and `-0.002` in turn and prints the loss after each nudge, so we can see which direction actually helps.
+
+**Acceptance criteria:**
+
+- Calculations use `numpy` and `dl_lib.losses.functional.mse`.
+- The loss is printed before and after each of the four nudges.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_functional.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 2
+```
+
+```text
+Dataset: [(0.0, 0.0), (1.0, 2.0), (2.0, 4.0), (3.0, 6.0), (4.0, 8.0), (5.0, 10.0)]
+w: 7.739560485559633
+MSE: 301.9734168678107
+
+Perturbing w:
+  w + (+0.002) -> w=7.741560, MSE=302.183904
+  w + (+0.001) -> w=7.740560, MSE=302.078651
+  w + (-0.001) -> w=7.738560, MSE=301.868201
+  w + (-0.002) -> w=7.737560, MSE=301.763003
+```
+
+<details>
+<summary>How would we modify <code>w</code>?</summary>
+
+We ***step*** in the direction of decline, by doing: `w -= L`.
+
+</details>
+
+Ok - let's try that. We do it and get this:
+
+```text
+w_old=7.6
+Loss before update: 301.973417
+Numerical gradient: 105.225276
+
+w_new=-97.485715
+Loss after update: 90726.235467
+```
+
+<details>
+<summary>Wait - didn't we say that the loss should decrease?</summary>
+
+We did, but the value of `L` is too large. If our step is always `L` we would start oscilating.
+
+</details>
+
+<details>
+<summary>How can we deal with this?</summary>
+
+***Learning rate!***
+
+We'll take a fraction of the full gradient: `w -= learning_rate * L`.
+
+And this is it! This process is guaranteed to find $2$ as the optimal value.
+
+</details>
+
+<details>
+<summary>How is this algorithm called?</summary>
+
+[Gradient Descent](https://en.wikipedia.org/wiki/Gradient_descent): the iterative algorithm for minimizing a differentiable multivariate function.
+
+</details>
+
+<details>
+<summary>How do we call the process of going through the full training dataset one time and doing the optimization step?</summary>
+
+One ***epoch***.
+
+</details>
+
+#### Task 03
+
+**Description:**
+
+Define in `dl_lib.perceptron.functional`:
+
+- **`numerical_gradient`**: approximates the gradient of a loss function at the current parameters. Takes a loss function and the parameters array; returns an array the same shape as the parameters, where each entry is the central-difference approximation of the partial derivative with respect to that one entry, leaving every other entry untouched during the computation.
+- **`gradient_descent_step`**: applies one step of gradient descent. Takes the parameters, a gradient the same shape, and a learning rate; returns the parameters moved one step against the gradient.
+
+Create a script that computes the loss, the numerical gradient, and the result of subtracting the raw gradient with no learning rate, then the result of one properly scaled step. It finishes with a `10`-epoch training loop printing the loss after every epoch.
+
+**Acceptance criteria:**
+
+- The loss is printed before and after the update.
+- The run shows what happens with no learning rate versus a learning rate of `0.001`.
+- The `10`-epoch loop shows the loss decreasing every epoch.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_functional.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 3
+```
+
+```text
+Loss before update: 301.973417
+Numerical gradient: 105.225276
+w after subtracting the raw gradient: w=-97.485715, loss=90726.235467
+w after one step with learning_rate=0.001: w=7.634335, loss=291.002555
+
+Loss before update: 301.973417
+epoch  1: w=7.634335, loss=291.002555
+epoch  2: w=7.531039, loss=280.430270
+epoch  3: w=7.429637, loss=270.242083
+epoch  4: w=7.330093, loss=260.424038
+epoch  5: w=7.232375, loss=250.962688
+epoch  6: w=7.136448, loss=241.845074
+epoch  7: w=7.042280, loss=233.058708
+epoch  8: w=6.949838, loss=224.591556
+epoch  9: w=6.859091, loss=216.432020
+epoch 10: w=6.770008, loss=208.568924
+```
+
+In Week 2, we calculated how MSE changes with respect to each prediction. Now let's find how it changes with respect to the model's weight.
+
+For a batch of $N$ examples, mean squared error is:
+
+$$
+L=\frac{1}{N}\sum_{i=1}^{N}(\hat{y}_i-y_i)^2
+$$
+
+We already derived its partial derivative with respect to each prediction:
+
+$$
+\boxed{
+\frac{\partial L}{\partial \hat{y}_i}
+= \frac{2}{N}(\hat{y}_i-y_i)
+}
+$$
+
+During training, however, we change the **weight**, so we need to calculate how changing the weight affects the loss. Thus we need to get this:
+
+$$
+\boxed{
+\frac{dL}{dw}
+= \sum_{i=1}^{N}
+\frac{\partial L}{\partial \hat{y}_i}
+\frac{\partial \hat{y}_i}{\partial w}
+}
+$$
+
+For each observation, we multiply:
+
+- how the prediction affects the loss;
+- how the weight affects that prediction.
+
+We then add these contributions because all predictions depend on the same weight.
+
+<details>
+<summary>How do we combine the two derivatives?</summary>
+
+Substitute the derivative of MSE from Week 2:
+
+$$
+\frac{dL}{dw}
+= \sum_{i=1}^{N}
+\frac{2}{N}(\hat{y}_i-y_i)
+\frac{\partial \hat{y}_i}{\partial w}
+$$
+
+Then substitute the derivative of the prediction:
+
+$$
+\frac{dL}{dw}
+= \sum_{i=1}^{N}
+\frac{2}{N}(\hat{y}_i-y_i)x_i
+$$
+
+Move the constant factor outside the sum:
+
+$$
+\frac{dL}{dw}
+= \frac{2}{N}\sum_{i=1}^{N}x_i(\hat{y}_i-y_i)
+$$
+
+Finally, substitute $\hat{y}_i=x_iw$:
+
+$$
+\boxed{
+\frac{dL}{dw}
+= \frac{2}{N}\sum_{i=1}^{N}x_i(x_iw-y_i)
+}
+$$
+
+This is the **analytical gradient** we will implement in Task 04.
+
+</details>
+
+#### Task 04
+
+**Description:**
+
+Define **`analytical_gradient`** in `dl_lib.perceptron.functional`: computes this exact gradient instead of approximating it. Takes a dataset of `(x, y)` pairs and the current weights, plus the bias and the activation the model uses (both optional, defaulting to no bias and no activation, which is this task's case); returns the exact weight gradient together with the exact bias gradient, following the same chain rule through the forward pass that `dataset_loss` evaluates numerically.
+
+Create a script that reuses Task 03's dataset and seeded weight, then prints the loss, the numerical gradient, and the analytical gradient side by side, together with their difference.
+
+**Acceptance criteria:**
+
+- The numerical and analytical gradients agree to within `1e-4`.
+- Training itself is untouched - Task 05's training loop still uses `numerical_gradient`.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_functional.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 4
+```
+
+```text
+Loss: 301.973417
+Numerical gradient:  105.225276
+Analytical gradient: 105.225276
+Difference: 0.00000000
+```
+
+#### Task 05
+
+**Description:**
+
+Create a script that trains the weight for `500` epochs with `learning_rate=0.001` and prints the final value. Then run the same training again starting from a weight drawn without a seed, to check that convergence does not depend on a lucky starting point.
+
+**Acceptance criteria:**
+
+- After `500` epochs the weight is close to `2.0` and the loss is close to `0`.
+- Training without a seed converges to the same place from a different starting point.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 5
+```
+
+```text
+Seed 42, initial w=7.739560
+After 500 epochs: w=2.000551, loss=0.000003 (target: w=2.0)
+
+Training again without a seed:
+No seed, initial w=7.168567
+After 500 epochs: w=2.000496, loss=0.000002 (target: w=2.0)
+```
+
+Congratulations! You just created and trained your first neural network 🎉!
+
+### Logic gates
+
+Let's create a model that can act as an `AND` gate!
+
+<details>
+<summary>What is our first step?</summary>
+
+Data!
+
+| x1 | x2 | y |
+| --- | --- | --- |
+| 0 | 0 | 0 |
+| 0 | 1 | 0 |
+| 1 | 0 | 0 |
+| 1 | 1 | 1 |
+
+</details>
+
+<details>
+<summary>What is next?</summary>
+
+Architecture!
+
+We might start off with something like this:
+
+![w03_and_or_models.png](assets/w03_and_or_models.png "w03_and_or_models.png")
+
+However, because our task now shifts from being a regression one into a classification one, we can also add the `sigmoid` function to control the output values:
+
+$${\displaystyle f(x)={\frac {1}{1+e^{-x}}}}$$
+
+![w03_and_or_models_sigmoid.png](assets/w03_and_or_models_sigmoid.png "w03_and_or_models_sigmoid.png")
+
+</details>
+
+<details>
+<summary>Can we use the same architecture to model an <code>OR</code> gate?</summary>
+
+Absolutely!
+
+</details>
+
+But in this case adding a sigmoid can actually cause a problem.
+
+<details>
+
+<summary>What input values would produce an incorrect prediction for the <code>OR</code> and <code>AND</code> gates?</summary>
+
+Look at what happens when we have $x_1=0$ and $x_2=0$:
+
+- the logit will be $0$;
+- it will be transformed into $0.5$ by the sigmoid;
+- if we're using $>= 0.5$ as a threshold (which is the default), we'd return $1$:
+
+![w03_sigmoid_problem.png](assets/w03_sigmoid_problem.png "w03_sigmoid_problem.png")
+
+</details>
+
+<details>
+
+<summary>How do we fix this?</summary>
+
+Welcome, ***bias***! It'll handle the logic the neuron would apply when the linear combination adds up to $0$, be it due to the weights being $0$ or the inputs.
+
+![w03_bias.png](assets/w03_bias.png "w03_bias.png")
+
+</details>
+
+#### Task 06
+
+**Description:**
+
+Define a `Perceptron` class in `dl_lib.perceptron.perceptron`: a single neuron with a weighted sum of its inputs, built so that later tasks can turn on a bias and an activation without becoming a different class. It provides:
+
+- **construction**: builds the neuron's weights. Takes the number of inputs, a `(low, high)` range to draw them from, an optional seed, and two switches used by later tasks - `use_bias` (default `False`) and `activation` (default `None`, meaning no activation is applied).
+- **`forward`**: applies the neuron to one input vector. Takes an array of `n_inputs` values; returns the weighted sum of the inputs and the weights, plus the bias if `use_bias` is on, with `activation` applied if one was given.
+
+Also define **`train`** in `dl_lib.perceptron.training`: trains a `Perceptron`'s weights (and its bias, if it has one) with finite-difference gradient descent, reusing `numerical_gradient` and `gradient_descent_step`. Takes the model, a dataset of `(x, y)` pairs, a learning rate, a number of epochs, and how often to record progress; returns a list of `(epoch, loss)` pairs, one per recorded epoch plus the final one.
+
+`train` builds that loss by calling **`dataset_loss`** in `dl_lib.perceptron.functional`: takes the dataset, its targets, a `weights`/`bias`/`activation` combination, and the `loss` function to use (mean squared error by default); returns that loss evaluated over the whole dataset - the single scalar `numerical_gradient` perturbs against.
+
+Because `numerical_gradient` always perturbs an array while a `Perceptron`'s bias is a single float, `train` updates the bias through **`dataset_loss_given_bias`** instead: the same computation as `dataset_loss`, but with `bias` moved last and taken as a 1-element array, so it can be wrapped the same way as the weights.
+
+Also define **`and_dataset`** and **`or_dataset`** in `dl_lib.perceptron.datasets`.
+
+Finally, create a script that trains two `Perceptron` models - one on the `AND` dataset, one on `OR` without bias and an activation function and prints the loss every `10,000` epochs plus each model's final predictions on its own dataset.
+
+**Acceptance criteria:**
+
+- Weights are drawn from a seeded distribution so the run is reproducible.
+- The loss decreases, or stays at its lowest reachable value, as training proceeds.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_datasets.py`, `tests/test_dl_lib/test_perceptron/test_functional.py`, `tests/test_dl_lib/test_perceptron/test_perceptron.py`, and `tests/test_dl_lib/test_perceptron/test_training.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 6
+```
+
+```text
+AND gate - initial weights: [ 0.5479121  -0.12224312]
+  epoch  10000: loss=0.083333
+  epoch  20000: loss=0.083333
+  epoch  30000: loss=0.083333
+  epoch  40000: loss=0.083333
+  epoch  50000: loss=0.083333
+  epoch  60000: loss=0.083333
+  epoch  70000: loss=0.083333
+  epoch  80000: loss=0.083333
+  epoch  90000: loss=0.083333
+  epoch 100000: loss=0.083333
+AND gate - final weights: [0.33333333 0.33333333]
+AND gate - predictions:
+  AND(0, 0) = 0 -> predicted 0.000000
+  AND(0, 1) = 0 -> predicted 0.333333
+  AND(1, 0) = 0 -> predicted 0.333333
+  AND(1, 1) = 1 -> predicted 0.666667
+
+OR gate - initial weights: [ 0.5479121  -0.12224312]
+  epoch  10000: loss=0.083333
+  epoch  20000: loss=0.083333
+  epoch  30000: loss=0.083333
+  epoch  40000: loss=0.083333
+  epoch  50000: loss=0.083333
+  epoch  60000: loss=0.083333
+  epoch  70000: loss=0.083333
+  epoch  80000: loss=0.083333
+  epoch  90000: loss=0.083333
+  epoch 100000: loss=0.083333
+OR gate - final weights: [0.66666667 0.66666667]
+OR gate - predictions:
+  OR(0, 0) = 0 -> predicted 0.000000
+  OR(0, 1) = 1 -> predicted 0.666667
+  OR(1, 0) = 1 -> predicted 0.666667
+  OR(1, 1) = 1 -> predicted 1.333333
+```
+
+#### Task 07
+
+**Description:**
+
+Retrain `AND` and `OR` this time with a bias (but still no activation function), so each model gets a third parameter that is free to shift its output even when both inputs are `0`.
+
+**Acceptance criteria:**
+
+- The same two gates are retrained with `use_bias=True`.
+- The final loss is lower than Task 06's.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_perceptron.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 7
+```
+
+```text
+AND gate - initial weights: [ 0.5479121  -0.12224312], bias: 0.717196
+  epoch  10000: loss=0.062500
+  epoch  20000: loss=0.062500
+  epoch  30000: loss=0.062500
+  epoch  40000: loss=0.062500
+  epoch  50000: loss=0.062500
+  epoch  60000: loss=0.062500
+  epoch  70000: loss=0.062500
+  epoch  80000: loss=0.062500
+  epoch  90000: loss=0.062500
+  epoch 100000: loss=0.062500
+AND gate - final weights: [0.5 0.5], bias: -0.250000
+AND gate - predictions:
+  AND(0, 0) = 0 -> predicted -0.250000
+  AND(0, 1) = 0 -> predicted 0.250000
+  AND(1, 0) = 0 -> predicted 0.250000
+  AND(1, 1) = 1 -> predicted 0.750000
+
+OR gate - initial weights: [ 0.5479121  -0.12224312], bias: 0.717196
+  epoch  10000: loss=0.062500
+  epoch  20000: loss=0.062500
+  epoch  30000: loss=0.062500
+  epoch  40000: loss=0.062500
+  epoch  50000: loss=0.062500
+  epoch  60000: loss=0.062500
+  epoch  70000: loss=0.062500
+  epoch  80000: loss=0.062500
+  epoch  90000: loss=0.062500
+  epoch 100000: loss=0.062500
+OR gate - final weights: [0.5 0.5], bias: 0.250000
+OR gate - predictions:
+  OR(0, 0) = 0 -> predicted 0.250000
+  OR(0, 1) = 1 -> predicted 0.750000
+  OR(1, 0) = 1 -> predicted 0.750000
+  OR(1, 1) = 1 -> predicted 1.250000
+```
+
+#### Task 08
+
+**Description:**
+
+Retrain `AND` this time with a bias and an activation function.
+
+To show a visual comparison train for `100,000` epochs with `learning_rate=0.1` - once with no activation and once with sigmoid - and plot both loss curves on one figure.
+
+**Acceptance criteria:**
+
+- Both loss curves are plotted over the full `100,000` epochs on one figure.
+- The sigmoid-activated model's final loss is lower than the plain model's.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_perceptron.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 8
+```
+
+```text
+Without sigmoid - final loss: 0.062500
+  AND(0, 0) = 0 -> predicted -0.250000
+  AND(0, 1) = 0 -> predicted 0.250000
+  AND(1, 0) = 0 -> predicted 0.250000
+  AND(1, 1) = 1 -> predicted 0.750000
+
+With sigmoid    - final loss: 0.000470
+  AND(0, 0) = 0 -> predicted 0.000017
+  AND(0, 1) = 0 -> predicted 0.023489
+  AND(1, 0) = 0 -> predicted 0.023489
+  AND(1, 1) = 1 -> predicted 0.972141
+```
+
+![w03_task08_loss_curve.png](assets/w03_task08_loss_curve.png "w03_task08_loss_curve.png")
+
+In Week 2, we derived the gradient of sigmoid combined with binary cross-entropy with respect to each logit. Now we only need to connect the logits to the weights and bias.
+
+<details>
+<summary>What do we already know from Week 2?</summary>
+
+For mean binary cross-entropy with sigmoid predictions:
+
+$$
+\boxed{
+\frac{\partial L}{\partial z_i}
+= \frac{p_i-y_i}{N}
+}
+$$
+
+</details>
+
+<details>
+<summary>What is <code>p_i</code>?</summary>
+
+It is the output of our model:
+
+$$
+z_i=x_{i1}w_1+x_{i2}w_2+b,
+\qquad
+p_i=\sigma(z_i)
+$$
+
+</details>
+
+<details>
+<summary>How do we calculate the weight gradients?</summary>
+
+When differentiating with respect to weight $w_j$, the inputs and all other parameters are held constant:
+
+$$
+\frac{\partial z_i}{\partial w_j}=x_{ij}
+$$
+
+Each weight contributes to every observation's logit, so the chain rule gives:
+
+$$
+\frac{\partial L}{\partial w_j}
+= \sum_{i=1}^{N}
+\frac{\partial L}{\partial z_i}
+\frac{\partial z_i}{\partial w_j}
+$$
+
+Substitute the two derivatives:
+
+$$
+\boxed{
+\frac{\partial L}{\partial w_j}
+= \frac{1}{N}\sum_{i=1}^{N}(p_i-y_i)x_{ij}
+}
+$$
+
+Each weight gradient is the mean of the prediction errors multiplied by the corresponding input feature.
+
+</details>
+
+<details>
+<summary>How do we calculate the bias gradient?</summary>
+
+The bias is added directly to each logit:
+
+$$
+\frac{\partial z_i}{\partial b}=1
+$$
+
+Apply the chain rule:
+
+$$
+\frac{\partial L}{\partial b}
+= \sum_{i=1}^{N}
+\frac{\partial L}{\partial z_i}
+\frac{\partial z_i}{\partial b}
+= \sum_{i=1}^{N}\frac{p_i-y_i}{N}\cdot1
+$$
+
+Therefore:
+
+$$
+\boxed{
+\frac{\partial L}{\partial b}
+= \frac{1}{N}\sum_{i=1}^{N}(p_i-y_i)
+}
+$$
+
+The bias gradient is the mean prediction error.
+
+</details>
+
+#### Task 09
+
+**Description:**
+
+Extend **`analytical_gradient`** in `dl_lib.perceptron.functional` with the sigmoid-activated, binary-cross-entropy case, selected via a new `loss="bce"` argument. Unlike the mean-squared-error case, this path takes no `activation_derivative` - the cancellation derived above means it is not needed.
+
+Create a script that builds the sigmoid-activated, bias-using `AND` gate model from Task 08, then computes and prints the numerical and the analytical gradient (trained with binary cross-entropy) for its weights and its bias, component by component, together with their difference.
+
+**Acceptance criteria:**
+
+- Each component of the analytical gradient matches the corresponding component of the numerical gradient to within `1e-4`.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_functional.py` and `tests/test_dl_lib/test_activations/test_functional.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 9
+```
+
+```text
+AND gate (sigmoid) - weights: [ 0.5479121  -0.12224312], bias: 0.717196
+Numerical weight gradient:  [0.13452735 0.10067649]
+Analytical weight gradient: [0.13452735 0.10067649]
+Weight gradient difference: [8.01413103e-11 6.73556211e-11]
+Numerical bias gradient:  0.463650
+Analytical bias gradient: 0.463650
+Bias gradient difference: 0.00000000
+```
+
+<details>
+<summary>Can we use the same architecture to model a <code>NAND</code> gate?</summary>
+
+Yep! Let's see it in action!
+
+</details>
+
+#### Task 10
+
+**Description:**
+
+Define **`nand_dataset`** in `dl_lib.perceptron.datasets` and create a script `weeks/week3/task10.py` that trains a sigmoid-activated `Perceptron` on the `NAND` dataset, using binary cross-entropy as established in Task 09.
+
+**Acceptance criteria:**
+
+- The final predictions are within `0.03` of each target.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_datasets.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 10
+```
+
+```text
+  epoch  10000: loss=0.017375
+  epoch  20000: loss=0.008660
+  epoch  30000: loss=0.005755
+  epoch  40000: loss=0.004307
+  epoch  50000: loss=0.003440
+  epoch  60000: loss=0.002863
+  epoch  70000: loss=0.002451
+  epoch  80000: loss=0.002143
+  epoch  90000: loss=0.001904
+  epoch 100000: loss=0.001713
+NAND gate - final weights: [-12.0755756 -12.0755756], bias: 18.282030
+NAND gate - predictions:
+  NAND(0, 0) = 1 -> predicted 1.000000
+  NAND(0, 1) = 1 -> predicted 0.997988
+  NAND(1, 0) = 1 -> predicted 0.997988
+  NAND(1, 1) = 0 -> predicted 0.002817
+```
+
+### Modelling XOR
+
+<details>
+<summary>What is our first step?</summary>
+
+Data!
+
+| x1 | x2 | y |
+| --- | --- | --- |
+| 0 | 0 | 0 |
+| 0 | 1 | 1 |
+| 1 | 0 | 1 |
+| 1 | 1 | 0 |
+
+</details>
+
+<details>
+<summary>How are the classes distributed in <code>2D</code> space?</summary>
+
+![w03_class_distribution.png](assets/w03_class_distribution.png "w03_class_distribution.png")
+
+> [!WARNING]
+> A perceptron can only separate linearly separable data points.
+
+Since the `XOR` function is not linearly separable, it is impossible for a single hyperplane / single perceptron to separate it.
+
+</details>
+
+<details>
+<summary>So what actually solves XOR?</summary>
+
+Depth. Instead of one neuron, we use two hidden neurons feeding a third output neuron, drawing inspiration from tha actual mathematical formula the defines the XOR gate:
+
+`(x|y) & ~(x&y)`
+
+</details>
+
+Each hidden neuron can draw its own line; combined, the two lines carve the input space into the regions `XOR` needs. This is the smallest possible multilayer network, and it is exactly why it matters: a single layer has a hard mathematical ceiling, and stacking layers is what lifts it.
+
+<details>
+<summary>How would the architecture look like?</summary>
+
+Essentially, we want to have this: `AND(OR(x, y), NAND(x, y))`:
+
+![w03_xor_architecture.png](assets/w03_xor_architecture.png "w03_xor_architecture.png")
+
+</details>
+
+<details>
+<summary>How many parameters would we have in total?</summary>
+
+9
+
+</details>
+
+#### Task 11
+
+**Description:**
+
+Define an `Xor` class in `dl_lib.perceptron.xor`: a fixed, two-layer network - two sigmoid hidden units, each looking at both inputs, feeding one sigmoid output unit. It provides:
+
+- **construction**: draws the hidden layer's two weight vectors and biases, and the output layer's weight vector and bias, all from a `(low, high)` range, with an optional seed.
+- **`forward`**: applies the network to one `(x1, x2)` input. Takes an array of 2 values; returns the output unit's sigmoid activation, computed from the two hidden units' sigmoid activations.
+
+Also define a module-level **`forward`** function in `dl_lib.perceptron.xor`: takes a model and the two raw inputs `x1` and `x2` as separate numbers; returns the same result as calling the model's own `forward` with them packed into an array.
+
+Also define **`xor_dataset`** in `dl_lib.perceptron.datasets`.
+
+Create a script that trains an `Xor` model, prints the progress and the final predictions. Trains with binary cross-entropy, as established in Task 09.
+
+> [!WARNING]
+> The model is sensitive to the random starting values! This is a well-known property of training multilayer networks - it is one reason initialization schemes matter so much once networks grow larger than this one.
+>
+> In this task if both hidden units happened to start out at similar weights and biases the gradient descent moves them together instead of letting them specialize into two different lines.
+>
+> If we happen to start from a point where the two hidden units are different enough from each other to specialize, and training escapes the trap.
+
+**Acceptance criteria:**
+
+- An XOR model is defined and trained.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_datasets.py` and `tests/test_dl_lib/test_perceptron/test_xor.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 11
+```
+
+```text
+First attempt - seed=42:
+  epoch   2000: loss=0.348307
+  epoch   4000: loss=0.347388
+  epoch   6000: loss=0.347102
+  epoch   8000: loss=0.346964
+  epoch  10000: loss=0.346882
+  XOR(0, 0) = 0.000433
+  XOR(0, 1) = 0.499870
+  XOR(1, 0) = 0.999717
+  XOR(1, 1) = 0.500129
+
+Second attempt - seed=1 (a different random start):
+  epoch   2000: loss=0.002470
+  epoch   4000: loss=0.001192
+  epoch   6000: loss=0.000784
+  epoch   8000: loss=0.000584
+  epoch  10000: loss=0.000465
+  XOR(0, 0) = 0.000443
+  XOR(0, 1) = 0.999586
+  XOR(1, 0) = 0.999386
+  XOR(1, 1) = 0.000388
+```
+
+#### Task 12
+
+**Description:**
+
+Define a `SquareNet` class in `dl_lib.perceptron.square_net` that models the square function: `x -> x^2`. It provides:
+
+- **construction**: draws a configurable number of hidden sigmoid units' weights and biases, and the output layer's weights and bias, all from a `(low, high)` range, with an optional seed.
+- **`forward`**: applies the network to one scalar input. Takes an array holding a single value; returns the output unit's value.
+
+Create a script that trains a `SquareNet` with `12` hidden units on every integer from `-8` to `8` (so that the values we check, `2` and `7`, fall inside the training range rather than being extrapolated), for `80,000` epochs.
+
+> [!NOTE]
+> `model(2) => 4` and `model(7) => 49` only work if the network has actually seen the shape of the curve nearby - this is the lesson "don't test outside the training range" when dealing with neural networks for regression problems.
+
+**Acceptance criteria:**
+
+- `model(2)` is within `0.5` of `4` and `model(7)` is within `0.5` of `49`.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_perceptron/test_square_net.py`.
+
+**Example output:**
+
+```console
+python run.py -w 3 -t 12
+```
+
+```text
+Training:
+  epoch  10000: loss=2.738519
+  epoch  20000: loss=0.681237
+  epoch  30000: loss=0.336482
+  epoch  40000: loss=0.205148
+  epoch  50000: loss=0.134811
+  epoch  60000: loss=0.092973
+  epoch  70000: loss=0.066927
+  epoch  80000: loss=0.050224
+
+Predictions:
+  model(-8) = 63.752 (x^2 = 64)
+  model(-7) = 49.407 (x^2 = 49)
+  model(-2) = 3.757 (x^2 = 4)
+  model(0) = 0.378 (x^2 = 0)
+  model(2) = 3.735 (x^2 = 4)
+  model(7) = 49.265 (x^2 = 49)
+  model(8) = 63.831 (x^2 = 64)
+```
+
+#### Task 13
+
+**Description:**
+
+Answer the following questions in Bulgarian:
+
+1. What is machine learning in 1 sentence?
+2. What is deep learning in 1 sentence?
+3. What is does model training mean in 1 sentence?
+4. What task do Large Language Models solve?
+5. What is the difference between loss functions and metrics?
+6. Why is the use of mean squared error preferred to the use of mean absolute error?
+7. Why can't we cube the difference to get the mean error instead of squaring it?
+8. Why is the derivative of the loss function beneficial during model training?
+
+**Acceptance criteria:**
+
+1. Answers are written in Bulgarian.
+2. Answers are written in the body of the email (not in a `.docx` or `.txt` file).
+
+#### Task 14
+
+**Description:**
+
+Watch [this YouTube video from the The Alan Turing Institute](https://www.youtube.com/watch?v=2kSl0xkq2lM) and answer the following questions:
+
+1. Which class of AI techniques began to work around 2005 for solving real-world problems?
+2. What is a classic application of AI is discussed in the video?
+3. What is the simplest way of getting Machine Learning to solve a task?
+4. Define what supervised learning is.
+5. What does AI require in order to work at all?
+6. What class of tasks does the task for facial recognition belong to?
+7. What is the task solved by each neuron in the brain?
+8. What happens when a neuron recognizes a pattern?
+9. What is a digital picture made up of?
+10. What are the three reasons that allowed the modelling of human brain cells in software?
+11. Which type of computer processor is suited really well for performing the mathematics related to deep learning?
+12. Do the capabilities of neural networks grow with scale?
+13. What allowed for the biggest and fastest advances in the field?
+14. What is the name of the probably most important paper in the last decade?
+15. What is the Transformer architecture designed for?
+16. What is the innovation that the Transformer architecture has?
+17. What is the key point about GPT-3?
+18. Is machine learning more efficient at learning than humans? Why?
+19. What is "the bitter truth"?
+20. What is one reason why ChatGPT is not conscious?
+
+**Acceptance criteria:**
+
+1. Answers are written in Bulgarian.
+2. Answers are written in the body of the email (not in a `.docx` or `.txt` file).
+
+## Week 04 - Building an Automatic Differentiation Engine
+
+Administrative: exam dates.
+
+### Backpropagation
+
+<details>
+
+<summary>How do we translate the expression "slope of a line"?</summary>
+
+Наклон на линия.
+
+</details>
+
+<details>
+
+<summary>How would you define the slope of a line?</summary>
+
+- slope (also gradient) = a number that describes the direction of the line on a plane.
+- often denoted by the letter $m$.
+
+![w04_slope.png](assets/w04_slope.png "w04_slope.png")
+
+- calculated as the ratio of the vertical change to the horizontal change ("rise over run") between two distinct points on the line:
+  - a 45° rising line has slope $m = 1$ (tan(45°) = 1)
+  - a 45° falling line has slope $m = -1$ (tan(-45°) = -1)
+
+</details>
+
+<details>
+
+<summary>What is the sign of the slope of an increasing line going up from left to right?</summary>
+
+Positive ($m > 0$).
+
+</details>
+
+<details>
+
+<summary>What is the sign of the slope of a decreasing line going down from left to right?</summary>
+
+Negative ($m < 0$).
+
+</details>
+
+<details>
+
+<summary>What is the slope of a horizontal line?</summary>
+
+$0$.
+
+</details>
+
+<details>
+
+<summary>What is the slope of a vertical line?</summary>
+
+A vertical line would lead to a $0$ in the denominator, so the slope can be regarder as `undefined` or `infinite`.
+
+</details>
+
+<details>
+
+<summary>What is the steepness of a line?</summary>
+
+- The absolute value of its slope:
+  - greater absolute value indicates a steeper line.
+
+</details>
+
+<details>
+
+<summary>Suppose a line runs through two points: P = (1, 2) and Q = (13, 8). What is its slope, direction and level of steepness?</summary>
+
+$dy = 8 - 2 = 6$
+$dx = 13 - 1 = 12$
+$m = \frac{dy}{dx} = \frac{6}{12} = \frac{1}{2} = 0.5$
+
+Direction: $0.5 > 0$ => up
+Steepness: $0 < 0.5 < 1$ => not very steep (less steep than a 45° rising line)
+
+</details>
+
+<details>
+
+<summary>Suppose a line runs through two points: P = (4, 15) and Q = (3, 21). What is its slope, direction and level of steepness?</summary>
+
+$dy = 21 - 15 = 6$
+$dx = 3 - 4 = -1$
+$m = \frac{dy}{dx} = \frac{6}{-1} = -6$
+
+Direction: $-6 < 0$ => down
+Steepness: $|-6| = 6 > 1$ => steep
+
+</details>
+
+<details>
+
+<summary>What is the link between "slope" and "derivative"?</summary>
+
+- For non-linear functions, the rate of change varies along the curve.
+- The derivative of the function at a point
+$=$ The slope of the line, tangent to the curve at the point
+$=$ The rate of change of the function at that point
+
+![w04_slop_der_connection.png](assets/w04_slop_der_connection.png "w04_slop_der_connection.png")
+
+Formula for slope:
+
+$m = \frac{dy}{dx}$
+
+Formula for derivative:
+
+${\displaystyle L=\lim _{eps\to 0}{\frac {f(x+eps)-f(x)}{eps}}}$
+
+it's the same formula as for the slope, only here the change in $x$ is infinitesimally small.
+
+For example, let $f$ be the squaring function: ${\displaystyle f(x)=x^{2}}$. Then the derivative is:
+
+$$\frac{f(x+eps) - f(x)}{eps} = \frac{(x+eps)^2 - x^2}{eps} = \frac{x^2 + 2xeps + eps^2 - x^2}{eps} = 2x + eps$$
+
+The division in the last step is valid as long as $eps \neq 0$. The closer $eps$ is to $0$, the closer this expression becomes to the value $2x$. The limit exists, and for every input $x$ the limit is $2x$. So, the derivative of the squaring function is the doubling function: ${\displaystyle f'(x)=2x}$.
+
+</details>
+
+<details>
+
+<summary>So, what added value does the derivative have?</summary>
+
+**It tells us how the value of the loss function changes when we *increase* (a part of) its input by a tiny amount.**
+
+Do we remember the below diagram?
+
+![w03_multiplier_loss_viz.png](assets/w03_multiplier_loss_viz.png "w03_multiplier_loss_viz.png")
+
+</details>
+
+<details>
+
+<summary>What is backpropagation then?</summary>
+
+Backpropagation is the iterative process of calculating derivatives of the loss function with respect to every `value` node leading up to it.
+
+Rules of thumb:
+
+```text
+Start from the final child (the last node in topological order).
++ => copy gradient to parents:
+    parent1.grad = current.grad
+    parent2.grad = current.grad
+* => multiply value of other parent with current gradient:
+    parent1.grad = parent2.value * current.grad
+    parent2.grad = parent1.value * current.grad
+```
+
+Let's say we have the following computational graph and we have to see how tiny changes in the weights and biases influence the value of `L`:
+
+![w04_03_result](assets/w04_03_result.svg?raw=true "w04_03_result.svg")
+
+<details>
+
+<summary>Reveal answer</summary>
+
+![w04_calculations](assets/w04_calculations.svg?raw=true "w04_calculations.svg")
+
+</details>
+
+</details>
+
+### Building the `Value` class
+
+#### Task 01
+
+**Description:**
+
+Define a class `Value` that wraps a single floating point number and provides:
+
+- construction: stores the float in a field `data`.
+- `__repr__`: prints itself as `Value(data=...)`.
+- `__add__`: adds two instances and returns a new instance holding the sum.
+- `__mul__`: multiplies two instances and returns a new instance holding the product.
+
+Create a script that constructs a few instances and prints the results of adding and multiplying them, including a small expression that chains both operators.
+
+**Acceptance criteria:**
+
+- Two instances of `Value` can be added.
+- Two instances of `Value` can be multiplied.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_value.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 1
+```
+
+```text
+a = Value(data=2.0)
+b = Value(data=-3.0)
+c = Value(data=10.0)
+a + b = Value(data=-1.0)
+a * b = Value(data=-6.0)
+a * b + c = Value(data=4.0)
+```
+
+#### Task 02
+
+**Description:**
+
+A single `Value` cannot answer the question "how was my number produced?". We need to record what it combined and how via two new fields:
+
+- `_prev`: the set of `Value`s that were combined to produce the current instance.
+- `_op`: the string name of the operation that produced the current instance.
+
+Create a script that builds a small two-operation expression and prints each intermediate `Value`'s `_op` and the `.data` of everything in its `_prev`. Because `_prev` is a `set` its iteration order is not meaningful. You could sorts by `.data` before printing to keep the output of the script reproducible.
+
+**Acceptance criteria:**
+
+- We can access the predecessor(s) of an instance.
+- We can see what operator the predecessor(s) used to produce an instance.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_value.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 2
+```
+
+```text
+d = Value(data=4.0)
+d._op = '+'
+d._prev = [10.0, -6.0]
+e = Value(data=-6.0)
+e._op = '*'
+e._prev = [2.0, -3.0]
+```
+
+#### Task 03
+
+**Description:**
+
+Define in `dl_lib.engine.graph`:
+
+- `trace`: walks the graph rooted at a `Value` and collects every node and every edge it can reach. Takes the root `Value`; returns a `(nodes, edges)` pair, where `nodes` is the set of every `Value` in the graph and `edges` is the set of `(child, parent)` pairs, meaning `child` is one of the operands that produced `parent`.
+- `draw_dot`: renders the graph rooted at a `Value` as a left-to-right Graphviz `Digraph`. Takes the root `Value`; returns the `Digraph`, with one record node per `Value` and one small node per operation, wired by `trace`'s edges.
+
+Create a script that traces a small expression, prints its node and edge counts, then displays it to the user.
+
+> [!NOTE]
+> Recall that you can check `cheat_sheet.md` for an introduction into the API of `graphviz`.
+
+**Acceptance criteria:**
+
+- We can create a graph of the predecessors of an instance.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_graph.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 3
+```
+
+```text
+Number of nodes: 5
+Number of edges: 4
+```
+
+![w04_graph.svg](assets/w04_graph.svg "w04_graph.svg")
+
+#### Task 04
+
+**Description:**
+
+Let's add names for the nodes and a field to store the gradient each node will eventually receive. Extend the class with:
+
+- `label`: a human-readable name, stored at construction and settable afterward, used for display.
+- `grad`: a `float` that defaults to `0.0`, holding the gradient that later tasks will fill in.
+
+Extend `draw_dot` so each record node renders as `{ label | data: value | grad: value }` with `data` and `grad` each formatted to four decimal places.
+
+Create a script that labels every node of a small expression and shows the labeled graph.
+
+**Acceptance criteria:**
+
+- `Value` accepts and stores an optional `label`.
+- `Value.grad` defaults to `0.0`.
+- `draw_dot`'s record nodes show `label`, `data`, and `grad`.
+- The script prints that `.grad` is still `0.0` before any backward pass.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_value.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 4
+```
+
+```text
+output = Value(data=20.0)
+output.grad = 0.0
+d.grad = 0.0
+```
+
+![w04_labeled_graph.svg](assets/w04_labeled_graph.svg "w04_labeled_graph.svg")
+
+### Backpropagation by hand
+
+#### Task 05
+
+**Description:**
+
+Let's compute a gradient by hand so that the chain rule is concrete rather than a formula we trust blindly.
+
+In `weeks/week4/task05.py` backpropagate the Task 04 graph by hand: starting from `output.grad = 1.0`, assign every other node's `grad` yourself using the local derivative of `+` and `*` at each step. Also define a function `manual_der`: a numerical-derivative checker, local to this script only, that estimates `d(output)/d(each argument)` with the central-difference formula, to sanity-check the hand-computed gradients.
+
+**Acceptance criteria:**
+
+- Every node's gradient is assigned by hand.
+- The script prints both the manual and the numerical gradients so they can be compared.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 5
+```
+
+```text
+Manual gradients: a=-15.0, b=10.0, c=5.0, f=4.0
+Numerical gradients: a=-15.000000000497947, b=9.999999999976694, c=4.999999999810711, f=3.9999999998485687
+```
+
+#### Task 06
+
+**Description:**
+
+Reusing Task 05's hand-computed gradients, take one gradient-descent step: nudge every leaf, rebuild the expression from the updated leaves, and print the loss before and after the step.
+
+**Acceptance criteria:**
+
+- The loss decreases after one step.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 6
+```
+
+```text
+L before step: 20.0
+L after step: 16.293599999999998
+```
+
+#### Task 07
+
+**Description:**
+
+Build a two-input perceptron's logit with every leaf labeled. Use `x1=2.0`, `x2=0.0`, `w1=-3.0`, `w2=1.0`, and `b=6.8813735870195432`. Print the logit and show the graph.
+
+> [!NOTE]
+> The bias `6.8813735870195432` is not arbitrary - it is chosen so that, once Task 08 squashes this logit through `tanh`, the result lands on a round number that makes the hand-derivative in Task 09 easy to check.
+
+**Acceptance criteria:**
+
+- The logit and graph are outputted.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 7
+```
+
+```text
+logit = Value(data=0.8813735870195432)
+```
+
+![w04_perceptron_logit.svg](assets/w04_perceptron_logit.svg "w04_perceptron_logit.svg")
+
+#### Task 08
+
+**Description:**
+
+Add a `tanh` method to `Value`. Then, apply it on the previous task's perceptron and display the graph.
+
+**Acceptance criteria:**
+
+- `Value.tanh()` returns a new `Value` holding the hyperbolic tangent of a `Value`'s data.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_value.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 8
+```
+
+```text
+o = Value(data=0.7071067811865476)
+```
+
+![w04_perceptron_tanh.svg](assets/w04_perceptron_tanh.svg "w04_perceptron_tanh.svg")
+
+#### Task 09
+
+**Description:**
+
+Backpropagate the Task 08 perceptron graph by hand using the derivative of the `tanh` we showed in class. When done show the graph.
+
+**Acceptance criteria:**
+
+- Every node's `.grad` is assigned by hand including `tanh`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 9
+```
+
+```text
+x1.grad = -1.4999999999999996
+w1.grad = 0.9999999999999998
+x2.grad = 0.4999999999999999
+w2.grad = 0.0
+```
+
+![w04_perceptron_manual_backprop.svg](assets/w04_perceptron_manual_backprop.svg "w04_perceptron_manual_backprop.svg")
+
+### Automatic differentiation
+
+<details>
+
+<summary>What is topological ordering?</summary>
+
+Topological ordering of a directed graph is a linear ordering of its vertices such that for every directed edge $(u,v)$ from vertex $u$ to vertex $v$, $u$ comes before $v$ in the ordering.
+
+</details>
+
+<details>
+
+<summary>Can you give an example of a task that is solved using topological order?</summary>
+
+- The canonical application of topological sorting is in scheduling a sequence of jobs or tasks based on their dependencies.
+- Importing packages creates a DAG (direct acyclic graph).
+- Planning in software engineering often creates an implicit DAG: you cannot complete one task before another.
+
+</details>
+
+<details>
+
+<summary>Can there be multiple valid topological orderings?</summary>
+
+Absolutely:
+
+![w04_multi_top_sort.png](assets/w04_multi_top_sort.png "w04_multi_top_sort.png")
+
+For the above image both `4->5->3->1` and `5->4->3->1` are valid topological orders.
+
+</details>
+
+What is the topological order of the nodes in the following graph:
+
+![w04_top_sort_example.png](assets/w04_top_sort_example.png "w04_top_sort_example.png")
+
+<details>
+
+<summary>Reveal answer</summary>
+
+`0->3->1->4->2`
+
+- Since vertices `0` and `3` do not have any incoming edges from any other vertex, they appear first in the topological ordering;
+- Vertex `1` depends only on vertex `0`, so it comes after `0`;
+- Vertex `4` depends only on vertex `3`, placing it after `3`;
+- Finally, vertex `2` depends on both vertices `1` and `3`, so it appears after both of them in the ordering.
+
+</details>
+
+<details>
+
+<summary>How is topological order connected to backpropagation?</summary>
+
+We'd first have to sort the weights and biases topologically to do brackpropagation.
+
+</details>
+
+<details>
+
+<summary>What are the steps to implement this algorithm programmatically?</summary>
+
+The easiest way to do this is via depth-first search (DFS):
+
+The key idea of the DFS approach is to explore all dependent nodes of a vertex **before** the vertex itself is added to the ordering:
+
+1. Initialize an empty list `visited` list to track visited nodes and an empty list `stack` to store the result.
+2. Iterate through each vertex in the graph. If a vertex has not been visited, recursively call the (DFS) function on it.
+3. Inside the DFS function for a vertex $u$:
+   1. Mark $u$ as visited.
+   2. Recursively call the DFS function for all unvisited neighbors (adjacent vertices) of $u$.
+   3. **After** all neighbors and their descendants have been fully explored, push the current vertex $u$ onto the stack. This ensures a node is pushed only after all its dependencies are processed.
+4. After the DFS completes for all nodes, the stack will contain the vertices in **reverse** topological order. Pop the elements from the stack one by one (or reverse the list) to get the final topological ordering.
+
+We can also do this via breadth-first search (BFS) using the so-called `Kahn's Algorithm`. The two ways are explained in more detail in [Wikipedia](https://en.wikipedia.org/wiki/Topological_sorting).
+
+</details>
+
+#### Task 10
+
+**Description:**
+
+Extend `Value` and add `dl_lib.engine.graph`:
+
+- `top_sort` (in `dl_lib.engine.graph`): orders the graph rooted at a `Value` so every operand precedes the result it produced. Takes the root `Value`; returns the topologically sorted list.
+- `_backward`: every `Value` gets a `_backward` closure (a no-op by default) that, when called, pushes its own `.grad` into the `.grad` of the `Value`s that produced it.
+- `backward`: automates the hand process from Tasks 05 and 09. Takes no arguments; sets its own `.grad` to `1.0`, then calls every node's `_backward` in *reverse* topological order, so a node's gradient is fully accumulated from everything it feeds into before it propagates to its own operands.
+
+Create a script that adds two leaves, calls `.backward()` on the sum, and prints both leaves' gradients.
+
+**Acceptance criteria:**
+
+- `_backward` on an `__add__` result sends the output's gradient to both operands unchanged.
+- `top_sort` orders every operand before the result it produced.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_value.py` and `tests/test_dl_lib/test_engine/test_graph.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 10
+```
+
+```text
+c = Value(data=-1.0)
+a.grad = 1.0
+b.grad = 1.0
+```
+
+#### Task 11
+
+**Description:**
+
+`+` is wired; `*` and `tanh` are not yet. Both local derivatives are reusable, so they extend the library class.
+
+Wire `_backward` for `__mul__` and `tanh`.
+
+The demo for this task is a cautionary one, not a feature showcase: `weeks/week4/task11.py` reimplements just the `+`-`_backward` closure in a small standalone class, `_OverwritingValue`, that overwrites `.grad` instead of accumulating it, then runs it on `b = a + a` to see what goes wrong.
+
+**Acceptance criteria:**
+
+- We can backpropagate through multiplication.
+- We can backpropagate through a hyperbolic tangent.
+
+**Test cases:** See `test_when_called_on_product_of_distinct_values_then_each_operand_gets_the_others_data` and `test_when_called_on_tanh_then_operand_gets_the_local_tanh_derivative` in `tests/test_dl_lib/test_engine/test_value.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 11
+```
+
+```text
+b.data = 6.0
+a.grad = 1.0
+```
+
+<details>
+<summary><code>b = a + a</code> should send <code>a</code> a gradient of <code>1.0</code> twice - so why does <code>a.grad</code> come out as <code>1.0</code> instead of <code>2.0</code>?</summary>
+
+Both "uses" of `a` in `b = a + a` are the *same* object, and `b`'s `_backward` closure calls `self.grad = out.grad` for the first operand and then `other.grad = out.grad` for the second - but `self` and `other` are both `a`. The second assignment does not add to the first; it overwrites it with the same value, `1.0`. The gradient contribution from the first use is silently lost.
+
+</details>
+
+#### Task 12
+
+**Description:**
+
+Fix the bug in Task 11.
+
+**Acceptance criteria:**
+
+- Every `_backward` closure accumulates into `.grad`.
+
+**Test cases:** See `test_when_value_is_reused_then_its_gradient_accumulates_across_every_use` in `tests/test_dl_lib/test_engine/test_value.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 12
+```
+
+```text
+b = Value(data=6.0)
+a.grad = 2.0
+```
+
+#### Task 13
+
+**Description:**
+
+Every graph so far combines two `Value`s. Real expressions also mix a `Value` with a plain Python float (`x + 1`, `2 * w`) and need `/` and `exp`.
+
+Extend `dl_lib.engine.value.Value` with:
+
+- `__radd__` and `__rmul__`: let a `float` appear on the left of `+` or `*` with a `Value` on the right.
+- `__pow__`: raises a `Value` to a constant float power.
+- `__truediv__`: divides a `Value` by a `Value` or a `float`.
+- `exp`: returns a new `Value` holding `e ** self.data`.
+
+Create a script that shows the operators at work.
+
+**Acceptance criteria:**
+
+- The above functionality is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_value.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 13
+```
+
+```text
+a + 1.0 = Value(data=3.0)
+1.0 + a = Value(data=3.0)
+a * 2.0 = Value(data=4.0)
+2.0 * a = Value(data=4.0)
+a ** 2.0 = Value(data=4.0)
+a / 2.0 = Value(data=1.0)
+a.exp() = Value(data=7.38905609893065)
+```
+
+#### Task 14
+
+**Description:**
+
+`tanh` has been a single built-in method since Task 08 - a black box, even though we backpropagated through it by hand in Task 09. Now that `exp`, `/`, and float-interoperable `+`/`*` exist, we can write `tanh` out in terms of primitives the engine already knows how to differentiate, and check that backpropagating through the *decomposition* gives the same gradient as the built-in method. This is a one-off comparison, so it is demo-only.
+
+Build the same perceptron logit twice from identical inputs: once squashed with the built-in method `tanh`, and once with the formula for calculating `tanh` (using only `exp`, `*`, `+`, and `/`). Call `.backward()` on both and print each version's output and a couple of leaf gradients.
+
+**Acceptance criteria:**
+
+- Backpropagating through the decomposition produces the same leaf gradients as backpropagating through the built-in `tanh`.
+
+**Example output:**
+
+```bash
+python run.py -w 4 -t 14
+```
+
+```text
+o (decomposed) = Value(data=0.7071067811865477)
+x1.grad (decomposed) = -1.5
+w1.grad (decomposed) = 1.0
+o (built-in tanh) = Value(data=0.7071067811865476)
+x1.grad (built-in tanh) = -1.4999999999999996
+w1.grad (built-in tanh) = 0.9999999999999998
+```
+
+## Week 05 - Multilayer Perceptrons
+
+### Task 01
+
+Consider a two-input neural network with one hidden layer containing one neuron with a ReLU activation. The output layer is linear with the goal of doing regression.
+
+Given:
+
+- $x_1 = 1$
+- $x_2 = 2$
+- $w_1 = 0.5$
+- $w_2 = -1$
+- $b_1 = 0$
+- $w_3 = 1$
+- $b_2 = 0$
+
+and $y = 1$:
+
+1. Run the forward pass.
+2. Perform one iteration of stochastic gradient descent.
+3. Compute the new values of the parameters.
+4. What would you do if you saw these gradients in production?
+
+<details>
+<summary>Reveal solution</summary>
+
+Let's draw a high-level overview of the network we're working with:
+
+![w05_recap_11.png](assets/w05_recap_11.png "w05_recap_11.png")
+
+Great - this gives us a feeling of what's happening in the forward pass!
+
+To complete point one we can create the computation graph and calculate the fields `data`:
+
+![w05_recap_12.svg](assets/w05_recap_12.svg "w05_recap_12.svg")
+
+This completes point 1. We have the final output of the network: `0` and the computed loss: `1`.
+
+We use the method shown previously to compute the gradients:
+
+![w05_recap_13.svg](assets/w05_recap_13.svg "w05_recap_13.svg")
+
+This completes point 2.
+
+Since we do not have a learning rate in the description, let's assume it's $\lambda$. We'd then get the following updates:
+
+- $w_1^{new} = 0.5$
+- $w_2^{new} = -1$
+- $b_1^{new} = 0$
+- $w_3^{new} = 1$
+- $b_2^{new} = 0 - \lambda(-2) = 2\lambda$
+
+This completes point 3.
+
+Point 4 directs our attention to the gradient values. Having zero gradients is a big problem - we basically have dead neurons. We can see that this is caused by the scale of the weights and parameters. We could address this by:
+
+1. Having the parameters initialized with small values around `0` - uniform using the number of input features, see [nn.Linear](https://docs.pytorch.org/docs/stable/generated/torch.nn.Linear.html).
+2. Having the inputs normalized between `0` and `1` or standardized with a mean of `0` and a standard deviation of `1`.
+3. We should also keep tracking the gradient so that we can track our progress.
+
+And this is it - the above completes point 4.
+
+</details>
+
+### Task 02
+
+**Description:**
+
+A multilayer perceptron is built out of neurons, and the library has none yet.
+
+Define a class `Neuron` in `dl_lib.engine.mlp`. Given a number of inputs `n_inputs` and an optional seeded generator `rng`, it:
+
+- draws one weight `Value` per input and one bias `Value`, each from a uniform distribution between `-1` and `1` (defaulting to a fresh `random.Random(42)` if no `rng` is given, so it is reproducible without one).
+- on `__call__`, computes the hyperbolic tangent of the weighted sum of the given inputs plus the bias, and returns the result as a single `Value`.
+- exposes a method `parameters`, returning every weight followed by the bias.
+
+Create a script that constructs a neuron with three inputs, prints its weights and bias, and calls it on the inputs `2.0`, `3.0`, `-1.0`.
+
+**Acceptance criteria:**
+
+- A neuron draws one weight per input and a single bias, in that order.
+- Calling a neuron on a list of inputs returns one `Value`: the hyperbolic tangent of the weighted sum plus the bias.
+- `parameters` returns the weights followed by the bias.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_mlp.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 2
+```
+
+```text
+neuron.w = [0.2788535969157675, -0.9499784895546661, -0.4499413632617615]
+neuron.b = -0.5535785237023545
+neuron(x) = Value(data=-0.9835404188768979)
+```
+
+### Task 03
+
+**Description:**
+
+A single `Neuron` produces exactly one number; a network needs many of them reading the same inputs.
+
+Define a class `Layer` in `dl_lib.engine.mlp`. Given a number of inputs `n_inputs`, a number of outputs `n_outputs`, and an optional seeded generator `rng` (defaulting the same way, and threaded into every neuron it creates, so the whole layer's weights come from one continuous sequence of draws rather than each neuron restarting the same one), it:
+
+- constructs one neuron per output, each seeing all of the inputs.
+- on `__call__`, calls every neuron on the same input and returns their outputs as a list - always a list, even when there is only one neuron.
+- exposes a method `parameters`, returning every neuron's parameters, concatenated in order.
+
+Create a script that constructs a layer of four neurons over three inputs, calls it on the inputs `2.0`, `3.0`, `-1.0`, and prints the outputs and the neuron count.
+
+**Acceptance criteria:**
+
+- A layer creates one neuron per output, all sharing the same generator.
+- Calling a layer returns a list with one output per neuron, even when there is only one neuron.
+- `parameters` returns every neuron's parameters, concatenated in order.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_mlp.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 3
+```
+
+```text
+layer(x) = [-0.9835404188768979, 0.3761781385427304, -0.9881211941388645, -0.9991982278148797]
+Number of neurons: 4
+```
+
+### Task 04
+
+**Description:**
+
+One layer is a single step of computation; depth is what makes a network expressive.
+
+Define a class `MLP` in `dl_lib.engine.mlp`. Given a number of inputs `n_inputs`, a list `n_outputs` holding each layer's output size, and an optional seeded generator `rng` (defaulting and threaded down the same way, through every layer it creates), it:
+
+- builds one layer per requested output size, sizing each layer's input to the previous layer's output, and the first layer's input to `n_inputs`.
+- on `__call__`, feeds the input through every layer in sequence, then collapses a final layer of exactly one neuron down to a bare `Value` rather than a one-element list.
+- exposes a method `parameters`, returning every layer's parameters, concatenated in order.
+
+Create a script that constructs a network over three inputs with two hidden layers of four neurons each and a single output neuron, calls it on the inputs `2.0`, `3.0`, `-1.0`, and prints the collapsed output and the layer count.
+
+**Acceptance criteria:**
+
+- A network builds one layer per requested output size, each sized to match the previous layer's output.
+- Calling a network whose final layer holds one neuron returns a bare `Value`, not a one-element list.
+- Calling a network whose final layer holds several neurons returns a list.
+- `parameters` returns every layer's parameters, concatenated in order.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_mlp.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 4
+```
+
+```text
+mlp(x) = Value(data=0.6994093620224068)
+Number of layers: 3
+```
+
+### Task 05
+
+**Description:**
+
+Create a script that constructs a network over three inputs with two hidden layers of four neurons each and a single output neuron, then prints how many parameters it reports in total, along with the first three.
+
+**Acceptance criteria:**
+
+- The script prints the network's total parameter count.
+- The script prints the value held by each of the first three parameters.
+
+**Test cases:** See `tests/test_dl_lib/test_engine/test_mlp.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 5
+```
+
+```text
+Number of parameters: 41
+First three parameters: [0.2788535969157675, -0.9499784895546661, -0.4499413632617615]
+```
+
+### Task 06
+
+**Description:**
+
+Construct a network over three inputs with two hidden layers of four neurons each and a single output neuron, plus a toy dataset of four samples:
+
+| inputs | target |
+| --- | --- |
+| `2.0`, `3.0`, `-1.0` | `1.0` |
+| `3.0`, `-1.0`, `0.5` | `-1.0` |
+| `0.5`, `1.0`, `1.0` | `-1.0` |
+| `1.0`, `1.0`, `-1.0` | `1.0` |
+
+Run every sample through the network and compute the mean squared error loss: the sum, over all four samples, of the squared difference between the prediction and the target. Note that `Value` implements no subtraction, so the difference has to be written as an addition of the negated target.
+
+**Acceptance criteria:**
+
+- The script predicts one output per sample.
+- The script computes and prints the summed squared error over all four samples.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 6
+```
+
+```text
+Predictions: [0.6994093620224068, 0.502629581661551, 0.6931545900944502, 0.8755224728708614]
+MSE loss: 5.230517512042235
+```
+
+### Task 07
+
+**Description:**
+
+Take the same network and four-sample dataset and run 20 epochs at a learning rate of `0.05`. Each epoch: predict every sample, compute the mean squared error, backpropagate it, then nudge every parameter against its own gradient, scaled by the learning rate. Print the loss each epoch, and alongside it the sum of the absolute values of every parameter's gradient.
+
+**Acceptance criteria:**
+
+- Every epoch predicts, computes the loss, backpropagates, and updates every parameter against its gradient.
+- The script prints the loss and the total absolute gradient every epoch.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 7
+```
+
+```text
+epoch 0: loss = 5.230517512042235, sum|grad| = 34.220129865268504
+epoch 1: loss = 2.7046890507642445, sum|grad| = 50.695208354620014
+epoch 2: loss = 2.9924726393773007, sum|grad| = 52.612452853912515
+epoch 3: loss = 0.691642620292373, sum|grad| = 56.48349050871577
+epoch 4: loss = 0.4336539664762626, sum|grad| = 57.57833114644233
+epoch 5: loss = 0.21830440118736802, sum|grad| = 59.80607980031232
+epoch 6: loss = 0.019389294167293656, sum|grad| = 60.14971784558
+epoch 7: loss = 0.0022878054068387367, sum|grad| = 60.18274658248433
+epoch 8: loss = 0.0003795654448862342, sum|grad| = 60.1877236273685
+epoch 9: loss = 7.106617897142327e-05, sum|grad| = 60.18853422221534
+epoch 10: loss = 1.461312374585821e-05, sum|grad| = 60.188665823408435
+epoch 11: loss = 3.3297172627176823e-06, sum|grad| = 60.188686743232836
+epoch 12: loss = 8.430137915314457e-07, sum|grad| = 60.18868976278141
+epoch 13: loss = 2.3569129381387933e-07, sum|grad| = 60.188690025825025
+epoch 14: loss = 7.188755669820813e-08, sum|grad| = 60.188689954595695
+epoch 15: loss = 2.353579396751116e-08, sum|grad| = 60.18868989184172
+epoch 16: loss = 8.118357925684746e-09, sum|grad| = 60.18868986024918
+epoch 17: loss = 2.8961033543749084e-09, sum|grad| = 60.18868984659204
+epoch 18: loss = 1.0521901589172596e-09, sum|grad| = 60.188689841072545
+epoch 19: loss = 3.854305930747228e-10, sum|grad| = 60.18868983891087
+```
+
+The loss collapses to almost zero within a dozen epochs, which looks like a success - but `sum|grad|` tells a different story: it should shrink toward zero right alongside the loss (a near-zero loss means near-zero gradients), yet instead it climbs and then plateaus around `60.19`.
+
+A gradient accumulates rather than overwrites on every backward pass, which is what makes a value reused inside one graph sum its contributions correctly; this loop never resets the gradients back to zero between epochs, so every epoch's gradient is added on top of every previous epoch's.
+
+The loss still happens to decrease on this particular toy problem because the stale, inflated gradient still points in a direction that helps - but the number printed as "the gradient" no longer has anything to do with the current error.
+
+### Task 08
+
+**Description:**
+
+Create a script that fixes the bug.
+
+**Acceptance criteria:**
+
+- Every parameter's gradient is zeroed before each epoch's backward pass.
+- The script prints the loss and the total absolute gradient every epoch.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 8
+```
+
+```text
+epoch 0: loss = 5.230517512042235, sum|grad| = 34.2201298652685
+epoch 1: loss = 2.7046890507642445, sum|grad| = 18.74975816325999
+epoch 2: loss = 1.8460237252314982, sum|grad| = 15.764631738821066
+epoch 3: loss = 1.1774870087919072, sum|grad| = 16.871430528965146
+epoch 4: loss = 0.8217294550832637, sum|grad| = 13.24971182611667
+epoch 5: loss = 0.5957215587693911, sum|grad| = 9.877267078121829
+epoch 6: loss = 0.43115794091632775, sum|grad| = 4.901610361018949
+epoch 7: loss = 0.3468314917603138, sum|grad| = 3.8102077451205383
+epoch 8: loss = 0.28903713992681357, sum|grad| = 3.251459183294917
+epoch 9: loss = 0.24605065583938177, sum|grad| = 2.8263207442955087
+epoch 10: loss = 0.21309389813936697, sum|grad| = 2.491675487126754
+epoch 11: loss = 0.18718814718937848, sum|grad| = 2.2225823174480586
+epoch 12: loss = 0.16638755353165732, sum|grad| = 2.002310777340805
+epoch 13: loss = 0.1493799733703151, sum|grad| = 1.8191838275399463
+epoch 14: loss = 0.13525484661841908, sum|grad| = 1.6648593432876941
+epoch 15: loss = 0.12336389545940171, sum|grad| = 1.5332515941800222
+epoch 16: loss = 0.11323493741060488, sum|grad| = 1.4198348584183966
+epoch 17: loss = 0.10451700918771248, sum|grad| = 1.3211841680618464
+epoch 18: loss = 0.09694449026136834, sum|grad| = 1.2346661268862242
+epoch 19: loss = 0.09031307448189842, sum|grad| = 1.158226617994818
+```
+
+### Task 09
+
+**Description:**
+
+Scalar `Value`s cannot carry a real network - from here on the pieces operate on tensors, in a fresh `dl_lib.nn` package independent of `dl_lib.engine`.
+
+Define an abstract base class `Module` in `dl_lib.nn.module`. It:
+
+- declares an abstract method `forward`, taking a tensor and returning a tensor, for subclasses to implement.
+- makes a module callable like a function, by having the call delegate straight to `forward`.
+- carries a flag `training`, declared on the class itself rather than per instance, and starting out switched on.
+- exposes a method `train`, turning that flag on and returning the module itself, so calls can be chained.
+- exposes a method `eval`, turning that flag off and returning the module itself.
+
+Create a script that defines a small local subclass - ex. one that doubles its input - to demonstrate the base class, and calls it on a tensor.
+
+**Acceptance criteria:**
+
+- The base class cannot be instantiated on its own, because `forward` is abstract.
+- A subclass implementing `forward` can be called directly, and the call returns what `forward` returns.
+- A freshly constructed module reports that it is in training mode.
+- `train` switches a module into training mode and `eval` switches it out, each returning the module itself.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_module.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 9
+```
+
+```text
+x = tensor([1., 2., 3.])
+double(x) = tensor([2., 4., 6.])
+```
+
+> [!NOTE]
+> The subclass supplied nothing but `forward`; being callable came from the base class alone.
+
+### Task 10
+
+**Description:**
+
+Define a class `Sigmoid` in `dl_lib.nn.activations`, extending `Module`. Its `forward` returns the logistic sigmoid of the input, applied element by element.
+
+Create a script that applies a sigmoid to a small tensor spanning negative and positive values and prints the result.
+
+**Acceptance criteria:**
+
+- Calling a sigmoid returns the logistic sigmoid of every element of the input.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_activations.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 10
+```
+
+```text
+x = tensor([-3., -1.,  0.,  1.,  3.])
+sigmoid(x) = tensor([0.0474, 0.2689, 0.5000, 0.7311, 0.9526])
+```
+
+### Task 11
+
+**Description:**
+
+A sigmoid only ever emits positive numbers, so every layer downstream receives an input that is off-center before it even starts.
+
+Define a **`Tanh`** class in `dl_lib.nn.activations`, extending `Module`. Its `forward` returns the hyperbolic tangent of the input, applied element by element.
+
+Create a script that applies a hyperbolic tangent to a small tensor spanning negative and positive values and prints the result.
+
+**Acceptance criteria:**
+
+- Calling a hyperbolic tangent returns the hyperbolic tangent of every element of the input.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_activations.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 11
+```
+
+```text
+x = tensor([-3., -1.,  0.,  1.,  3.])
+tanh(x) = tensor([-0.9951, -0.7616,  0.0000,  0.7616,  0.9951])
+```
+
+### Task 12
+
+**Description:**
+
+Both squashing activations flatten out at their extremes, so a strongly activated neuron receives almost no gradient and learns at a crawl.
+
+Define a **`ReLU`** class in `dl_lib.nn.activations`, extending `Module`. Its `forward` returns the element-wise maximum of the input and zero.
+
+Create a script that applies a rectifier to a small tensor spanning negative, zero, and positive values and prints the result.
+
+**Acceptance criteria:**
+
+- Calling a rectifier zeroes every negative element of the input and leaves the rest unchanged.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_activations.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 12
+```
+
+```text
+x = tensor([-2., -1.,  0.,  1.,  2.])
+relu(x) = tensor([0., 0., 0., 1., 2.])
+```
+
+### Task 13
+
+**Description:**
+
+Zeroing negatives also zeroes their gradient, so a neuron pushed into the negative region can stay dead for the rest of training.
+
+Define a **`LeakyReLU`** class in `dl_lib.nn.activations`, extending `Module`. It is constructed with a `negative_slope`, defaulting to one hundredth, and its `forward` passes non-negative elements through untouched while scaling negative ones by that slope.
+
+Create a script that applies a leaky rectifier with a slope of `0.1` to a small tensor spanning negative, zero, and positive values and prints the result.
+
+**Acceptance criteria:**
+
+- Calling a leaky rectifier leaves non-negative elements of the input unchanged and scales negative elements by the configured slope.
+- The slope defaults to one hundredth when none is given.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_activations.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 13
+```
+
+```text
+x = tensor([-2., -1.,  0.,  1.,  2.])
+leaky_relu(x) = tensor([-0.2000, -0.1000,  0.0000,  1.0000,  2.0000])
+```
+
+### Task 14
+
+**Description:**
+
+Calling modules one by one by hand does not scale past a couple of them.
+
+Define a **`Sequential`** class in `dl_lib.nn.sequential`, extending `Module`. Constructed from any number of modules, it:
+
+- on `forward`, feeds its input through every module in order and returns the last one's output.
+- exposes methods **`append`**, **`extend`**, and **`insert`**, for growing the chain after construction - one module at the end, many at the end, and one at a given position.
+- overrides **`train`**, switching the chain itself and every module it holds into training mode, recursing into any nested chain, and returning itself.
+- overrides **`eval`**, doing the same in the other direction.
+
+Create a script that chains a rectifier followed by a hyperbolic tangent, calls the chain on a small tensor, and prints the result.
+
+**Acceptance criteria:**
+
+- Calling a chain feeds the input through every module in order and returns the final result.
+- Each of `append`, `extend`, and `insert` grows the chain.
+- Putting a chain into training mode also puts every module it holds into training mode, including those nested inside an inner chain.
+- Putting a chain into evaluation mode does the same in the other direction.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_sequential.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 14
+```
+
+```text
+x = tensor([-2.,  2.])
+sequential(x) = tensor([0.0000, 0.9640])
+```
+
+### Task 15
+
+**Description:**
+
+An optimizer needs the tensors it is about to update, but nothing in `dl_lib.nn` can hand that list over.
+
+Add a method **`parameters`** to `Module` in `dl_lib.nn.module`. It takes no arguments and returns an empty list by default, since a plain module such as an activation owns no learnable tensors, and nothing is discovered automatically by reflection. A subclass that does own learnable tensors overrides the method to hand them back explicitly.
+
+Add a **`parameters`** method to `Sequential` in `dl_lib.nn.sequential` as well, overriding the base one. It returns every module's own parameters concatenated, in the order the modules were added, so a chain reports its full parameter list from a single call however deep it runs.
+
+Create a script that defines a small local affine module - a weight matrix and a bias vector, overriding `parameters` to return both - then chains two of them with a rectifier in between, asks the chain for its parameters, and prints how many tensors came back along with each one's shape.
+
+**Acceptance criteria:**
+
+- A plain module reports no parameters.
+- A chain reports every module's own parameters, concatenated in the order the modules were added.
+- A chain nested inside another chain still has its parameters collected.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_module.py` and `tests/test_dl_lib/test_nn/test_sequential.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 5 -t 15
+```
+
+```text
+number of learnable tensors = 4
+params[0].shape = (3, 4)
+params[1].shape = (4,)
+params[2].shape = (4, 2)
+params[3].shape = (2,)
+```
