@@ -1,90 +1,91 @@
-# import unittest
-# from functools import partial
-#
-# import numpy as np
-#
-# from dl_lib.activations import functional as activations_functional
-# from dl_lib.perceptron import datasets, functional
-# from dl_lib.perceptron.perceptron import Perceptron
-#
-#
-# class TestInit(unittest.TestCase):
-#     def test_when_use_bias_is_false_then_bias_is_zero(self):
-#         # Arrange
-#         n_inputs = 2
-#         expected_bias = 0.0
-#
-#         # Act
-#         actual = Perceptron(n_inputs, use_bias=False, seed=42)
-#
-#         # Assert
-#         self.assertEqual(actual.weights.shape, (n_inputs,))
-#         self.assertFalse(actual.use_bias)
-#         self.assertEqual(actual.bias, expected_bias)
-#
-#     def test_when_use_bias_is_true_then_bias_is_drawn_from_the_given_range(self):
-#         # Arrange
-#         n_inputs = 2
-#         low = 0.0
-#         high = 10.0
-#
-#         # Act
-#         actual = Perceptron(n_inputs, low=low, high=high, use_bias=True, seed=42)
-#
-#         # Assert
-#         self.assertTrue(actual.use_bias)
-#         self.assertGreaterEqual(actual.bias, low)
-#         self.assertLess(actual.bias, high)
-#
-#     def test_when_seed_is_fixed_then_weights_are_reproducible(self):
-#         # Arrange
-#         seed = 42
-#
-#         # Act
-#         first = Perceptron(3, seed=seed)
-#         second = Perceptron(3, seed=seed)
-#
-#         # Assert
-#         np.testing.assert_array_equal(first.weights, second.weights)
-#
-#
-# class TestForward(unittest.TestCase):
-#     def test_when_called_then_output_is_finite(self):
-#         # Arrange
-#         model = Perceptron(2, use_bias=True, seed=42)
-#         x = np.array([1.0, 0.0])
-#
-#         # Act
-#         actual = model.forward(x)
-#
-#         # Assert
-#         self.assertTrue(np.isfinite(actual))
-#
-#     def test_when_no_activation_then_matches_the_plain_weighted_sum(self):
-#         # Arrange
-#         model = Perceptron(2, use_bias=True, seed=42)
-#         x = np.array([1.0, 2.0])
-#         expected = functional.forward(x, model.weights, model.bias)
-#
-#         # Act
-#         actual = model.forward(x)
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, expected)
-#
-#     def test_when_an_activation_is_given_then_applies_it(self):
-#         # Arrange
-#         model = Perceptron(
-#             2, use_bias=True, activation=activations_functional.sigmoid, seed=42
-#         )
-#         x = np.array([1.0, 2.0])
-#
-#         # Act
-#         actual = model.forward(x)
-#
-#         # Assert
-#         self.assertGreater(actual, 0.0)
-#         self.assertLess(actual, 1.0)
+import unittest
+
+import numpy as np
+
+from dl_lib.activations import functional as activations_functional
+from dl_lib.perceptron import functional
+from dl_lib.perceptron.perceptron import Perceptron
+
+
+class TestInit(unittest.TestCase):
+    def test_when_use_bias_is_false_then_bias_is_zero(self):
+        # Arrange
+        n_inputs = 2
+        expected_bias = 0.0
+
+        # Act
+        actual = Perceptron(n_inputs, use_bias=False, seed=42)
+
+        # Assert
+        self.assertEqual(actual.weights.shape, (n_inputs,))
+        self.assertFalse(actual.use_bias)
+        self.assertEqual(actual.bias, expected_bias)
+
+    def test_when_use_bias_is_true_then_bias_is_drawn_from_the_given_range(self):
+        # Arrange
+        n_inputs = 2
+        low = 0.0
+        high = 10.0
+
+        # Act
+        actual = Perceptron(n_inputs, low=low, high=high, use_bias=True, seed=42)
+
+        # Assert
+        self.assertTrue(actual.use_bias)
+        self.assertGreaterEqual(actual.bias, low)
+        self.assertLess(actual.bias, high)
+
+    def test_when_seed_is_fixed_then_weights_are_reproducible(self):
+        # Arrange
+        seed = 42
+
+        # Act
+        first = Perceptron(3, seed=seed)
+        second = Perceptron(3, seed=seed)
+
+        # Assert
+        np.testing.assert_array_equal(first.weights, second.weights)
+
+
+class TestForward(unittest.TestCase):
+    def test_when_called_then_output_is_finite(self):
+        # Arrange
+        model = Perceptron(2, use_bias=True, seed=42)
+        x = np.array([1.0, 0.0])
+
+        # Act
+        actual = model.forward(x)
+
+        # Assert
+        self.assertTrue(np.isfinite(actual))
+
+    def test_when_no_activation_then_matches_the_plain_weighted_sum(self):
+        # Arrange
+        model = Perceptron(2, use_bias=True, seed=42)
+        x = np.array([1.0, 2.0])
+        expected = functional.forward(x, model.weights, model.bias)
+
+        # Act
+        actual = model.forward(x)
+
+        # Assert
+        self.assertAlmostEqual(actual, expected)
+
+    def test_when_an_activation_is_given_then_applies_it(self):
+        # Arrange
+        model = Perceptron(
+            2, use_bias=True, activation=activations_functional.sigmoid, seed=42
+        )
+        x = np.array([1.0, 2.0])
+
+        # Act
+        actual = model.forward(x)
+
+        # Assert
+        self.assertGreater(actual, 0.0)
+        self.assertLess(actual, 1.0)
+
+
 #
 #
 # class TestTraining(unittest.TestCase):

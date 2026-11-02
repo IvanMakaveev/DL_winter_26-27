@@ -1,5 +1,7 @@
 import unittest
 
+import numpy as np
+
 from dl_lib.perceptron import datasets
 
 
@@ -16,36 +18,36 @@ class TestCreateDataset(unittest.TestCase):
         self.assertEqual(actual, expected)
 
 
-# class TestAndDataset(unittest.TestCase):
-#     def test_when_called_then_returns_the_and_truth_table(self):
-#         # Arrange
-#         expected_targets = [0.0, 0.0, 0.0, 1.0]
+class TestAndDataset(unittest.TestCase):
+    def test_when_called_then_returns_the_and_truth_table(self):
+        # Arrange
+        expected_targets = [0.0, 0.0, 0.0, 1.0]
 
-#         # Act
-#         actual = datasets.and_dataset()
+        # Act
+        actual = datasets.and_dataset()
 
-#         # Assert
-#         self.assertEqual([y for _, y in actual], expected_targets)
-#         np.testing.assert_array_equal(
-#             np.array([x for x, _ in actual]),
-#             np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]),
-#         )
+        # Assert
+        self.assertEqual([y for _, y in actual], expected_targets)
+        np.testing.assert_array_equal(
+            np.array([x for x, _ in actual]),
+            np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]),
+        )
 
 
-# class TestOrDataset(unittest.TestCase):
-#     def test_when_called_then_returns_the_or_truth_table(self):
-#         # Arrange
-#         expected_targets = [0.0, 1.0, 1.0, 1.0]
+class TestOrDataset(unittest.TestCase):
+    def test_when_called_then_returns_the_or_truth_table(self):
+        # Arrange
+        expected_targets = [0.0, 1.0, 1.0, 1.0]
 
-#         # Act
-#         actual = datasets.or_dataset()
+        # Act
+        actual = datasets.or_dataset()
 
-#         # Assert
-#         self.assertEqual([y for _, y in actual], expected_targets)
-#         np.testing.assert_array_equal(
-#             np.array([x for x, _ in actual]),
-#             np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]),
-#         )
+        # Assert
+        self.assertEqual([y for _, y in actual], expected_targets)
+        np.testing.assert_array_equal(
+            np.array([x for x, _ in actual]),
+            np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]),
+        )
 
 
 # class TestNandDataset(unittest.TestCase):

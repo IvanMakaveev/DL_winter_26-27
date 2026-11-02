@@ -29,7 +29,6 @@ def numerical_gradient(
     loss: Callable[..., float], parameters: np.ndarray, epsilon: float = 1e-4
 ) -> np.ndarray:
     gradients = np.zeros_like(parameters)
-    # It should work when parameters is 1D or 2D array
     for i in range(parameters.size):
         original_value = parameters.flat[i]
         parameters.flat[i] = original_value + epsilon
@@ -49,12 +48,12 @@ def gradient_descent_step(
 
 
 def dataset_loss(
-    dataset: list[tuple[float, float]],
-    targets: np.ndarray,
+    dataset,
+    targets,
     weights: np.ndarray,
     bias: float = 0.0,
     activation: Callable[..., Any] | None = None,
-    loss: Callable[..., float] | None = mse,
+    loss: Callable[..., float] = mse,
 ) -> float:
     inputs = [np.atleast_1d(x) for x, _ in dataset]
     predicted = np.array(
@@ -64,23 +63,41 @@ def dataset_loss(
 
 
 def analytical_gradient(
-    dataset: list[tuple[float, float]],
-    weights: np.ndarray,
+    dataset,
+    weights,
     bias: float = 0.0,
     activation: Callable[..., Any] | None = None,
     activation_derivative: Callable[..., Any] | None = None,
-) -> np.ndarray:
+) -> tuple[np.ndarray, float]:
     inputs = [np.atleast_1d(x) for x, _ in dataset]
     targets = np.array([y for _, y in dataset])
-    predicted = np.array(
-        [forward(x, weights, bias, activation) for x in inputs]
-    ).reshape(-1)
+    logits = np.array([np.dot(x, weights) + bias for x in inputs]).reshape(-1)
+    predicted = (
+        np.array([activation(logit) for logit in logits]).reshape(-1)
+        if activation is not None
+        else logits
+    )
     errors = predicted - targets
 
     if activation_derivative:
-        errors *= activation_derivative(predicted)
+        errors *= activation_derivative(logits)
 
     weight_grad = 2 * np.dot(errors, inputs) / len(dataset)
     bias_grad = 2 * np.sum(errors) / len(dataset)
 
     return weight_grad, bias_grad
+
+
+def dataset_loss_given_bias(
+    dataset,
+    targets,
+    weights: np.ndarray,
+    activation: Callable[..., Any] | None,
+    bias: np.ndarray,
+    loss: Callable[..., float] = mse,
+) -> float:
+    inputs = [np.atleast_1d(x) for x, _ in dataset]
+    predicted = np.array(
+        [forward(x, weights, bias[0], activation) for x in inputs]
+    ).reshape(-1)
+    return loss(targets, predicted)
