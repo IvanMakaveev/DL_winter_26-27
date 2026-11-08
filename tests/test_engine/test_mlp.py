@@ -1,7 +1,7 @@
 import random
 import unittest
 
-from dl_lib.engine.mlp import Layer, Neuron
+from dl_lib.engine.mlp import MLP, Layer, Neuron
 from dl_lib.engine.value import Value
 
 
@@ -172,82 +172,76 @@ class TestLayerParameters(unittest.TestCase):
         self.assertEqual(actual, expected)
 
 
-# class TestMLPInit(unittest.TestCase):
-#
-#     def test_when_constructed_then_has_one_layer_per_output_size(self):
-#         # Arrange
-#         expected = 2
-#
-#         # Act
-#         actual = len(MLP(3, [4, 1]).layers)
-#
-#         # Assert
-#         self.assertEqual(actual, expected)
-#
-#     def test_when_constructed_then_each_layers_input_size_matches_previous_output(
-#             self):
-#         # Arrange
-#         mlp = MLP(3, [4, 2, 1])
-#         expected = [3, 4, 2]
-#
-#         # Act
-#         actual = [len(layer.neurons[0].w) for layer in mlp.layers]
-#
-#         # Assert
-#         self.assertEqual(actual, expected)
-#
-#
-# class TestMLPCall(unittest.TestCase):
-#
-#     def test_when_called_with_multi_neuron_output_layer_then_returns_a_list(
-#             self):
-#         # Arrange
-#         mlp = MLP(3, [4, 2])
-#         x = [Value(1.0), Value(2.0), Value(3.0)]
-#         expected = 2
-#
-#         # Act
-#         actual = mlp(x)
-#
-#         # Assert
-#         self.assertIsInstance(actual, list)
-#         self.assertEqual(len(actual), expected)
-#
-#     def test_when_called_with_single_neuron_output_layer_then_returns_a_bare_value(
-#             self):
-#         # Arrange
-#         mlp = MLP(3, [4, 1])
-#         x = [Value(1.0), Value(2.0), Value(3.0)]
-#
-#         # Act
-#         actual = mlp(x)
-#
-#         # Assert
-#         self.assertIsInstance(actual, Value)
-#
-#
-# class TestMLPParameters(unittest.TestCase):
-#
-#     def test_when_parameters_called_then_returns_parameters_from_every_layer(
-#             self):
-#         # Arrange
-#         mlp = MLP(3, [4, 1])
-#         expected = [*mlp.layers[0].parameters(), *mlp.layers[1].parameters()]
-#
-#         # Act
-#         actual = mlp.parameters()
-#
-#         # Assert
-#         self.assertEqual(actual, expected)
-#
-#     def test_when_parameters_called_then_count_matches_sum_of_layer_counts(
-#             self):
-#         # Arrange
-#         mlp = MLP(3, [4, 4, 1])
-#         expected = sum(len(layer.parameters()) for layer in mlp.layers)
-#
-#         # Act
-#         actual = len(mlp.parameters())
-#
-#         # Assert
-#         self.assertEqual(actual, expected)
+class TestMLPInit(unittest.TestCase):
+    def test_when_constructed_then_has_one_layer_per_output_size(self):
+        # Arrange
+        expected = 2
+
+        # Act
+        actual = len(MLP(3, [4, 1]).layers)
+
+        # Assert
+        self.assertEqual(actual, expected)
+
+    def test_when_constructed_then_each_layers_input_size_matches_previous_output(self):
+        # Arrange
+        mlp = MLP(3, [4, 2, 1])
+        expected = [3, 4, 2]
+
+        # Act
+        actual = [len(layer.neurons[0].w) for layer in mlp.layers]
+
+        # Assert
+        self.assertEqual(actual, expected)
+
+
+class TestMLPCall(unittest.TestCase):
+    def test_when_called_with_multi_neuron_output_layer_then_returns_a_list(self):
+        # Arrange
+        mlp = MLP(3, [4, 2])
+        x = [Value(1.0), Value(2.0), Value(3.0)]
+        expected = 2
+
+        # Act
+        actual = mlp(x)
+
+        # Assert
+        self.assertIsInstance(actual, list)
+        self.assertEqual(len(actual), expected)
+
+    def test_when_called_with_single_neuron_output_layer_then_returns_a_bare_value(
+        self,
+    ):
+        # Arrange
+        mlp = MLP(3, [4, 1])
+        x = [Value(1.0), Value(2.0), Value(3.0)]
+
+        # Act
+        actual = mlp(x)
+
+        # Assert
+        self.assertIsInstance(actual, Value)
+
+
+class TestMLPParameters(unittest.TestCase):
+    def test_when_parameters_called_then_returns_parameters_from_every_layer(self):
+        # Arrange
+        mlp = MLP(3, [4, 1])
+        expected = [*mlp.layers[0].parameters(), *mlp.layers[1].parameters()]
+
+        # Act
+        actual = mlp.parameters()
+
+        # Assert
+        self.assertEqual(actual, expected)
+
+    def test_when_parameters_called_then_count_matches_sum_of_layer_counts(self):
+        # Arrange
+        mlp = MLP(3, [4, 4, 1])
+        expected = sum(len(layer.parameters()) for layer in mlp.layers)
+
+        # Act
+        actual = len(mlp.parameters())
+
+        # Assert
+        self.assertEqual(actual, expected)
