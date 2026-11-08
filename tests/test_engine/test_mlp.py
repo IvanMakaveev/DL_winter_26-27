@@ -1,99 +1,95 @@
-# import random
-# import unittest
-#
-# from dl_lib.engine.mlp import MLP, Layer, Neuron
-# from dl_lib.engine.value import Value
-#
-#
-# class TestNeuronInit(unittest.TestCase):
-#
-#     def test_when_constructed_then_has_one_weight_per_input(self):
-#         # Arrange
-#         expected = 3
-#
-#         # Act
-#         actual = len(Neuron(3).w)
-#
-#         # Assert
-#         self.assertEqual(actual, expected)
-#
-#     def test_when_constructed_with_seeded_rng_then_weights_match_uniform_draws(
-#             self):
-#         # Arrange
-#         rng = random.Random(42)
-#         expected = [rng.uniform(-1, 1), rng.uniform(-1, 1)]
-#
-#         # Act
-#         actual = [w.data for w in Neuron(2, rng=random.Random(42)).w]
-#
-#         # Assert
-#         self.assertEqual(actual, expected)
-#
-#     def test_when_constructed_with_seeded_rng_then_bias_matches_next_uniform_draw(
-#             self):
-#         # Arrange
-#         rng = random.Random(42)
-#         rng.uniform(-1, 1)
-#         rng.uniform(-1, 1)
-#         expected = rng.uniform(-1, 1)
-#
-#         # Act
-#         actual = Neuron(2, rng=random.Random(42)).b.data
-#
-#         # Assert
-#         self.assertEqual(actual, expected)
-#
-#
-# class TestNeuronCall(unittest.TestCase):
-#
-#     def test_when_called_then_output_matches_hand_calculation(self):
-#         # Arrange
-#         neuron = Neuron(2, rng=random.Random(42))
-#         x = [Value(1.0), Value(2.0)]
-#         expected = -0.968717830476061
-#
-#         # Act
-#         actual = neuron(x).data
-#
-#         # Assert
-#         self.assertAlmostEqual(actual, expected)
-#
-#     def test_when_called_then_output_is_a_value(self):
-#         # Arrange
-#         neuron = Neuron(2)
-#         x = [Value(1.0), Value(2.0)]
-#
-#         # Act
-#         actual = neuron(x)
-#
-#         # Assert
-#         self.assertIsInstance(actual, Value)
-#
-#
-# class TestNeuronParameters(unittest.TestCase):
-#
-#     def test_when_parameters_called_then_returns_weights_then_bias(self):
-#         # Arrange
-#         neuron = Neuron(2)
-#         expected = [*neuron.w, neuron.b]
-#
-#         # Act
-#         actual = neuron.parameters()
-#
-#         # Assert
-#         self.assertEqual(actual, expected)
-#
-#     def test_when_parameters_called_then_count_matches_inputs_plus_bias(self):
-#         # Arrange
-#         neuron = Neuron(5)
-#         expected = 6
-#
-#         # Act
-#         actual = len(neuron.parameters())
-#
-#         # Assert
-#         self.assertEqual(actual, expected)
-#
+import random
+import unittest
+
+from dl_lib.engine.mlp import Neuron
+from dl_lib.engine.value import Value
+
+
+class TestNeuronInit(unittest.TestCase):
+    def test_when_constructed_then_has_one_weight_per_input(self):
+        # Arrange
+        expected = 3
+
+        # Act
+        actual = len(Neuron(3).w)
+
+        # Assert
+        self.assertEqual(actual, expected)
+
+    def test_when_constructed_with_seeded_rng_then_weights_match_uniform_draws(self):
+        # Arrange
+        rng = random.Random(42)
+        expected = [rng.uniform(-1, 1), rng.uniform(-1, 1)]
+
+        # Act
+        actual = [w.data for w in Neuron(2, rng=random.Random(42)).w]
+
+        # Assert
+        self.assertEqual(actual, expected)
+
+    def test_when_constructed_with_seeded_rng_then_bias_matches_next_uniform_draw(self):
+        # Arrange
+        rng = random.Random(42)
+        rng.uniform(-1, 1)
+        rng.uniform(-1, 1)
+        expected = rng.uniform(-1, 1)
+
+        # Act
+        actual = Neuron(2, rng=random.Random(42)).b.data
+
+        # Assert
+        self.assertEqual(actual, expected)
+
+
+class TestNeuronCall(unittest.TestCase):
+    def test_when_called_then_output_matches_hand_calculation(self):
+        # Arrange
+        neuron = Neuron(2, rng=random.Random(42))
+        x = [Value(1.0), Value(2.0)]
+        expected = -0.968717830476061
+
+        # Act
+        actual = neuron(x).data
+
+        # Assert
+        self.assertAlmostEqual(actual, expected)
+
+    def test_when_called_then_output_is_a_value(self):
+        # Arrange
+        neuron = Neuron(2)
+        x = [Value(1.0), Value(2.0)]
+
+        # Act
+        actual = neuron(x)
+
+        # Assert
+        self.assertIsInstance(actual, Value)
+
+
+class TestNeuronParameters(unittest.TestCase):
+    def test_when_parameters_called_then_returns_weights_then_bias(self):
+        # Arrange
+        neuron = Neuron(2)
+        expected = [*neuron.w, neuron.b]
+
+        # Act
+        actual = neuron.parameters()
+
+        # Assert
+        self.assertEqual(actual, expected)
+
+    def test_when_parameters_called_then_count_matches_inputs_plus_bias(self):
+        # Arrange
+        neuron = Neuron(5)
+        expected = 6
+
+        # Act
+        actual = len(neuron.parameters())
+
+        # Assert
+        self.assertEqual(actual, expected)
+
+
 #
 # class TestLayerInit(unittest.TestCase):
 #
