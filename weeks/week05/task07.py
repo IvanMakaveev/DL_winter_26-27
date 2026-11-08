@@ -33,5 +33,4 @@ def main() -> int:
             f"epoch {epoch}: loss = {loss.data}, sum|grad| = {sum(abs(param.grad) for param in mlp.parameters())}"
         )
 
-
     return 0
