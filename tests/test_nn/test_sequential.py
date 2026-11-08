@@ -142,30 +142,30 @@ class TestInsert(unittest.TestCase):
         self.assertEqual([type(module) for module in sequential.modules], expected)
 
 
-# class TestParameters(unittest.TestCase):
-#     def test_when_called_then_collects_parameters_from_every_module_in_order(self):
-#         # Arrange
-#         first = torch.tensor([1.0])
-#         second = torch.tensor([2.0])
-#         sequential = Sequential(_ParamModule(first), ReLU(), _ParamModule(second))
-#         expected = [first, second]
+class TestParameters(unittest.TestCase):
+    def test_when_called_then_collects_parameters_from_every_module_in_order(self):
+        # Arrange
+        first = torch.tensor([1.0])
+        second = torch.tensor([2.0])
+        sequential = Sequential(_ParamModule(first), ReLU(), _ParamModule(second))
+        expected = [first, second]
 
-#         # Act
-#         actual = sequential.parameters()
+        # Act
+        actual = sequential.parameters()
 
-#         # Assert
-#         self.assertEqual(actual, expected)
+        # Assert
+        self.assertEqual(actual, expected)
 
-#     def test_when_no_module_owns_parameters_then_returns_empty_list(self):
-#         # Arrange
-#         sequential = Sequential(ReLU(), Tanh())
-#         expected = []
+    def test_when_no_module_owns_parameters_then_returns_empty_list(self):
+        # Arrange
+        sequential = Sequential(ReLU(), Tanh())
+        expected = []
 
-#         # Act
-#         actual = sequential.parameters()
+        # Act
+        actual = sequential.parameters()
 
-#         # Assert
-#         self.assertEqual(actual, expected)
+        # Assert
+        self.assertEqual(actual, expected)
 
 
 class TestTrain(unittest.TestCase):

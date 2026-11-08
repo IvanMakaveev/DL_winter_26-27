@@ -31,3 +31,6 @@ class Sequential(Module):
         for module in self.modules:
             module.eval()
         return super().eval()
+
+    def parameters(self) -> list[torch.Tensor]:
+        return [param for module in self.modules for param in module.parameters()]
