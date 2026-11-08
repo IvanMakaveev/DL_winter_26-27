@@ -1,8 +1,8 @@
-from dl_lib.perceptron.datasets import and_dataset, or_dataset
-from dl_lib.perceptron.functional import initialize_weights
-from dl_lib.perceptron.training import train
-from dl_lib.perceptron.perceptron import Perceptron
 from dl_lib.losses.functional import mse
+from dl_lib.perceptron.datasets import and_dataset, or_dataset
+from dl_lib.perceptron.perceptron import Perceptron
+from dl_lib.perceptron.training import train
+
 
 def main() -> int:
     and_dataset_data = and_dataset()
@@ -10,7 +10,14 @@ def main() -> int:
 
     print(f"AND gate - initial weights: {and_model.weights}")
 
-    and_history = train(and_model, and_dataset_data, learning_rate=0.1, epochs=100000, loss=mse, log_every=10000)
+    and_history = train(
+        and_model,
+        and_dataset_data,
+        learning_rate=0.1,
+        epochs=100000,
+        loss=mse,
+        log_every=10000,
+    )
     for epoch, loss in and_history:
         print(f"  epoch {epoch:6d}: loss={loss:.6f}")
     print(f"AND gate - final weights: {and_model.weights}")
@@ -22,7 +29,14 @@ def main() -> int:
     or_dataset_data = or_dataset()
     or_model = Perceptron(2, low=-1.0, high=1.0, use_bias=False, seed=42)
     print(f"OR gate - initial weights: {or_model.weights}")
-    or_history = train(or_model, or_dataset_data, learning_rate=0.1, epochs=100000, loss=mse, log_every=10000)
+    or_history = train(
+        or_model,
+        or_dataset_data,
+        learning_rate=0.1,
+        epochs=100000,
+        loss=mse,
+        log_every=10000,
+    )
     for epoch, loss in or_history:
         print(f"  epoch {epoch:6d}: loss={loss:.6f}")
     print(f"OR gate - final weights: {or_model.weights}")

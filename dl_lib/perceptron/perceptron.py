@@ -16,11 +16,12 @@ class Perceptron:
         activation: Callable[..., Any] | None = None,
         seed: int | None = None,
     ):
-        self.weights = functional.initialize_weights(low, high, input_size, seed)
         self.use_bias = use_bias
-        self.bias = (
-            functional.initialize_weights(low, high, 1, seed)[0] if use_bias else 0.0
+        generated_weights = functional.initialize_weights(
+            low, high, input_size + (1 if use_bias else 0), seed
         )
+        self.weights = generated_weights[:-1] if use_bias else generated_weights
+        self.bias = generated_weights[-1] if use_bias else 0.0
         self.activation = activation
 
     def forward(self, inputs: np.ndarray) -> float:
