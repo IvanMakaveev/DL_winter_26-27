@@ -68,6 +68,7 @@ def analytical_gradient(
     bias: float = 0.0,
     activation: Callable[..., Any] | None = None,
     activation_derivative: Callable[..., Any] | None = None,
+    loss="mse",
 ) -> tuple[np.ndarray, float]:
     inputs = [np.atleast_1d(x) for x, _ in dataset]
     targets = np.array([y for _, y in dataset])
@@ -78,6 +79,11 @@ def analytical_gradient(
         else logits
     )
     errors = predicted - targets
+
+    if loss == "bce":
+        weight_grad = np.dot(errors, inputs) / len(dataset)
+        bias_grad = np.sum(errors) / len(dataset)
+        return weight_grad, bias_grad
 
     if activation_derivative:
         errors *= activation_derivative(logits)

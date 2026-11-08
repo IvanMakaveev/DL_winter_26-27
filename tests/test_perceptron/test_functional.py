@@ -269,53 +269,53 @@ class TestAnalyticalGradient(unittest.TestCase):
         )
         self.assertAlmostEqual(actual_bias_gradient, expected_bias_gradient, places=4)
 
-    # def test_when_bce_loss_then_matches_the_numerical_gradient_without_activation_derivative(
-    #     self,
-    # ):
-    #     # Arrange
-    #     dataset = [
-    #         (np.array([0.0, 0.0]), 0.0),
-    #         (np.array([0.0, 1.0]), 0.0),
-    #         (np.array([1.0, 0.0]), 0.0),
-    #         (np.array([1.0, 1.0]), 1.0),
-    #     ]
-    #     targets = np.array([y for _, y in dataset])
-    #     weights = np.array([0.5, -0.1])
-    #     bias = 0.7
-    #     activation = lambda z: 1.0 / (1.0 + np.exp(-z))
+    def test_when_bce_loss_then_matches_the_numerical_gradient_without_activation_derivative(
+        self,
+    ):
+        # Arrange
+        dataset = [
+            (np.array([0.0, 0.0]), 0.0),
+            (np.array([0.0, 1.0]), 0.0),
+            (np.array([1.0, 0.0]), 0.0),
+            (np.array([1.0, 1.0]), 1.0),
+        ]
+        targets = np.array([y for _, y in dataset])
+        weights = np.array([0.5, -0.1])
+        bias = 0.7
+        activation = lambda z: 1.0 / (1.0 + np.exp(-z))
 
-    #     weights_loss = lambda w: functional.dataset_loss(
-    #         dataset,
-    #         targets,
-    #         w,
-    #         bias,
-    #         activation=activation,
-    #         loss=losses_functional.binary_cross_entropy,
-    #     )
-    #     bias_loss = lambda b: functional.dataset_loss_given_bias(
-    #         dataset,
-    #         targets,
-    #         weights,
-    #         activation,
-    #         np.array([b]),
-    #         loss=losses_functional.binary_cross_entropy,
-    #     )
-    #     expected_weight_gradient = functional.numerical_gradient(weights_loss, weights)
-    #     expected_bias_gradient = functional.numerical_gradient(
-    #         bias_loss, np.array([bias])
-    #     )[0]
+        weights_loss = lambda w: functional.dataset_loss(
+            dataset,
+            targets,
+            w,
+            bias,
+            activation=activation,
+            loss=losses_functional.binary_cross_entropy,
+        )
+        bias_loss = lambda b: functional.dataset_loss_given_bias(
+            dataset,
+            targets,
+            weights,
+            activation,
+            np.array([b]),
+            loss=losses_functional.binary_cross_entropy,
+        )
+        expected_weight_gradient = functional.numerical_gradient(weights_loss, weights)
+        expected_bias_gradient = functional.numerical_gradient(
+            bias_loss, np.array([bias])
+        )[0]
 
-    #     # Act
-    #     actual_weight_gradient, actual_bias_gradient = functional.analytical_gradient(
-    #         dataset,
-    #         weights,
-    #         bias,
-    #         activation=activation,
-    #         loss="bce",
-    #     )
+        # Act
+        actual_weight_gradient, actual_bias_gradient = functional.analytical_gradient(
+            dataset,
+            weights,
+            bias,
+            activation=activation,
+            loss="bce",
+        )
 
-    #     # Assert
-    #     np.testing.assert_allclose(
-    #         actual_weight_gradient, expected_weight_gradient, atol=1e-4
-    #     )
-    #     self.assertAlmostEqual(actual_bias_gradient, expected_bias_gradient, places=4)
+        # Assert
+        np.testing.assert_allclose(
+            actual_weight_gradient, expected_weight_gradient, atol=1e-4
+        )
+        self.assertAlmostEqual(actual_bias_gradient, expected_bias_gradient, places=4)
