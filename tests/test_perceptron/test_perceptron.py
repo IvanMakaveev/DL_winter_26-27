@@ -1,9 +1,10 @@
 import unittest
+from functools import partial
 
 import numpy as np
 
 from dl_lib.activations import functional as activations_functional
-from dl_lib.perceptron import functional
+from dl_lib.perceptron import datasets, functional
 from dl_lib.perceptron.perceptron import Perceptron
 
 
@@ -86,77 +87,75 @@ class TestForward(unittest.TestCase):
         self.assertLess(actual, 1.0)
 
 
-#
-#
-# class TestTraining(unittest.TestCase):
-#     def test_when_a_single_gradient_descent_step_is_applied_then_loss_decreases(self):
-#         # Arrange
-#         model = Perceptron(2, low=-1.0, high=1.0, use_bias=True, seed=42)
-#         dataset = datasets.and_dataset()
-#         targets = np.array([y for _, y in dataset])
-#         learning_rate = 0.1
-#         weights_loss = partial(
-#             functional.dataset_loss,
-#             dataset,
-#             targets,
-#             bias=model.bias,
-#             activation=model.activation,
-#         )
-#
-#         initial_loss = weights_loss(model.weights)
-#
-#         # Act
-#         weight_gradient = functional.numerical_gradient(weights_loss, model.weights)
-#         model.weights = functional.gradient_descent_step(
-#             model.weights, weight_gradient, learning_rate
-#         )
-#         final_loss = weights_loss(model.weights)
-#
-#         # Assert
-#         self.assertLess(final_loss, initial_loss)
-#
-#     def test_when_trained_for_a_few_steps_then_loss_decreases(self):
-#         # Arrange
-#         model = Perceptron(2, low=-1.0, high=1.0, use_bias=True, seed=42)
-#         dataset = datasets.and_dataset()
-#         targets = np.array([y for _, y in dataset])
-#         learning_rate = 0.1
-#         epochs = 50
-#
-#         initial_loss = functional.dataset_loss(
-#             dataset, targets, model.weights, model.bias, model.activation
-#         )
-#
-#         # Act
-#         for _ in range(epochs):
-#             weights_loss = partial(
-#                 functional.dataset_loss,
-#                 dataset,
-#                 targets,
-#                 bias=model.bias,
-#                 activation=model.activation,
-#             )
-#             weight_gradient = functional.numerical_gradient(weights_loss, model.weights)
-#             model.weights = functional.gradient_descent_step(
-#                 model.weights, weight_gradient, learning_rate
-#             )
-#
-#             bias_loss = partial(
-#                 functional.dataset_loss_given_bias,
-#                 dataset,
-#                 targets,
-#                 model.weights,
-#                 model.activation,
-#             )
-#             bias_array = np.array([model.bias])
-#             bias_gradient = functional.numerical_gradient(bias_loss, bias_array)
-#             model.bias = functional.gradient_descent_step(
-#                 bias_array, bias_gradient, learning_rate
-#             )[0]
-#
-#         final_loss = functional.dataset_loss(
-#             dataset, targets, model.weights, model.bias, model.activation
-#         )
-#
-#         # Assert
-#         self.assertLess(final_loss, initial_loss)
+class TestTraining(unittest.TestCase):
+    def test_when_a_single_gradient_descent_step_is_applied_then_loss_decreases(self):
+        # Arrange
+        model = Perceptron(2, low=-1.0, high=1.0, use_bias=True, seed=42)
+        dataset = datasets.and_dataset()
+        targets = np.array([y for _, y in dataset])
+        learning_rate = 0.1
+        weights_loss = partial(
+            functional.dataset_loss,
+            dataset,
+            targets,
+            bias=model.bias,
+            activation=model.activation,
+        )
+
+        initial_loss = weights_loss(model.weights)
+
+        # Act
+        weight_gradient = functional.numerical_gradient(weights_loss, model.weights)
+        model.weights = functional.gradient_descent_step(
+            model.weights, weight_gradient, learning_rate
+        )
+        final_loss = weights_loss(model.weights)
+
+        # Assert
+        self.assertLess(final_loss, initial_loss)
+
+    def test_when_trained_for_a_few_steps_then_loss_decreases(self):
+        # Arrange
+        model = Perceptron(2, low=-1.0, high=1.0, use_bias=True, seed=42)
+        dataset = datasets.and_dataset()
+        targets = np.array([y for _, y in dataset])
+        learning_rate = 0.1
+        epochs = 50
+
+        initial_loss = functional.dataset_loss(
+            dataset, targets, model.weights, model.bias, model.activation
+        )
+
+        # Act
+        for _ in range(epochs):
+            weights_loss = partial(
+                functional.dataset_loss,
+                dataset,
+                targets,
+                bias=model.bias,
+                activation=model.activation,
+            )
+            weight_gradient = functional.numerical_gradient(weights_loss, model.weights)
+            model.weights = functional.gradient_descent_step(
+                model.weights, weight_gradient, learning_rate
+            )
+
+            bias_loss = partial(
+                functional.dataset_loss_given_bias,
+                dataset,
+                targets,
+                model.weights,
+                model.activation,
+            )
+            bias_array = np.array([model.bias])
+            bias_gradient = functional.numerical_gradient(bias_loss, bias_array)
+            model.bias = functional.gradient_descent_step(
+                bias_array, bias_gradient, learning_rate
+            )[0]
+
+        final_loss = functional.dataset_loss(
+            dataset, targets, model.weights, model.bias, model.activation
+        )
+
+        # Assert
+        self.assertLess(final_loss, initial_loss)

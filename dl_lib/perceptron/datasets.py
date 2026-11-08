@@ -21,3 +21,21 @@ def or_dataset() -> list[tuple[np.ndarray, float]]:
         (np.array([1.0, 0.0]), 1.0),
         (np.array([1.0, 1.0]), 1.0),
     ]
+
+
+def nand_dataset() -> list[tuple[np.ndarray, float]]:
+    return [
+        (np.array([0.0, 0.0]), 1.0),
+        (np.array([0.0, 1.0]), 1.0),
+        (np.array([1.0, 0.0]), 1.0),
+        (np.array([1.0, 1.0]), 0.0),
+    ]
+
+
+def xor_dataset() -> list[tuple[np.ndarray, float]]:
+    return [
+        (np.array([0.0, 0.0]), 0.0),
+        (np.array([0.0, 1.0]), 1.0),
+        (np.array([1.0, 0.0]), 1.0),
+        (np.array([1.0, 1.0]), 0.0),
+    ]

@@ -50,33 +50,33 @@ class TestOrDataset(unittest.TestCase):
         )
 
 
-# class TestNandDataset(unittest.TestCase):
-#     def test_when_called_then_returns_the_nand_truth_table(self):
-#         # Arrange
-#         expected_targets = [1.0, 1.0, 1.0, 0.0]
+class TestNandDataset(unittest.TestCase):
+    def test_when_called_then_returns_the_nand_truth_table(self):
+        # Arrange
+        expected_targets = [1.0, 1.0, 1.0, 0.0]
 
-#         # Act
-#         actual = datasets.nand_dataset()
+        # Act
+        actual = datasets.nand_dataset()
 
-#         # Assert
-#         self.assertEqual([y for _, y in actual], expected_targets)
-#         np.testing.assert_array_equal(
-#             np.array([x for x, _ in actual]),
-#             np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]),
-#         )
+        # Assert
+        self.assertEqual([y for _, y in actual], expected_targets)
+        np.testing.assert_array_equal(
+            np.array([x for x, _ in actual]),
+            np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]),
+        )
 
 
-# class TestXorDataset(unittest.TestCase):
-#     def test_when_called_then_returns_the_xor_truth_table(self):
-#         # Arrange
-#         expected_targets = [0.0, 1.0, 1.0, 0.0]
+class TestXorDataset(unittest.TestCase):
+    def test_when_called_then_returns_the_xor_truth_table(self):
+        # Arrange
+        expected_targets = [0.0, 1.0, 1.0, 0.0]
 
-#         # Act
-#         actual = datasets.xor_dataset()
+        # Act
+        actual = datasets.xor_dataset()
 
-#         # Assert
-#         self.assertEqual([y for _, y in actual], expected_targets)
-#         np.testing.assert_array_equal(
-#             np.array([x for x, _ in actual]),
-#             np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]),
-#         )
+        # Assert
+        self.assertEqual([y for _, y in actual], expected_targets)
+        np.testing.assert_array_equal(
+            np.array([x for x, _ in actual]),
+            np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]]),
+        )
