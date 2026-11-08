@@ -18,3 +18,17 @@ class Neuron:
 
     def parameters(self) -> list:
         return [*self.w, self.b]
+
+
+class Layer:
+    def __init__(self, n_inputs: int, n_outputs: int, rng: random.Random = RNG_DEFAULT):
+        self.neurons = [Neuron(n_inputs, rng) for i in range(n_outputs)]
+
+    def __call__(self, x: list) -> list:
+        return [neuron(x) for neuron in self.neurons]
+
+    def parameters(self) -> list:
+        result = []
+        for neuron in self.neurons:
+            result.extend(neuron.parameters())
+        return result
