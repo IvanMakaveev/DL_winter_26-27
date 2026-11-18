@@ -152,6 +152,23 @@
     - [Clouds](#clouds)
       - [Task 14](#task-14-4)
       - [Task 15](#task-15-2)
+  - [Week 09 - VGG and ResNet](#week-09---vgg-and-resnet)
+    - [The VGG model](#the-vgg-model)
+      - [Task 01](#task-01-8)
+      - [Task 02](#task-02-8)
+      - [Task 03](#task-03-8)
+    - [Kaiming and Xavier initialization strategies](#kaiming-and-xavier-initialization-strategies)
+      - [Task 04](#task-04-8)
+      - [Task 05](#task-05-8)
+    - [Residual learning](#residual-learning)
+      - [Task 06](#task-06-8)
+      - [Task 07](#task-07-8)
+      - [Task 08](#task-08-8)
+      - [Task 09](#task-09-8)
+      - [Task 10](#task-10-7)
+      - [Task 11](#task-11-6)
+      - [Task 12](#task-12-6)
+      - [Task 13](#task-13-6)
 
 ## Week 01 - Introduction to NumPy, Matplotlib and PyTorch
 
@@ -8951,3 +8968,1252 @@ See `cheat_sheet.md`'s Week 08 `torchvision` section for `torchvision.models.ale
 - A model report file is created.
 - The report's comparison table is scored on the validation set, and the chosen best model's test-set score is reported separately.
 - The report's metric is macro-averaged, not plain accuracy.
+
+## Week 09 - VGG and ResNet
+
+Today we'll talk about two of the models that improved the results of AlexNet in the ImageNet competition: VGG and ResNet:
+
+![w09_intro.png](assets/w09_intro.png "w09_intro.png")
+
+AlexNet was introduced in 2012 and in many ways it set the overall structure that future architectures would share.
+
+<details>
+<summary>What were the major components of the structure?</summary>
+
+A feature extraction part, made up of several convolutional layers, and a feature interpretation part, made up of several linear layers.
+
+![w09_anarch.png](assets/w09_anarch.png "w09_anarch.png")
+
+We can represent this with modern day PyTorch as follows:
+
+```python
+class AlexNet(nn.Module):
+    def __init__(self, num_classes: int = 1000):
+        super().__init__()
+
+        self.features = nn.Sequential(
+            # (N, 3, 224, 224) -> (N, 96, 55, 55)
+            nn.Conv2d(3, 96, kernel_size=11, stride=4, padding=2),
+            nn.ReLU(),
+            # PyTorch divides alpha by size:
+            # we use 5e-4 / 5 to match the paper's coefficient of 1e-4
+            nn.LocalResponseNorm(size=5, alpha=5e-4, beta=0.75, k=2),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+
+            # (N, 96, 27, 27) -> (N, 256, 13, 13)
+            nn.Conv2d(96, 256, kernel_size=5, padding=2, groups=2),
+            nn.ReLU(),
+            nn.LocalResponseNorm(size=5, alpha=5e-4, beta=0.75, k=2),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+
+            # (N, 256, 13, 13) -> (N, 384, 13, 13)
+            nn.Conv2d(256, 384, kernel_size=3, padding=1),
+            nn.ReLU(),
+
+            # (N, 384, 13, 13) -> (N, 384, 13, 13)
+            nn.Conv2d(384, 384, kernel_size=3, padding=1, groups=2),
+            nn.ReLU(),
+
+            # (N, 384, 13, 13) -> (N, 256, 6, 6)
+            nn.Conv2d(384, 256, kernel_size=3, padding=1, groups=2),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(), nn.Linear(256 * 6 * 6, 4096), nn.ReLU(), nn.Dropout(p=0.5),
+            nn.Linear(4096, 4096), nn.ReLU(), nn.Dropout(p=0.5),
+            nn.Linear(4096, num_classes),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.classifier(self.features(x))
+```
+
+</details>
+
+It had some peculiarities though.
+
+<details>
+<summary>Which decisions of the authors did we note last time would be subject to change in newer architectures?</summary>
+
+- Large kernels in the beginning. Small kernels towards the end.
+  - NOTE: Padding 2 in the beginning. Padding 1 towards the end.
+- They use `LocalResponseNorm` to improve the error rate.
+  - NOTE: They apply the normalization after the activations.
+- The `MaxPool2d` is overlapping. Default stride is `kernel_size`.
+
+</details>
+
+Let's now open the paper that introduced VGG and see what changed!
+
+### The VGG model
+
+Simonyan and Zisserman, "Very Deep Convolutional Networks for Large-Scale Image Recognition" (VGG): <https://arxiv.org/abs/1409.1556>.
+
+<details>
+<summary>What is the main contribution of the authors?</summary>
+
+They created deep CNNs with a kernel 3x3 in each layer. This gave lower error rate.
+
+![w09_kernels.png](assets/w09_kernels.png "w09_kernels.png")
+
+</details>
+
+<details>
+<summary>Read the introduction - which other aspect(s) of the original architecture do they address?</summary>
+
+- The models from 2013 and 2014 had **smaller receptive fields**.
+- They also had a **smaller stride**.
+- VGG kept these changes and achieved better accuracy by **increasing the depth**.
+
+![w09_pintro.png](assets/w09_pintro.png "w09_pintro.png")
+
+</details>
+
+<details>
+<summary>Which section talks about the padding, convolution stride and max pool stride?</summary>
+
+2.1:
+
+![w09_hyperpa.png](assets/w09_hyperpa.png "w09_hyperpa.png")
+
+</details>
+
+<details>
+<summary>Which table shows the general architecture that the authors experimented with?</summary>
+
+![w09_t1.png](assets/w09_t1.png "w09_t1.png")
+
+</details>
+
+<details>
+<summary>What does the second column represent?</summary>
+
+It is a network with 11 weight layers that uses `LocalResponseNorm` after the first convolution.
+
+</details>
+
+<details>
+<summary>What do they conclude about this variant?</summary>
+
+It does not improve the performance:
+
+![w09_lrn.png](assets/w09_lrn.png "w09_lrn.png")
+
+Note that this was the opposite in the case of AlexNet (extract below taken from AlexNet paper):
+
+![w09_lrn_an.png](assets/w09_lrn_an.png "w09_lrn_an.png")
+
+</details>
+
+<details>
+<summary>What does this show us?</summary>
+
+This type of normalization is not scalable - while it may work on shallower models, it has no added value as parameter count grows.
+
+</details>
+
+<details>
+<summary>What is another peculiar (at first) change the authors made in the architecture?</summary>
+
+They used blocks of convolutions.
+
+</details>
+
+<details>
+<summary>What is the authors' argument for doing this?</summary>
+
+![w09_a1.png](assets/w09_a1.png "w09_a1.png")
+![w09_a2.png](assets/w09_a2.png "w09_a2.png")
+
+</details>
+
+<details>
+<summary>How can we visualize this?</summary>
+
+We can look at the simpler 1D case:
+
+![w09_clviz.png](assets/w09_clviz.png "w09_clviz.png")
+
+</details>
+
+<details>
+<summary>How do the authors explain the added value of this?</summary>
+
+- We get fewer parameters for the same receptive field, because parameter count grows with the square of the kernel size.
+- We get a more complex function as we have multiple non-linearities.
+
+![w09_benefits.png](assets/w09_benefits.png "w09_benefits.png")
+
+</details>
+
+#### Task 01
+
+**Description:**
+
+Define `compute_receptive_field` in `dl_lib/vision/functional.py`.
+
+It takes `layers`, a list of `(kernel_size, stride)` tuples ordered from the input side of a network to the output side, and returns the receptive field: the width (equivalently height, since every kernel here is square) of the patch of input pixels that a single output unit can "see", after passing through every one of those layers.
+
+Create a script that compares one 7x7 convolution against three stacked 3x3 convolutions (same input/output channel count): the receptive field of each, the parameter count of each, and the output spatial shape each produces on the same random input.
+
+**Acceptance criteria:**
+
+- A function for computing the receptive field of convolutional layers is defined.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 1
+```
+
+```text
+Receptive field of one 7x7 conv:        7
+Receptive field of three stacked 3x3s:   7
+Params in one 7x7 conv (64 -> 64 channels):      200,768
+Params in three stacked 3x3 convs (64 -> 64 channels): 110,784
+Stacking 3x3s uses 1.81x fewer parameters for the same receptive field.
+Output shape of the 7x7 conv:      (2, 64, 32, 32)
+Output shape of the stacked 3x3s:   (2, 64, 32, 32)
+```
+
+#### Task 02
+
+**Description:**
+
+Define the `Vgg` class. It provides:
+
+- `construction`: takes `num_classes`, an optional `cfg`, and `batch_norm` (default `False`, when `True` inserts a `BatchNorm2d` after every conv **and before** its `ReLU`). It builds:
+  - a VGG-shaped configuration:
+    - if `cfg` is not passed, it defaults to VGG-11 without local response normalization (we won't support this in our implementations);
+    - if `cfg` is passed, then it will hold either output channel count or the string `"M"`, representing a 2x2 stride-2 max pool.
+  - `self.features`: the conv stack, built from `cfg`;
+  - `self.classifier`: a small fully connected head, assuming a 64x64 input to match `load_cifar10_loaders`.
+- `forward`: runs the forward pass;
+- `parameters`, `train`, `eval`, `to`: delegate to `features` and `classifier`.
+
+Create a script that builds a default model, runs one real CIFAR-10 batch through, printing the receptive field after every max pool, then runs the classifier and reports the parameter counts.
+
+**Acceptance criteria:**
+
+- The class Vgg is defined.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_vgg.py`.
+
+**Example output:**
+
+> [!NOTE]
+> Depending on how you prepare your input you may have different labels and this is fine for this task.
+
+```bash
+python run.py -w 9 -t 2
+```
+
+```text
+Classes (10): ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+Batch shape: (4, 3, 64, 64), labels: [6, 0, 4, 1]
+After MaxPool2d    shape=(4, 64, 32, 32) receptive_field=4
+After MaxPool2d    shape=(4, 128, 16, 16) receptive_field=10
+After MaxPool2d    shape=(4, 256, 8, 8) receptive_field=30
+After MaxPool2d    shape=(4, 512, 4, 4) receptive_field=70
+After MaxPool2d    shape=(4, 512, 2, 2) receptive_field=150
+Logits shape: (4, 10)
+Params in features:   9,220,480
+Params in classifier: 3,158,026
+Total params:         12,378,506
+```
+
+<details>
+<summary>What can we say about the last receptive field?</summary>
+
+150 pixels exceeds the 64x64 input - every unit at that depth can see the entire image!
+
+</details>
+
+This paper was published a little over a month after the paper for batch normalization.
+
+It's quite possible that the authors did not know of its existence.
+
+Nevertheless let's experiment and see what they would have seen, had they employed it.
+
+#### Task 03
+
+**Description:**
+
+Create a script that:
+
+- builds two VGG models: one with batch normalization and one - without;
+- runs one real CIFAR-10 batch and a backward pass through each;
+- and measures the mean absolute gradient of every conv layer's weight, from the layer closest to the input to the layer closest to the output.
+
+Plot the gradient magnitude on a log scale against layer depth for both models to see the effects of this normalization.
+
+**Acceptance criteria:**
+
+- The effects of batch normalization are visualized.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 3
+```
+
+```text
+Layer depth vs mean |gradient| of the weights:
+  layer 1: plain=1.58e-06  batch_norm=2.82e-02
+  layer 2: plain=9.11e-07  batch_norm=1.36e-02
+  layer 3: plain=7.23e-07  batch_norm=8.01e-03
+  layer 4: plain=6.59e-07  batch_norm=6.62e-03
+  layer 5: plain=5.87e-07  batch_norm=4.07e-03
+  layer 6: plain=8.20e-07  batch_norm=3.37e-03
+  layer 7: plain=1.30e-06  batch_norm=3.05e-03
+  layer 8: plain=3.10e-06  batch_norm=2.57e-03
+```
+
+![w09 task03 vanishing gradients](assets/w09_task03_vanishing_gradients.png "w09 task03 vanishing gradients")
+
+### Kaiming and Xavier initialization strategies
+
+Let's say we have this code:
+
+```python
+import torch
+import matplotlib.pyplot as plt
+x = torch.randn(1000, 10) # 1000 samples, each with 10 features
+w = torch.randn(10, 200) # turn each of the 10 features into 200
+y = x @ w
+print(x.mean(), x.std())
+print(y.mean(), y.std())
+plt.figure(figsize=(20, 5))
+plt.subplot(121)
+plt.hist(x.view(-1).tolist(), 50, density=True)
+plt.subplot(122)
+plt.hist(y.view(-1).tolist(), 50, density=True)
+plt.tight_layout()
+plt.show()
+```
+
+<details>
+<summary>What numbers do you expect to see on the first line of the output?</summary>
+
+$\sim0$ and $\sim1$
+
+</details>
+
+<details>
+<summary>Would the numbers on the second line of the output be larger or smaller than the ones on the first line?</summary>
+
+- The mean could change slightly (can go either direction, but by a small amount).
+- The variance will be much larger.
+
+```console
+tensor(0.0023) tensor(0.9991)
+tensor(0.0024) tensor(3.1895)
+```
+
+![w09_prod1.png](assets/w09_prod1.png "w09_prod1.png")
+
+</details>
+
+Now, let's say we have this code:
+
+```python
+import torch
+import matplotlib.pyplot as plt
+k = 5
+x = torch.randn(1000, 10)
+w = torch.randn(10, 200) * k
+y = x @ w
+print(x.mean(), x.std())
+print(y.mean(), y.std())
+plt.figure(figsize=(20, 5))
+plt.subplot(121)
+plt.hist(x.view(-1).tolist(), 50, density=True)
+plt.subplot(122)
+plt.hist(y.view(-1).tolist(), 50, density=True)
+plt.tight_layout()
+plt.show()
+```
+
+<details>
+<summary>What would we get on the second line now compared to the second line before?</summary>
+
+The variance again will be much larger.
+
+```console
+tensor(-0.0056) tensor(1.0016)
+tensor(0.0393) tensor(15.6916)
+```
+
+![w09_prod2.png](assets/w09_prod2.png "w09_prod2.png")
+
+</details>
+
+Now, we let's say we have this code:
+
+```python
+import torch
+import matplotlib.pyplot as plt
+k = 0.05
+x = torch.randn(1000, 10)
+w = torch.randn(10, 200) * k
+y = x @ w
+print(x.mean(), x.std())
+print(y.mean(), y.std())
+plt.figure(figsize=(20, 5))
+plt.subplot(121)
+plt.hist(x.view(-1).tolist(), 50, density=True)
+plt.subplot(122)
+plt.hist(y.view(-1).tolist(), 50, density=True)
+plt.tight_layout()
+plt.show()
+```
+
+<details>
+<summary>What would we get on the second line now compared to the second line before?</summary>
+
+The variance will be much smaller.
+
+```console
+tensor(-0.0071) tensor(0.9955)
+tensor(-0.0001) tensor(0.1610)
+```
+
+![w09_prod3.png](assets/w09_prod3.png "w09_prod3.png")
+
+</details>
+
+<details>
+<summary>Ok, so what is the problem that we have to solve?</summary>
+
+What is the value of $k$ that preserves a standard deviation of $1$?
+
+</details>
+
+The paper that gives an answer to this is the ["Kaiming init" paper](https://arxiv.org/abs/1502.01852).
+
+<details>
+<summary>Open it and find the formula the authors suggest using for obtaining the value of "k".</summary>
+
+$$k = \sqrt{2/n_l}$$
+
+![w09_kaiming_init_paper.png](assets/w09_kaiming_init_paper.png "w09_kaiming_init_paper.png")
+
+Implemented in PyTorch as [nn.init.kaiming_normal_](https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.kaiming_normal_).
+
+- The authors of the paper studied the activation `ReLU`, so the above formula is only for it.
+- Depending on the activation function we would have slightly different numbers.
+  - If the activation function is a *squashing* one (i.e. has flat tails), we have positive *gain*:
+    - the possible gains can be found in [PyTorch's documentation](https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.calculate_gain)
+      - in `ReLU` was have `gain=2`, because we discard half of the population
+      - in our current example we don't use any activation, so we can regard it as an identity
+    - `mode='fan_in'` means that we use the number of incoming neurons.
+
+</details>
+
+<details>
+<summary>So what is the correct answer for our case?</summary>
+
+1 divided by the square root of the number of input features - in our case $10$.
+
+```python
+import torch
+import matplotlib.pyplot as plt
+x = torch.randn(1000, 10)
+w = torch.randn(10, 200) / 10**0.5
+y = x @ w
+print(x.mean(), x.std())
+print(y.mean(), y.std())
+plt.figure(figsize=(20, 5))
+plt.subplot(121)
+plt.hist(x.view(-1).tolist(), 50, density=True)
+plt.subplot(122)
+plt.hist(y.view(-1).tolist(), 50, density=True)
+plt.tight_layout()
+plt.show()
+```
+
+```console
+tensor(0.0005) tensor(0.9872)
+tensor(0.0005) tensor(1.0064)
+```
+
+![w09_prod4.png](assets/w09_prod4.png "w09_prod4.png")
+
+</details>
+
+#### Task 04
+
+**Description:**
+
+Define four functions in `dl_lib/nn/init.py`:
+
+- `calculate_gain`: looks up the recommended scaling factor for a given nonlinearity (for example `"relu"`, or `"leaky_relu"` with its negative slope) using [`torch.nn.init.calculate_gain`](https://docs.pytorch.org/docs/stable/nn.init.html#torch.nn.init.calculate_gain).
+- `_calculate_fan_in_and_fan_out`: reads a weight tensor's shape and returns how many inputs (fan-in) and outputs (fan-out) each unit connects to.
+- `kaiming_normal_`: fills a weight tensor in place from a normal distribution scaled for ReLU-family nonlinearities.
+  - Takes the tensor to fill, the nonlinearity's negative slope (defaulting to `0`), whether to scale by fan-in or fan-out (defaulting to `"fan_in"`), and which nonlinearity follows (defaulting to `"leaky_relu"`).
+  - Returns the same tensor.
+- `kaiming_uniform_`: the same idea as `kaiming_normal_`, but draws from a uniform distribution.
+
+Create a script that builds two VGG models without batch normalization: one left at PyTorch's own default `Conv2d` initialization, the other re-initialized with `kaiming_normal_(nonlinearity="relu")`. It measures the activation standard deviation after every ReLU, and the mean absolute gradient of every conv layer, on one real CIFAR-10 batch, and plots the gradient comparison on a log scale.
+
+**Acceptance criteria:**
+
+- A layer can be initialized using the Kaiming normal initialization logic.
+- A layer can be initialized using the Kaiming uniform initialization logic.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_init.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 4
+```
+
+```text
+Activation std per ReLU block:
+  block 1: default=1.64e-01  kaiming=3.17e-01
+Mean |gradient| per conv layer:
+  layer 1: default=2.12e-06  kaiming=1.08e-03
+```
+
+![w09 task04 kaiming init](assets/w09_task04_kaiming_init.png "w09 task04 kaiming init")
+
+Same story as BatchNorm, from a different angle: Kaiming init alone also lifts gradient magnitude just by starting the weights at the right scale.
+
+<details>
+<summary>What does PyTorch do differently from us?</summary>
+
+The default `Conv2d` initialization uses `kaiming_uniform_(weight, a=√5)`. Since `kaiming_uniform_` defaults to `nonlinearity="leaky_relu"`, it calculates the gain for a leaky ReLU with slope \(\sqrt{5}\), which is \(1/\sqrt{3}\).
+
+> [!NOTE]
+> The \(\sqrt{5}\) is an implementation choice of the PyTorch developers. It doesn't mean the network uses (or should use) a leaky ReLU with that slope.
+
+In our implementation since we are calling `kaiming_normal_(weight, nonlinearity="relu")` we use the ReLU gain \(\sqrt{2}\).
+
+</details>
+
+ReLU is not symmetric around $0$ (it kills every negative input), so Kaiming's formula accounts for that asymmetry with its gain factor.
+
+`tanh` is symmetric and bounded in `(-1, 1)`, so it needs a different gain, and that's what Xavier (also called Glorot) initialization provides - it also balances fan-in against fan-out, not just fan-in.
+
+Glorot and Bengio, "Understanding the difficulty of training deep feedforward neural networks": <https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>.
+
+<details>
+<summary>Which equation shows the distribution formula?</summary>
+
+![w09_xavier_init](assets/w09_xavier_init.png "w09_xavier_init")
+
+</details>
+
+#### Task 05
+
+**Description:**
+
+Define the Xavier initialization logic:
+
+- `xavier_normal_`: fills a weight tensor in place from a normal distribution scaled by both fan-in and fan-out, the formula Glorot and Bengio derived for symmetric, bounded nonlinearities like `tanh`. Takes the tensor to fill and a gain factor (use task 4's `calculate_gain` to get the right one for the nonlinearity that follows); returns the same tensor.
+- `xavier_uniform_`: the same idea as `xavier_normal_`, but draws from a uniform distribution instead of a normal one.
+
+Create a script that builds a 10-layer `Linear(256, 256) -> Tanh` stack three times, with identical starting random seed: once initialized with `kaiming_normal_` (ReLU gain - the "wrong" tool for a tanh network), once with `xavier_normal_(gain=calculate_gain("tanh"))`, once with a deliberately too-small fixed `std=0.01` normal init. It measures the activation standard deviation after every tanh layer and plots all three.
+
+**Acceptance criteria:**
+
+- A layer can be initialized using the Xavier normal initialization logic.
+- A layer can be initialized using the Xavier uniform initialization logic.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_init.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 5
+```
+
+```text
+Tanh gain used for Xavier: 1.667
+Activation std per tanh layer, a 10-layer Linear+Tanh stack:
+  layer  1: kaiming(relu-tuned)=0.721  xavier(tanh-tuned)=0.759  too_small(std=0.01)=1.56e-01
+  layer 10: kaiming(relu-tuned)=0.553  xavier(tanh-tuned)=0.647  too_small(std=0.01)=1.04e-08
+```
+
+![w09 task05 xavier init](assets/w09_task05_xavier_init.png "w09 task05 xavier init")
+
+The too-small init decays from std 0.16 to std 1e-8 over just 10 layers - by layer 10 the activations are indistinguishable from zero, and no gradient signal can flow back through them.
+
+Kaiming and Xavier both stay close to each other here and close to the tanh-saturation line; the ReLU-tuned gain is not catastrophically wrong for tanh in this case, just not the formally correct one.
+
+### Residual learning
+
+After VGG won the ImageNet competition in 2014 it started a trend.
+
+<details>
+<summary>What is the most obvious conclusion from seeing VGG winning?</summary>
+
+Deeper is better!
+
+We should aim to combine lots of individual features to build more and more expressive features.
+
+This meme started circulating the web:
+
+![w09_imagenet_meme.png](assets/w09_imagenet_meme.png "w09_imagenet_meme.png")
+
+</details>
+
+People started experimenting with it but a problem quickly arised. Let's open the ResNet paper and explore it:
+
+He, Zhang, Ren, and Sun, "Deep Residual Learning for Image Recognition" (ResNet): <https://arxiv.org/abs/1512.03385>.
+
+<details>
+<summary>Which figure shows the problem that arised as deeper nets were created?</summary>
+
+![w09_deepres.png](assets/w09_deepres.png "w09_deepres.png")
+
+</details>
+
+<details>
+<summary>We an interesting jump after the third iteration - what does it is show?</summary>
+
+This is learning rate decay! We'll come back to it later.
+
+</details>
+
+<details>
+<summary>Which figure shows how the "plain" networks look like?</summary>
+
+![w09_deepnet.png](assets/w09_deepnet.png "w09_deepnet.png")
+
+</details>
+
+<details>
+<summary>So what is the fundamental question we have to answer in order to reveal the solution?</summary>
+
+Why does the addition of more layers lead to worse performance?
+
+</details>
+
+<details>
+<summary>What is first reason might we think of for a network to stop learning?</summary>
+
+Maybe its gradients have vanished!
+
+</details>
+
+Ok - this would be easy then - we just add batch normalization and we're done.
+
+Right?
+
+Let's see:
+
+#### Task 06
+
+**Description:**
+
+Create a script that defines a function `build_plain_cnn(depth)`.
+
+It should return a plain CNN network as described in the ResNet paper (blocks of `Conv2d -> BatchNorm2d -> ReLU` repeated several times and ending with 2D adaptive average pool).
+
+Train a `depth=20` and a `depth=56` plain CNN, with same hyperparameters, on the same small CIFAR-10 subset, and plot the training loss per epoch for both.
+
+**Acceptance criteria:**
+
+- A visual confirmation that a deeper network is not guaranteed to reach a lower training loss.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 6
+```
+
+```text
+Plain CNN depth=20: 123,898 params
+  depth=20 epoch=5 train_loss=1.3417
+Plain CNN depth=56: 415,546 params
+  depth=56 epoch=5 train_loss=1.6570
+```
+
+![w09 task06 degradation](assets/w09_task06_degradation.png "w09 task06 degradation")
+
+<details>
+<summary>In which section(s) do the authors discuss this possiblity (vanishing gradients)?</summary>
+
+In the introduction:
+
+![w09_grad1](assets/w09_grad1.png "w09_grad1")
+
+and also in the experiments section:
+
+![w09_grad2](assets/w09_grad2.png "w09_grad2")
+
+</details>
+
+<details>
+<summary>What is another possiblity for lack of learning?</summary>
+
+Overfitting can also cause this!
+
+</details>
+
+<details>
+<summary>Where do the authors discuss the possibility?</summary>
+
+![w09_grad3](assets/w09_grad3.png "w09_grad3")
+
+</details>
+
+<details>
+<summary>What is our intution about this - if we compare the performance of a deep model to the performance of a shallow model what sign would we put between them?</summary>
+
+The deeper model be at least as good as the shallow one!
+
+`perf(deep_model) >= perf(shallow_model)`
+
+</details>
+
+<details>
+<summary>Ok - great - what would need to be true in order for the equality to hold?</summary>
+
+For every shallow model I can prove that there exists a deeper model that learns the same function **by having the extra layers learn *the identity function***!
+
+![w09_grad4](assets/w09_grad4.png "w09_grad4")
+
+</details>
+
+<details>
+<summary>So what is the next question we should ask?</summary>
+
+Why don't these extra layers learn the identity function?
+
+</details>
+
+<details>
+<summary>Hmmm - but in the context of convolutions what whould these identity functions look like?</summary>
+
+They would have to have $1$ in the center of the kernel and zeros everywhere else (assuming padding and stride are $1$ which is fine for this context).
+
+</details>
+
+<details>
+<summary>Given this what do you think - why don't they learn such filters?</summary>
+
+There is an inherent bias in the training process to have weights near zero:
+
+- both the Kaiming and Xavier initializations give values around $0$;
+- we often employ weight decay -> that leads to small weights;
+- we also often employ (L2) regularization -> that also leads to small weights.
+
+So it turns out that **learning the identity function is as difficult as learning any other function**! <- this is our core problem
+
+</details>
+
+<details>
+<summary>So which function is the easiest to learn according to this biased process?</summary>
+
+The zero function! Essentially, we are fighting the network to learn the zero function and it is fighting back trying to warp around its weights so that they work well while still being around zero.
+
+</details>
+
+<details>
+<summary>If that is the problem what effect should the solution have on this default function?</summary>
+
+It should make the default function be the identity function.
+
+</details>
+
+One way to do this is to learn to transform X via (multiple) layers to come out the same X.
+
+This can be done in theory - we can measure the loss at different stages throughout the forward pass and try to minimize it that way.
+
+<details>
+<summary>Which figure shows the approach used by the authors?</summary>
+
+Why don't we have X **stay X** and then **learn whatever we need change**?
+
+This problem is solved by having skip connections:
+
+![w09_insight](assets/w09_insight.png "w09_insight")
+
+</details>
+
+<details>
+<summary>What hypothesis does this point to?</summary>
+
+*It is good to not change much.*
+
+which is the same as:
+
+*We can still learn the zero function provided we have information about the initial state.*
+
+which is the same as:
+
+*The deeper you go the less, the more careful you should be when changing what the ones before you have learned.*
+
+</details>
+
+A residual block (like the one in figure 2) would then learn the following formula: `H(x) = F(x) + x`.
+
+<details>
+<summary>What is H(x)?</summary>
+
+The output of the block.
+
+</details>
+
+<details>
+<summary>What is F(x)?</summary>
+
+It represents the output of the layers in-between.
+
+</details>
+
+<details>
+<summary>What would we get if F(x) learns the zero function?</summary>
+
+***We get the identity function!***
+
+Thus, the default function of the network becomes the identity function.
+
+</details>
+
+Chaining such blocks produces a residual network.
+
+> [!NOTE]
+> While the authors do not happen to fall in this context, remember that residual connections are just as powerful as batch and layer normalizations and weight initialization strategies when it comes to vanishing gradients.
+
+#### Task 07
+
+**Description:**
+
+Define the class `ResidualBlock`. It provides:
+
+- `construction`: takes `in_channels`, `out_channels`, `stride`. Builds the path `conv3x3 -> BatchNorm -> ReLU -> conv3x3 -> BatchNorm`.
+  - If `stride != 1` or `in_channels != out_channels`, also builds a `shortcut_conv`/`shortcut_bn` 1x1 projection (otherwise both are `None` and the shortcut is the input unchanged).
+- `_layers`: a helper that lists the main path's sublayers in order, appending the shortcut's two sublayers when the block has one. `parameters`, `train`, `eval`, and `to` all loop over this list instead of repeating it.
+- `forward`: runs the forward pass.
+- `parameters`, `train`, `eval`, `to`: cover every sublayer, including the shortcut when present.
+
+Create a script that zeros out a `ResidualBlock`'s second conv and second BatchNorm's scale and shift (so `F(x)` starts at exactly 0), then compares the block's real output against what the same main path would output with no shortcut add at all.
+
+**Acceptance criteria:**
+
+- A residual block is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_resnet.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 7
+```
+
+```text
+With conv2/bn2 zeroed, F(x) starts at 0 for both paths:
+  mean |F(x) + x - x| (residual block output vs input): 0.000000
+  mean |H(x) - x|     (plain block output vs input):    0.098624
+```
+
+Without the shortcut, "do nothing" is not the natural resting state of a block of conv layers; with it, it is.
+
+Let's examine figure 3 again.
+
+<details>
+<summary>What are FLOPs?</summary>
+
+Floating-point operations. This is the count of numerical operations, such as additions and multiplications, needed to perform one forward pass.
+
+</details>
+
+<details>
+<summary>What can we notice in relation to that?</summary>
+
+Even though it may not look like it VGG has far more parameters than the residual network.
+
+</details>
+
+There are three design choices that allowed this:
+
+1. Strided convolutions instead of max pooling;
+2. 1x1 2D convolutions to regulate the number of channels;
+3. Global average pooling.
+
+<details>
+<summary>Which table shows the stride the authors use for their experiments?</summary>
+
+They use a stride of $2$.
+
+![w09_t2](assets/w09_t2.png "w09_t2")
+
+</details>
+
+<details>
+<summary>What benefit does this have over max pooling?</summary>
+
+The network learns the downsampling as it creates features.
+
+Here's the usual stride-1 convolution (with padding):
+
+![w09_s1_p](assets/w09_s1_p.gif "w09_s1_p")
+
+And here is how it looks like when we do stride-2:
+
+![w09_s2_p](assets/w09_s2_p.gif "w09_s2_p")
+
+You can see how we downsample and feature engineer at the same time.
+
+</details>
+
+<details>
+<summary>What is one limitation?</summary>
+
+More parameters, more FLOPs.
+
+</details>
+
+#### Task 08
+
+**Description:**
+
+Create a script that builds two small CNNs (layers apart from the ones below are not important - you can choose yourself) with the same channel plan and the same number of downsampling steps:
+
+- one downsamples with `MaxPool2d(2)`;
+- the other with a stride-2 `conv3x3-BatchNorm-ReLU` block instead.
+
+It reports parameter count and conv FLOPs for each, then trains both on the same small CIFAR-10 subset and reports final validation F1.
+
+**Acceptance criteria:**
+
+- The effect of stride-2 convolutions is shown.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 8
+```
+
+```text
+MaxPool downsampler:  5,466 params, 12,976,128 conv FLOPs per image
+Stride-2 downsampler: 17,082 params, 22,413,312 conv FLOPs per image
+Stride-2 uses 3.13x the params and 1.73x the FLOPs of MaxPool.
+MaxPool downsampler: final train_loss=1.9891 val_f1=0.230
+Stride-2 downsampler: final train_loss=1.9168 val_f1=0.283
+```
+
+Next is the 1x1 convolution in 2D.
+
+<details>
+<summary>What is its added value?</summary>
+
+We can control the number of filters while keeping the features intact:
+
+![w09_pointwise](assets/w09_pointwise.gif "w09_pointwise")
+
+> [!NOTE]
+> The above GIF shows two things: a depthwise convolution followed by a 1x1 convolution.
+
+</details>
+
+<details>
+<summary>In which figure do the authors show how they used this?</summary>
+
+You can save computation if you first project down to 64 channels, do the convolution and then project back again to 256:
+
+![w09_pointwise_use](assets/w09_pointwise_use.png "w09_pointwise_use")
+
+> [!NOTE]
+> Notice the depth here - they go for 101 and 152 layers!
+
+</details>
+
+#### Task 09
+
+**Description:**
+
+Create a script that compares a 1x1 convolution against a 3x3 convolution for the same channel-reduction job (64 input channels to 16 output channels on a 16x16 feature map): parameter count, FLOPs, and the effect each has on receptive field.
+
+**Acceptance criteria:**
+
+- The effects of a 1x1 convolution are shown.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 9
+```
+
+```text
+Changing 64 -> 16 channels on a 16x16 map:
+  1x1 conv: 1,040 params, 524,288 FLOPs
+  3x3 conv: 9,232 params, 4,718,592 FLOPs
+  3x3 uses 9x the params and 9x the FLOPs of 1x1.
+Receptive field after two 3x3 convs: 5
+  + one more 1x1 conv: 5 (unchanged, 1x1 only mixes channels)
+  + one more 3x3 conv: 7 (grows, 3x3 also looks at neighbors)
+```
+
+#### Task 10
+
+**Description:**
+
+Define the class `ResNet` in `dl_lib/vision/resnet.py`.
+
+It is composed from `self.stem` (a `torch.nn.Sequential` conv-BatchNorm-ReLU) and `self.stage1`/`self.stage2`/`self.stage3` (lists of `ResidualBlock`).
+
+It provides:
+
+- `construction`: takes `num_classes`, `depth` (must satisfy `(depth - 2) % 6 == 0`, raising `ValueError` otherwise, to match the paper's depth family of 20/32/44/56/...), and `global_avg_pool` (default `True`). Channel plan is `16 -> 16 -> 32 -> 64`, with the first block of stage 2 and stage 3 using `stride=2` to halve the spatial size.
+- `_make_stage` (a `staticmethod`): builds one stage's list of `ResidualBlock`s. Takes `in_channels`, `out_channels`, `num_blocks`, `stride`; only the first block uses the given `in_channels`/`stride` (so it is the one that projects), every later block is `out_channels -> out_channels` with `stride=1`.
+- `_stages`: a helper that returns `[stage1, stage2, stage3]` in order, so `forward`, `parameters`, `train`, `eval`, and `to` all loop over it instead of repeating the three stages by name.
+- `forward`: runs the forward pass.
+- `parameters`, `train`, `eval`, `to`: cover `stem`, every stage's blocks, and the classification head.
+
+Create a script that builds `ResNet` at `depth=20`, `32`, and `56`, each with `global_avg_pool=False` (so task 11's comparison has a well-defined "before" state), and reports total parameter count, the classification head's own parameter count, and the output logits shape for each.
+
+**Acceptance criteria:**
+
+- A residual network is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_resnet.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 10
+```
+
+```text
+Batch shape: (4, 3, 64, 64), labels: [6, 0, 4, 1]
+depth=20: logits=(4, 10) total_params=435,674 head_params=163,850
+depth=32: logits=(4, 10) total_params=630,106 head_params=163,850
+depth=56: logits=(4, 10) total_params=1,018,970 head_params=163,850
+```
+
+<details>
+<summary>How does this global average pooling work?</summary>
+
+It collapses a channel to a single number - its spatial average.
+
+Suppose a feature map has two channels, each \(2\times2\):
+
+\[
+\text{Channel 1}=
+\begin{bmatrix}
+1 & 3\\
+5 & 7
+\end{bmatrix}
+\qquad
+\text{Channel 2}=
+\begin{bmatrix}
+2 & 4\\
+6 & 8
+\end{bmatrix}
+\]
+
+Their averages are:
+
+\[
+\frac{1+3+5+7}{4}=4,\qquad
+\frac{2+4+6+8}{4}=5.
+\]
+
+The output is therefore **[4, 5]**—channels remain separate.
+
+In PyTorch:
+
+```python
+import torch
+from torch import nn
+
+x = torch.tensor([[
+    [[1., 3.], [5., 7.]],  # Channel 1
+    [[2., 4.], [6., 8.]],  # Channel 2
+]])  # Shape: (batch=1, channels=2, height=2, width=2)
+
+pooled = nn.AdaptiveAvgPool2d(1)(x)  # Shape: (1, 2, 1, 1)
+output = pooled.flatten(1)          # Shape: (1, 2)
+
+print(output)  # tensor([[4., 5.]])
+```
+
+In general, the shape changes from \((N,C,H,W)\) to \((N,C,1,1)\). There are **no learned parameters**.
+
+</details>
+
+<details>
+<summary>What is adaptive about it?</summary>
+
+You can specify an output size.
+
+For an \(8\times8\) input, `AdaptiveAvgPool2d((2, 2))` behaves like `AvgPool2d(kernel_size=4, stride=4)`: it splits each channel into four nonoverlapping \(4\times4\) regions and averages each one.
+
+For dimensions that don't divide evenly, the averaging regions can overlap. For example, a \(5\times5\) input produces a \(2\times2\) output using \(3\times3\) regions starting at row/column indices 0 and 2—equivalent in this case to `kernel_size=3, stride=2`.
+
+</details>
+
+#### Task 11
+
+**Description:**
+
+Create a script that builds `ResNet` at `depth=20`, `32`, and `56`, each once with `global_avg_pool=False` and once with `global_avg_pool=True` (`AdaptiveAvgPool2d(1) -> Flatten -> Linear`), and compares the head's own parameter count, the model's total parameter count, and the output logits shape between the two.
+
+**Acceptance criteria:**
+
+- The effect of global average pooling is shown.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 11
+```
+
+```text
+depth=20:
+  flatten+Linear head: head_params=163,850 total_params=435,674 logits=(4, 10)
+  global_avg_pool head: head_params=650 total_params=272,474 logits=(4, 10)
+  head params shrink 252.1x, total params shrink 1.60x
+depth=56:
+  flatten+Linear head: head_params=163,850 total_params=1,018,970 logits=(4, 10)
+  global_avg_pool head: head_params=650 total_params=855,770 logits=(4, 10)
+  head params shrink 252.1x, total params shrink 1.19x
+```
+
+<details>
+<summary>Where can we see the hyperparameters used by the authors?</summary>
+
+Section 3.4 Implementation:
+
+![w09_hyperparams](assets/w09_hyperparams.png "w09_hyperparams")
+
+</details>
+
+> [!NOTE]
+> They use (batch) normalization before the activation! This seems to be the prevaling way of doing it till today.
+
+<details>
+<summary>How do they change the learning rate?</summary>
+
+It starts from 0.1 and they divide it by 10 when the loss plateus.
+
+</details>
+
+<details>
+<summary>But how would we notice that the loss plateud during training?</summary>
+
+We compare the current loss with the previous $k$, for example $3$ and if there is no change, we decay the learning rate.
+
+</details>
+
+<details>
+<summary>What does figure 4 show?</summary>
+
+The trend from the beginning is reversed:
+
+![w09_trend](assets/w09_trend.png "w09_trend")
+
+</details>
+
+Let's check this for ourselves!
+
+#### Task 12
+
+**Description:**
+
+Create a script that trains three models of matched depth on the same small CIFAR-10 subset, same hyperparameters, same number of epochs:
+
+- `Vgg(batch_norm=True)`.
+- `build_plain_cnn(depth=56)`;
+- `ResNet(depth=56, global_avg_pool=True)`;
+
+It plots training loss and validation F1 per epoch.
+
+**Acceptance criteria:**
+
+- The effect of residual connections is visualized.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 12
+```
+
+```text
+VGG (batch_norm=True): 12,384,010 params
+  epoch=19 train_loss=1.6611 val_f1=0.255
+plain CNN (depth=56): 415,546 params
+  epoch=19 train_loss=1.5310 val_f1=0.266
+ResNet (depth=56): 855,770 params
+  epoch=19 train_loss=1.0996 val_f1=0.409
+Final val F1:
+  VGG (batch_norm=True): 0.255
+  plain CNN (depth=56): 0.266
+  ResNet (depth=56): 0.409
+```
+
+![w09 task12 payoff](assets/w09_task12_payoff.png "w09 task12 payoff")
+
+<details>
+<summary>What does table 2 show?</summary>
+
+- Row 1: if you introduce residual connections to the shallower network it is marginally better.
+- Row 2: but it gets better the deeper the network is.
+
+![w09_reseffect](assets/w09_reseffect.png "w09_reseffect")
+
+</details>
+
+<details>
+<summary>What two interesting things does table 6 show?</summary>
+
+![w09_reseffect2](assets/w09_reseffect2.png "w09_reseffect2")
+
+1. The 110-layer ResNet has less parameters than previous networks of only 19 layers!
+2. At 1,202 layers (which is enormous, btw) we get something seeminly peculiar: the validation error climbs up again!
+
+</details>
+
+The authors did this because they wanted to study depth - it's an overkill for the CIFAR-10 dataset.
+
+<details>
+<summary>Which figure interprets this?</summary>
+
+![w09_reseffect3](assets/w09_reseffect3.png "w09_reseffect3")
+
+</details>
+
+<details>
+<summary>What does it show?</summary>
+
+Now this is overfitting!
+
+Notice how the training error is basically 0, while the validator error is climbing.
+
+Also, notice how adding more layers does not result in higher training error - only the validation error moves upwards.
+
+</details>
+
+And like we said last time, this is actually also a win, because this is the first paper to put a higher bound and actually overfit the training CIFAR 10 dataset!
+
+Finally, let's go back to the authors' hypothesis - if each layers learns only a little bit then the change in the signal should be much less when compared to plain CNNs.
+
+<details>
+<summary>What could we graph to check our hypothesis?</summary>
+
+We can check the standard deviation of the pre-activations across layers:
+
+![w09_reseffect4](assets/w09_reseffect4.png "w09_reseffect4")
+
+You can see clearly how in the plain networks, there is much more change in the earlier layers compared to the residual networks.
+
+</details>
+
+#### Task 13
+
+**Description:**
+
+Try to improve the F1 score from the previous task.
+
+**Acceptance criteria:**
+
+- A model report file describing a better model is created.

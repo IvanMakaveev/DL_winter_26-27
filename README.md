@@ -25,7 +25,7 @@
 6. :white_check_mark: 04.11, Wednesday, 7:15 pm, 107
 7. :white_check_mark: 11.11, Wednesday, 7:15 pm, 107
 8. :white_check_mark: **13.11, Friday, 5:15 pm, 217**
-9. 18.11, Wednesday, 7:15 pm, 107
+9. :white_check_mark: 18.11, Wednesday, 7:15 pm, 107
 10. 02.12, Wednesday, 7:15 pm, 107
 11. 09.12, Wednesday, 7:15 pm, 107
 12. **12.12, Saturday, 10:15 am, 107**
@@ -50,7 +50,7 @@ Grading:
     - Behavior-driven development.
     - Presence of a model report file.
 - [ ] Midterm:
-  - Date: one of these dates: 16.12.
+  - Date: 16.12.
   - Room: ???.
   - Time: 6 pm, ~1 hour.
   - Content: theoretical questions and one-two tasks.
