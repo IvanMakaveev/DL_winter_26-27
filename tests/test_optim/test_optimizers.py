@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from dl_lib.optim.optimizers import SGD, AdaGrad, RMSprop
+from dl_lib.optim.optimizers import SGD, AdaGrad, Adam, RMSprop
 
 
 class TestSGDInit(unittest.TestCase):
@@ -225,90 +225,90 @@ class TestRMSpropStep(unittest.TestCase):
         self.assertTrue(torch.allclose(p, expected, atol=1e-4))
 
 
-# class TestAdamInit(unittest.TestCase):
-#     def test_when_optional_args_not_given_then_default_values_are_used(self):
-#         # Arrange
-#         p = torch.tensor([1.0])
-#         expected_beta1 = 0.9
-#         expected_beta2 = 0.999
-#         expected_eps = 1e-8
-#         expected_weight_decay = 0.0
+class TestAdamInit(unittest.TestCase):
+    def test_when_optional_args_not_given_then_default_values_are_used(self):
+        # Arrange
+        p = torch.tensor([1.0])
+        expected_beta1 = 0.9
+        expected_beta2 = 0.999
+        expected_eps = 1e-8
+        expected_weight_decay = 0.0
 
-#         # Act
-#         adam = Adam([p], lr=0.001)
+        # Act
+        adam = Adam([p], lr=0.001)
 
-#         # Assert
-#         self.assertEqual(adam.beta1, expected_beta1)
-#         self.assertEqual(adam.beta2, expected_beta2)
-#         self.assertEqual(adam.eps, expected_eps)
-#         self.assertEqual(adam.weight_decay, expected_weight_decay)
+        # Assert
+        self.assertEqual(adam.beta1, expected_beta1)
+        self.assertEqual(adam.beta2, expected_beta2)
+        self.assertEqual(adam.eps, expected_eps)
+        self.assertEqual(adam.weight_decay, expected_weight_decay)
 
-#     def test_when_constructed_then_moments_are_zero_and_step_count_is_zero(self):
-#         # Arrange
-#         p = torch.tensor([1.0, 2.0])
-#         expected_moment = torch.zeros_like(p)
-#         expected_t = 0
+    def test_when_constructed_then_moments_are_zero_and_step_count_is_zero(self):
+        # Arrange
+        p = torch.tensor([1.0, 2.0])
+        expected_moment = torch.zeros_like(p)
+        expected_t = 0
 
-#         # Act
-#         adam = Adam([p], lr=0.001)
+        # Act
+        adam = Adam([p], lr=0.001)
 
-#         # Assert
-#         self.assertTrue(torch.equal(adam.m[0], expected_moment))
-#         self.assertTrue(torch.equal(adam.v[0], expected_moment))
-#         self.assertEqual(adam.t, expected_t)
+        # Assert
+        self.assertTrue(torch.equal(adam.m[0], expected_moment))
+        self.assertTrue(torch.equal(adam.v[0], expected_moment))
+        self.assertEqual(adam.t, expected_t)
 
 
-# class TestAdamStep(unittest.TestCase):
-#     def test_when_called_once_then_matches_the_bias_corrected_update_at_t_equals_one(
-#         self,
-#     ):
-#         # Arrange
-#         p = torch.tensor([1.0], requires_grad=True)
-#         p.grad = torch.tensor([0.1])
-#         adam = Adam([p], lr=0.001)
-#         expected = torch.tensor([0.999])
+class TestAdamStep(unittest.TestCase):
+    def test_when_called_once_then_matches_the_bias_corrected_update_at_t_equals_one(
+        self,
+    ):
+        # Arrange
+        p = torch.tensor([1.0], requires_grad=True)
+        p.grad = torch.tensor([0.1])
+        adam = Adam([p], lr=0.001)
+        expected = torch.tensor([0.999])
 
-#         # Act
-#         adam.step()
+        # Act
+        adam.step()
 
-#         # Assert
-#         self.assertTrue(torch.allclose(p, expected, atol=1e-4))
+        # Assert
+        self.assertTrue(torch.allclose(p, expected, atol=1e-4))
 
-#     def test_when_called_twice_then_matches_the_bias_corrected_update_at_t_equals_two(
-#         self,
-#     ):
-#         # Arrange
-#         p = torch.tensor([1.0], requires_grad=True)
-#         adam = Adam([p], lr=0.001)
-#         expected = torch.tensor([0.998])
+    def test_when_called_twice_then_matches_the_bias_corrected_update_at_t_equals_two(
+        self,
+    ):
+        # Arrange
+        p = torch.tensor([1.0], requires_grad=True)
+        adam = Adam([p], lr=0.001)
+        expected = torch.tensor([0.998])
 
-#         # Act
-#         p.grad = torch.tensor([0.1])
-#         adam.step()
-#         p.grad = torch.tensor([0.1])
-#         adam.step()
+        # Act
+        p.grad = torch.tensor([0.1])
+        adam.step()
+        p.grad = torch.tensor([0.1])
+        adam.step()
 
-#         # Assert
-#         self.assertTrue(torch.allclose(p, expected, atol=1e-4))
+        # Assert
+        self.assertTrue(torch.allclose(p, expected, atol=1e-4))
 
-#     def test_when_weight_decay_given_then_moments_are_computed_from_grad_plus_decay_times_p(
-#         self,
-#     ):
-#         # Arrange
-#         p = torch.tensor([1.0], requires_grad=True)
-#         p.grad = torch.tensor([0.1])
-#         weight_decay = 0.1
-#         adam = Adam([p], lr=0.001, weight_decay=weight_decay)
-#         effective_grad = p.grad + weight_decay * p
-#         expected_m = (1 - adam.beta1) * effective_grad
-#         expected_v = (1 - adam.beta2) * effective_grad**2
+    def test_when_weight_decay_given_then_moments_are_computed_from_grad_plus_decay_times_p(
+        self,
+    ):
+        # Arrange
+        p = torch.tensor([1.0], requires_grad=True)
+        p.grad = torch.tensor([0.1])
+        weight_decay = 0.1
+        adam = Adam([p], lr=0.001, weight_decay=weight_decay)
+        effective_grad = p.grad + weight_decay * p
+        expected_m = (1 - adam.beta1) * effective_grad
+        expected_v = (1 - adam.beta2) * effective_grad**2
 
-#         # Act
-#         adam.step()
+        # Act
+        adam.step()
 
-#         # Assert
-#         self.assertTrue(torch.allclose(adam.m[0], expected_m))
-#         self.assertTrue(torch.allclose(adam.v[0], expected_v))
+        # Assert
+        self.assertTrue(torch.allclose(adam.m[0], expected_m))
+        self.assertTrue(torch.allclose(adam.v[0], expected_v))
 
 
 # class TestAdamWStep(unittest.TestCase):
