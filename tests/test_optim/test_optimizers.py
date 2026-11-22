@@ -1,116 +1,116 @@
-# import unittest
+import unittest
 
-# import torch
+import torch
 
-# from dl_lib.optim.optimizers import SGD, AdaGrad, Adam, AdamW, RMSprop
-
-
-# class TestSGDInit(unittest.TestCase):
-#     def test_when_momentum_not_given_then_defaults_to_zero(self):
-#         # Arrange
-#         p = torch.tensor([1.0])
-#         expected = 0.0
-
-#         # Act
-#         actual = SGD([p], lr=0.1).momentum
-
-#         # Assert
-#         self.assertEqual(actual, expected)
-
-#     def test_when_constructed_then_velocities_are_zero_for_every_parameter(self):
-#         # Arrange
-#         p1 = torch.tensor([1.0, 2.0])
-#         p2 = torch.tensor([3.0])
-#         expected = [torch.zeros_like(p1), torch.zeros_like(p2)]
-
-#         # Act
-#         actual = SGD([p1, p2], lr=0.1).velocities
-
-#         # Assert
-#         self.assertEqual(len(actual), len(expected))
-#         for actual_velocity, expected_velocity in zip(actual, expected):
-#             self.assertTrue(torch.equal(actual_velocity, expected_velocity))
+from dl_lib.optim.optimizers import SGD
 
 
-# class TestSGDStep(unittest.TestCase):
-#     def test_when_called_then_updates_parameter_by_minus_lr_times_grad(self):
-#         # Arrange
-#         p = torch.tensor([1.0, 2.0], requires_grad=True)
-#         p.grad = torch.tensor([0.1, 0.2])
-#         lr = 0.1
-#         sgd = SGD([p], lr=lr)
-#         expected = torch.tensor([0.99, 1.98])
+class TestSGDInit(unittest.TestCase):
+    def test_when_momentum_not_given_then_defaults_to_zero(self):
+        # Arrange
+        p = torch.tensor([1.0])
+        expected = 0.0
 
-#         # Act
-#         sgd.step()
+        # Act
+        actual = SGD([p], lr=0.1).momentum
 
-#         # Assert
-#         self.assertTrue(torch.allclose(p, expected))
+        # Assert
+        self.assertEqual(actual, expected)
 
-#     def test_when_called_with_a_different_learning_rate_then_scales_the_update_accordingly(
-#         self,
-#     ):
-#         # Arrange
-#         p = torch.tensor([1.0, 2.0], requires_grad=True)
-#         p.grad = torch.tensor([0.1, 0.2])
-#         lr = 0.5
-#         sgd = SGD([p], lr=lr)
-#         expected = torch.tensor([0.95, 1.9])
+    def test_when_constructed_then_velocities_are_zero_for_every_parameter(self):
+        # Arrange
+        p1 = torch.tensor([1.0, 2.0])
+        p2 = torch.tensor([3.0])
+        expected = [torch.zeros_like(p1), torch.zeros_like(p2)]
 
-#         # Act
-#         sgd.step()
+        # Act
+        actual = SGD([p1, p2], lr=0.1).velocities
 
-#         # Assert
-#         self.assertTrue(torch.allclose(p, expected))
+        # Assert
+        self.assertEqual(len(actual), len(expected))
+        for actual_velocity, expected_velocity in zip(actual, expected):
+            self.assertTrue(torch.equal(actual_velocity, expected_velocity))
 
 
-# class TestSGDMomentumStep(unittest.TestCase):
-#     def test_when_called_twice_then_velocity_accumulates_across_steps(self):
-#         # Arrange
-#         p = torch.tensor([1.0, 2.0], requires_grad=True)
-#         lr = 0.1
-#         momentum = 0.9
-#         sgd = SGD([p], lr=lr, momentum=momentum)
-#         expected_velocity_after_first_step = torch.tensor([0.1, 0.2])
-#         expected_velocity_after_second_step = torch.tensor([0.19, 0.38])
+class TestSGDStep(unittest.TestCase):
+    def test_when_called_then_updates_parameter_by_minus_lr_times_grad(self):
+        # Arrange
+        p = torch.tensor([1.0, 2.0], requires_grad=True)
+        p.grad = torch.tensor([0.1, 0.2])
+        lr = 0.1
+        sgd = SGD([p], lr=lr)
+        expected = torch.tensor([0.99, 1.98])
 
-#         # Act
-#         p.grad = torch.tensor([0.1, 0.2])
-#         sgd.step()
-#         actual_velocity_after_first_step = sgd.velocities[0].clone()
+        # Act
+        sgd.step()
 
-#         p.grad = torch.tensor([0.1, 0.2])
-#         sgd.step()
-#         actual_velocity_after_second_step = sgd.velocities[0].clone()
+        # Assert
+        self.assertTrue(torch.allclose(p, expected))
 
-#         # Assert
-#         self.assertTrue(
-#             torch.allclose(
-#                 actual_velocity_after_first_step, expected_velocity_after_first_step
-#             )
-#         )
-#         self.assertTrue(
-#             torch.allclose(
-#                 actual_velocity_after_second_step, expected_velocity_after_second_step
-#             )
-#         )
+    def test_when_called_with_a_different_learning_rate_then_scales_the_update_accordingly(
+        self,
+    ):
+        # Arrange
+        p = torch.tensor([1.0, 2.0], requires_grad=True)
+        p.grad = torch.tensor([0.1, 0.2])
+        lr = 0.5
+        sgd = SGD([p], lr=lr)
+        expected = torch.tensor([0.95, 1.9])
 
-#     def test_when_called_twice_then_parameter_matches_hand_computed_trajectory(self):
-#         # Arrange
-#         p = torch.tensor([1.0, 2.0], requires_grad=True)
-#         lr = 0.1
-#         momentum = 0.9
-#         sgd = SGD([p], lr=lr, momentum=momentum)
-#         expected = torch.tensor([0.971, 1.942])
+        # Act
+        sgd.step()
 
-#         # Act
-#         p.grad = torch.tensor([0.1, 0.2])
-#         sgd.step()
-#         p.grad = torch.tensor([0.1, 0.2])
-#         sgd.step()
+        # Assert
+        self.assertTrue(torch.allclose(p, expected))
 
-#         # Assert
-#         self.assertTrue(torch.allclose(p, expected))
+
+class TestSGDMomentumStep(unittest.TestCase):
+    def test_when_called_twice_then_velocity_accumulates_across_steps(self):
+        # Arrange
+        p = torch.tensor([1.0, 2.0], requires_grad=True)
+        lr = 0.1
+        momentum = 0.9
+        sgd = SGD([p], lr=lr, momentum=momentum)
+        expected_velocity_after_first_step = torch.tensor([0.1, 0.2])
+        expected_velocity_after_second_step = torch.tensor([0.19, 0.38])
+
+        # Act
+        p.grad = torch.tensor([0.1, 0.2])
+        sgd.step()
+        actual_velocity_after_first_step = sgd.velocities[0].clone()
+
+        p.grad = torch.tensor([0.1, 0.2])
+        sgd.step()
+        actual_velocity_after_second_step = sgd.velocities[0].clone()
+
+        # Assert
+        self.assertTrue(
+            torch.allclose(
+                actual_velocity_after_first_step, expected_velocity_after_first_step
+            )
+        )
+        self.assertTrue(
+            torch.allclose(
+                actual_velocity_after_second_step, expected_velocity_after_second_step
+            )
+        )
+
+    def test_when_called_twice_then_parameter_matches_hand_computed_trajectory(self):
+        # Arrange
+        p = torch.tensor([1.0, 2.0], requires_grad=True)
+        lr = 0.1
+        momentum = 0.9
+        sgd = SGD([p], lr=lr, momentum=momentum)
+        expected = torch.tensor([0.971, 1.942])
+
+        # Act
+        p.grad = torch.tensor([0.1, 0.2])
+        sgd.step()
+        p.grad = torch.tensor([0.1, 0.2])
+        sgd.step()
+
+        # Assert
+        self.assertTrue(torch.allclose(p, expected))
 
 
 # class TestAdaGradInit(unittest.TestCase):
