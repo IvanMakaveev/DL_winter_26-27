@@ -78,3 +78,22 @@ class Adam(Optimizer):
                 m_hat = m / (1 - self.beta1**self.t)
                 v_hat = v / (1 - self.beta2**self.t)
                 p -= self.lr * m_hat / (torch.sqrt(v_hat) + self.eps)
+
+
+class AdamW(Adam):
+    def __init__(self, params, lr, beta1=0.9, beta2=0.999, eps=1e-8, weight_decay=0.0):
+        super().__init__(params, lr, beta1, beta2, eps, weight_decay)
+
+    def step(self) -> None:
+        self.t += 1
+        with torch.no_grad():
+            for p, m, v in zip(self.params, self.m, self.v):
+                grad = p.grad if p.grad is not None else 0.0
+                m *= self.beta1
+                m += (1 - self.beta1) * grad
+                v *= self.beta2
+                v += (1 - self.beta2) * (grad**2)
+                m_hat = m / (1 - self.beta1**self.t)
+                v_hat = v / (1 - self.beta2**self.t)
+                p -= self.lr * self.weight_decay * p
+                p -= self.lr * m_hat / (torch.sqrt(v_hat) + self.eps)

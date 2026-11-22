@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from dl_lib.optim.optimizers import SGD, AdaGrad, Adam, RMSprop
+from dl_lib.optim.optimizers import SGD, AdaGrad, Adam, AdamW, RMSprop
 
 
 class TestSGDInit(unittest.TestCase):
@@ -311,44 +311,44 @@ class TestAdamStep(unittest.TestCase):
         self.assertTrue(torch.allclose(adam.v[0], expected_v))
 
 
-# class TestAdamWStep(unittest.TestCase):
-#     def test_when_weight_decay_is_zero_then_matches_adams_update_exactly(self):
-#         # Arrange
-#         p_adam = torch.tensor([1.0], requires_grad=True)
-#         p_adamw = torch.tensor([1.0], requires_grad=True)
-#         lr = 0.001
-#         adam = Adam([p_adam], lr=lr, weight_decay=0.0)
-#         adamw = AdamW([p_adamw], lr=lr, weight_decay=0.0)
+class TestAdamWStep(unittest.TestCase):
+    def test_when_weight_decay_is_zero_then_matches_adams_update_exactly(self):
+        # Arrange
+        p_adam = torch.tensor([1.0], requires_grad=True)
+        p_adamw = torch.tensor([1.0], requires_grad=True)
+        lr = 0.001
+        adam = Adam([p_adam], lr=lr, weight_decay=0.0)
+        adamw = AdamW([p_adamw], lr=lr, weight_decay=0.0)
 
-#         # Act
-#         for _ in range(2):
-#             p_adam.grad = torch.tensor([0.1])
-#             adam.step()
-#             p_adamw.grad = torch.tensor([0.1])
-#             adamw.step()
+        # Act
+        for _ in range(2):
+            p_adam.grad = torch.tensor([0.1])
+            adam.step()
+            p_adamw.grad = torch.tensor([0.1])
+            adamw.step()
 
-#         # Assert
-#         self.assertTrue(torch.allclose(p_adam, p_adamw, atol=1e-8))
+        # Assert
+        self.assertTrue(torch.allclose(p_adam, p_adamw, atol=1e-8))
 
-#     def test_when_weight_decay_given_then_differs_from_adams_l2_style_decay(self):
-#         # Arrange
-#         p_adam = torch.tensor([1.0], requires_grad=True)
-#         p_adamw = torch.tensor([1.0], requires_grad=True)
-#         lr = 0.001
-#         weight_decay = 0.1
-#         adam = Adam([p_adam], lr=lr, weight_decay=weight_decay)
-#         adamw = AdamW([p_adamw], lr=lr, weight_decay=weight_decay)
-#         expected_adam = torch.tensor([0.99800001])
-#         expected_adamw = torch.tensor([0.99780031])
+    def test_when_weight_decay_given_then_differs_from_adams_l2_style_decay(self):
+        # Arrange
+        p_adam = torch.tensor([1.0], requires_grad=True)
+        p_adamw = torch.tensor([1.0], requires_grad=True)
+        lr = 0.001
+        weight_decay = 0.1
+        adam = Adam([p_adam], lr=lr, weight_decay=weight_decay)
+        adamw = AdamW([p_adamw], lr=lr, weight_decay=weight_decay)
+        expected_adam = torch.tensor([0.99800001])
+        expected_adamw = torch.tensor([0.99780031])
 
-#         # Act
-#         for _ in range(2):
-#             p_adam.grad = torch.tensor([0.1])
-#             adam.step()
-#             p_adamw.grad = torch.tensor([0.1])
-#             adamw.step()
+        # Act
+        for _ in range(2):
+            p_adam.grad = torch.tensor([0.1])
+            adam.step()
+            p_adamw.grad = torch.tensor([0.1])
+            adamw.step()
 
-#         # Assert
-#         self.assertTrue(torch.allclose(p_adam, expected_adam, atol=1e-6))
-#         self.assertTrue(torch.allclose(p_adamw, expected_adamw, atol=1e-6))
-#         self.assertFalse(torch.allclose(p_adam, p_adamw, atol=1e-6))
+        # Assert
+        self.assertTrue(torch.allclose(p_adam, expected_adam, atol=1e-6))
+        self.assertTrue(torch.allclose(p_adamw, expected_adamw, atol=1e-6))
+        self.assertFalse(torch.allclose(p_adam, p_adamw, atol=1e-6))

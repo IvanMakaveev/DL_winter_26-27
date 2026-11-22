@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import torch
 
-from dl_lib.optim.optimizers import RMSprop, Adam
+from dl_lib.optim.optimizers import Adam, RMSprop
 
 
 def main() -> int:
@@ -77,7 +77,9 @@ def main() -> int:
     steps = list(range(num_steps))
     plt.plot(steps, xs3, color="lightblue", label="Adam (large gradient history)")
     plt.plot(steps, xs4, color="turquoise", label="Adam (small gradient history)")
-    plt.title("Adam decays the same gradient history differently based on its magnitude")
+    plt.title(
+        "Adam decays the same gradient history differently based on its magnitude"
+    )
     plt.xlabel("step")
     plt.ylabel("x")
     plt.legend()
