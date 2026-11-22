@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from dl_lib.optim.optimizers import SGD, AdaGrad
+from dl_lib.optim.optimizers import SGD, AdaGrad, RMSprop
 
 
 class TestSGDInit(unittest.TestCase):
@@ -168,61 +168,61 @@ class TestAdaGradStep(unittest.TestCase):
         self.assertTrue(torch.allclose(p, expected, atol=1e-4))
 
 
-# class TestRMSpropInit(unittest.TestCase):
-#     def test_when_alpha_and_eps_not_given_then_default_to_0_99_and_1e_minus_8(self):
-#         # Arrange
-#         p = torch.tensor([1.0])
-#         expected_alpha = 0.99
-#         expected_eps = 1e-8
+class TestRMSpropInit(unittest.TestCase):
+    def test_when_alpha_and_eps_not_given_then_default_to_0_99_and_1e_minus_8(self):
+        # Arrange
+        p = torch.tensor([1.0])
+        expected_alpha = 0.99
+        expected_eps = 1e-8
 
-#         # Act
-#         rmsprop = RMSprop([p], lr=0.1)
+        # Act
+        rmsprop = RMSprop([p], lr=0.1)
 
-#         # Assert
-#         self.assertEqual(rmsprop.alpha, expected_alpha)
-#         self.assertEqual(rmsprop.eps, expected_eps)
+        # Assert
+        self.assertEqual(rmsprop.alpha, expected_alpha)
+        self.assertEqual(rmsprop.eps, expected_eps)
 
-#     def test_when_constructed_then_accumulators_are_zero_for_every_parameter(self):
-#         # Arrange
-#         p1 = torch.tensor([1.0, 2.0])
-#         p2 = torch.tensor([3.0])
-#         expected = [torch.zeros_like(p1), torch.zeros_like(p2)]
+    def test_when_constructed_then_accumulators_are_zero_for_every_parameter(self):
+        # Arrange
+        p1 = torch.tensor([1.0, 2.0])
+        p2 = torch.tensor([3.0])
+        expected = [torch.zeros_like(p1), torch.zeros_like(p2)]
 
-#         # Act
-#         actual = RMSprop([p1, p2], lr=0.1).accumulators
+        # Act
+        actual = RMSprop([p1, p2], lr=0.1).accumulators
 
-#         # Assert
-#         self.assertEqual(len(actual), len(expected))
-#         for actual_accumulator, expected_accumulator in zip(actual, expected):
-#             self.assertTrue(torch.equal(actual_accumulator, expected_accumulator))
+        # Assert
+        self.assertEqual(len(actual), len(expected))
+        for actual_accumulator, expected_accumulator in zip(actual, expected):
+            self.assertTrue(torch.equal(actual_accumulator, expected_accumulator))
 
 
-# class TestRMSpropStep(unittest.TestCase):
-#     def test_when_called_then_accumulator_is_an_exponential_moving_average(self):
-#         # Arrange
-#         p = torch.tensor([1.0], requires_grad=True)
-#         p.grad = torch.tensor([0.1])
-#         rmsprop = RMSprop([p], lr=0.1)
-#         expected = torch.tensor([0.0001])
+class TestRMSpropStep(unittest.TestCase):
+    def test_when_called_then_accumulator_is_an_exponential_moving_average(self):
+        # Arrange
+        p = torch.tensor([1.0], requires_grad=True)
+        p.grad = torch.tensor([0.1])
+        rmsprop = RMSprop([p], lr=0.1)
+        expected = torch.tensor([0.0001])
 
-#         # Act
-#         rmsprop.step()
+        # Act
+        rmsprop.step()
 
-#         # Assert
-#         self.assertTrue(torch.allclose(rmsprop.accumulators[0], expected))
+        # Assert
+        self.assertTrue(torch.allclose(rmsprop.accumulators[0], expected))
 
-#     def test_when_called_then_updates_parameter_with_per_parameter_learning_rate(self):
-#         # Arrange
-#         p = torch.tensor([1.0], requires_grad=True)
-#         p.grad = torch.tensor([0.1])
-#         rmsprop = RMSprop([p], lr=0.1)
-#         expected = torch.tensor([0.0])
+    def test_when_called_then_updates_parameter_with_per_parameter_learning_rate(self):
+        # Arrange
+        p = torch.tensor([1.0], requires_grad=True)
+        p.grad = torch.tensor([0.1])
+        rmsprop = RMSprop([p], lr=0.1)
+        expected = torch.tensor([0.0])
 
-#         # Act
-#         rmsprop.step()
+        # Act
+        rmsprop.step()
 
-#         # Assert
-#         self.assertTrue(torch.allclose(p, expected, atol=1e-4))
+        # Assert
+        self.assertTrue(torch.allclose(p, expected, atol=1e-4))
 
 
 # class TestAdamInit(unittest.TestCase):

@@ -32,3 +32,22 @@ class AdaGrad(Optimizer):
                     if p.grad is not None
                     else 0.0
                 )
+
+
+class RMSprop(Optimizer):
+    def __init__(self, params, lr, alpha=0.99, eps=1e-8):
+        super().__init__(params, lr)
+        self.alpha = alpha
+        self.eps = eps
+        self.accumulators = [torch.zeros_like(p) for p in params]
+
+    def step(self) -> None:
+        with torch.no_grad():
+            for p, acc in zip(self.params, self.accumulators):
+                acc *= self.alpha
+                acc += (1 - self.alpha) * (p.grad**2 if p.grad is not None else 0.0)
+                p -= (
+                    self.lr * p.grad / (torch.sqrt(acc) + self.eps)
+                    if p.grad is not None
+                    else 0.0
+                )
