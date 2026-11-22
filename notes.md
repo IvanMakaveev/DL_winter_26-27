@@ -94,6 +94,81 @@
     - [Task 13](#task-13-4)
     - [Task 14](#task-14-3)
     - [Task 15](#task-15-1)
+  - [Week 06 - Optimizers](#week-06---optimizers)
+    - [Stochastic gradient descent (SGD)](#stochastic-gradient-descent-sgd)
+      - [Task 01](#task-01-5)
+      - [Task 02](#task-02-5)
+      - [Task 03](#task-03-5)
+      - [Task 04](#task-04-5)
+      - [Task 05](#task-05-5)
+    - [Adaptive gradients](#adaptive-gradients)
+      - [Task 06](#task-06-5)
+      - [Task 07](#task-07-5)
+      - [Task 08](#task-08-5)
+      - [Task 09](#task-09-5)
+    - [Comparing the five optimizers](#comparing-the-five-optimizers)
+      - [Task 10](#task-10-5)
+    - [Update rules](#update-rules)
+  - [Week 07 - Regularization and Normalization](#week-07---regularization-and-normalization)
+    - [Task 01](#task-01-6)
+    - [Task 02](#task-02-6)
+    - [Task 03](#task-03-6)
+    - [Task 04](#task-04-6)
+    - [Task 05](#task-05-6)
+    - [Task 06](#task-06-6)
+    - [Task 07](#task-07-6)
+    - [Task 08](#task-08-6)
+    - [Task 09](#task-09-6)
+  - [Week 08 - Convolutional Neural Networks](#week-08---convolutional-neural-networks)
+    - [ImageNet](#imagenet)
+      - [Task 01](#task-01-7)
+    - [Class-Based PyTorch Model](#class-based-pytorch-model)
+    - [Working with images in PyTorch](#working-with-images-in-pytorch)
+    - [The Clouds dataset](#the-clouds-dataset)
+    - [Converting pixels to tensors and tensors to pixels](#converting-pixels-to-tensors-and-tensors-to-pixels)
+    - [Loading images with PyTorch](#loading-images-with-pytorch)
+    - [Data augmentation](#data-augmentation)
+    - [Convolutional Neural Networks](#convolutional-neural-networks)
+    - [Visualizing the weights](#visualizing-the-weights)
+    - [Convolutions in different dimensions](#convolutions-in-different-dimensions)
+      - [Task 02](#task-02-7)
+      - [Task 03](#task-03-7)
+      - [Task 04](#task-04-7)
+      - [Task 05](#task-05-7)
+      - [Task 06](#task-06-7)
+      - [Task 07](#task-07-7)
+      - [Task 08](#task-08-7)
+      - [Task 09](#task-09-7)
+    - [The Model Report File](#the-model-report-file)
+    - [Precision \& Recall for Multiclass Classification (revisited)](#precision--recall-for-multiclass-classification-revisited)
+      - [Computing total value](#computing-total-value)
+      - [Computing per class value](#computing-per-class-value)
+    - [FashionMNIST](#fashionmnist)
+      - [Task 10](#task-10-6)
+      - [Task 11](#task-11-5)
+    - [CIFAR-10](#cifar-10)
+      - [Task 12](#task-12-5)
+      - [Task 13](#task-13-5)
+    - [Clouds](#clouds)
+      - [Task 14](#task-14-4)
+      - [Task 15](#task-15-2)
+  - [Week 09 - VGG and ResNet](#week-09---vgg-and-resnet)
+    - [The VGG model](#the-vgg-model)
+      - [Task 01](#task-01-8)
+      - [Task 02](#task-02-8)
+      - [Task 03](#task-03-8)
+    - [Kaiming and Xavier initialization strategies](#kaiming-and-xavier-initialization-strategies)
+      - [Task 04](#task-04-8)
+      - [Task 05](#task-05-8)
+    - [Residual learning](#residual-learning)
+      - [Task 06](#task-06-8)
+      - [Task 07](#task-07-8)
+      - [Task 08](#task-08-8)
+      - [Task 09](#task-09-8)
+      - [Task 10](#task-10-7)
+      - [Task 11](#task-11-6)
+      - [Task 12](#task-12-6)
+      - [Task 13](#task-13-6)
 
 ## Week 01 - Introduction to NumPy, Matplotlib and PyTorch
 
@@ -5771,3 +5846,4374 @@ params[1].shape = (4,)
 params[2].shape = (4, 2)
 params[3].shape = (2,)
 ```
+
+## Week 06 - Optimizers
+
+<details>
+
+<summary>What is an optimizer?</summary>
+
+The functionality that performs parameter updates.
+
+</details>
+
+<details>
+
+<summary>In which part of the model creation are optimizers used?</summary>
+
+They are used inside the training loop, all in the same manner:
+
+```python
+from torch import 
+
+optimizer = optim.SGD(model.parameters(), lr=0.001)
+
+<... start trainig loop ...>
+
+optimizer.zero_grad() # make the current gradients 0
+loss.backward()       # calculate the new gradients
+optimizer.step()      # update the parameters
+
+<... end trainig loop ...>
+```
+
+</details>
+
+Different optimizers have different logic for updating model parameters.
+
+<details>
+<summary>What optimizers have you heard of?</summary>
+
+Some built-in ones include:
+
+- [SGD](https://docs.pytorch.org/docs/stable/generated/torch.optim.SGD.html), optionally with momentum;
+- [AdaGrad](https://docs.pytorch.org/docs/stable/generated/torch.optim.Adagrad.html);
+- [RMSProp](https://docs.pytorch.org/docs/stable/generated/torch.optim.RMSprop.html);
+- [Adam](https://docs.pytorch.org/docs/stable/generated/torch.optim.Adam.html);
+- [AdamW](https://docs.pytorch.org/docs/stable/generated/torch.optim.AdamW.html) <- **most popular**;
+- [Muon](https://docs.pytorch.org/docs/2.15/generated/torch.optim.Muon.html) <- **gaining popularity**.
+
+</details>
+
+### Stochastic gradient descent (SGD)
+
+<details>
+
+<summary>What was the formula for the plain SGD we discussed last time?</summary>
+
+$$w_{i,t+1} = w_{i,t} - \lambda g_{i,t}$$
+
+</details>
+
+#### Task 01
+
+**Description:**
+
+Define an abstract base class `Optimizer` in `dl_lib.optim.optimizer`. Given a list of parameters and a learning rate, it:
+
+- stores the parameters and the learning rate on construction.
+- provides a method `zero_grad` that zeroes every parameter's gradient.
+- declares an abstract method `step`, left for every subclass to implement with its own update rule.
+
+Since this class is meant to be inherited and extended with update logic, we won't be using it in a script now.
+
+**Acceptance criteria:**
+
+- An ABC `Optimizer` is defined.
+
+**Test cases:** See `tests/test_dl_lib/test_optim/test_optimizer.py`.
+
+#### Task 02
+
+**Description:**
+
+Define a class `SGD` that extends `Optimizer`. Its step updates every parameter, in place, under `torch.no_grad()` so the update itself is not tracked for `autograd`.
+
+Create a script that constructs an `SGD` over one parameter. Manually set the gradient of that parameter, do one step, and print the parameter's value before and after the step.
+
+**Acceptance criteria:**
+
+- The SGD algorithm is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_optim/test_optimizers.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 6 -t 2
+```
+
+```text
+Before step: p = tensor([1., 2.])
+After step:  p = tensor([0.9900, 1.9800])
+```
+
+Ok - great! Let's see it in action.
+
+#### Task 03
+
+**Description:**
+
+Create a script that minimizes `f(x) = x**4 + x**3 - 5*x**2` starting from `x0 = 2.0` with plain SGD for a fixed number of steps at a fixed learning rate. It records every visited `x`, plots the curve with the trajectory overlaid as connected points, and prints the final `x` and `f(x)`.
+
+**Acceptance criteria:**
+
+- It is validated visually that plain SGD can get trapped in a local minimum and never reach the global minimum of a function.
+
+**Example output:**
+
+```bash
+python run.py -w 6 -t 3
+```
+
+```text
+Plain SGD final x: 1.2500, f(x) = -3.4180
+```
+
+![Plain SGD trajectory trapped in a local minimum](assets/w06_task03_sgd_local_minimum.png "Plain SGD trajectory trapped in a local minimum")
+
+<details>
+<summary>What does the chart show?</summary>
+
+SGD can get stuck:
+
+- oscillating across a narrow valley;
+- or stalling in a shallow dip where the gradient is small but not zero.
+
+</details>
+
+<details>
+<summary>How can we fix this?</summary>
+
+Momentum keeps a running "velocity" that accumulates gradients over time, the same way a rolling ball keeps some of its speed from the last step.
+
+A consistent downhill direction builds up speed, and a small shallow dip is not enough to stop a ball that already has momentum.
+
+$$v_{i,t} = \mu v_{i,t-1} + g_{i,t}$$
+
+$$w_{i,t+1} = w_{i,t} - \lambda v_{i,t}$$
+
+Here, $\mu$ is the momentum coefficient and $v$ is the momentum buffer.
+
+> [!NOTE]
+> Pytorch directly sets $v_{i,1}$ to $g_{i,1}$.
+>
+> With zero dampening (how much of the new gradient to *ignore*), this gives the same result as starting with $v_{i,0}=0$ and calculating $v_{i,1}$ using the formula from above (we'll do this in our implementation).
+
+</details>
+
+<details>
+<summary>How does Nesterov momentum work?</summary>
+
+First, we update the momentum buffer as shown above.
+
+To do the update, we use the current gradient plus a momentum-scaled copy of the updated buffer:
+
+$$w_{i,t+1} = w_{i,t} - \lambda \left(g_{i,t} + \mu v_{i,t}\right)$$
+
+</details>
+
+#### Task 04
+
+**Description:**
+
+Extend `SGD` with a parameter for momentum, defaulting to `0.0`.
+
+- On construction, it initializes a list `velocities` of zero tensors, one tensor per parameter and in the same order as `params`.
+- With momentum, `step` keeps using that list: each call first updates the velocity, then adds that velocity to the parameter.
+
+Apply SGD with momentum in Task 03 and see if you can beat plain SGD.
+
+Then, runs SGD it on a function shaped like a steep, narrow ravine (`f(x, y) = 10 * x**2 + 0.1 * y**2`), where the gradient is far larger in one direction than the other at every point. It records the trajectory and plots it over the function's contours, together with the final position.
+
+> [!NOTE]
+> Feel free to refer to `cheat_sheet.md` for guidance on how to create the contour plot!
+
+**Acceptance criteria:**
+
+- The class `SGD` supports momentum in a backward compatible manner.
+
+**Test cases:** See `tests/test_dl_lib/test_optim/test_optimizers.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 6 -t 4
+```
+
+```text
+Plain SGD final x: 1.2500, f(x) = -3.4180
+Momentum SGD final x: -1.9995, f(x) = -12.0000
+Momentum SGD on ravine final: x=-0.0747, y=-0.0566
+```
+
+![SGD trajectory with and without momentum](assets/w06_task04_momentum_trajectory.png "SGD trajectory with and without momentum")
+
+![SGD with momentum zig-zagging in a steep, narrow ravine](assets/w06_task04_momentum_ravine.png "SGD with momentum zig-zagging in a steep, narrow ravine")
+
+<details>
+<summary>What does this graph show?</summary>
+
+The ravine's gradient is much larger across its width than along its length. Momentum builds up speed in that steep direction too, so it keeps overshooting from one wall to the other instead of moving steadily toward the minimum along the shallow direction.
+
+</details>
+
+<details>
+<summary>How do we call the learning rate and momentum in the context of SGD?</summary>
+
+Hyperparameters.
+
+</details>
+
+<details>
+<summary>How can we define these types of parameters?</summary>
+
+Training is the process of finding the optimal values of a neural network's parameters.
+
+Hyperparameters, thus, are (all of) the parameters of this training process. *They are meta-parameters from the point of view of the neural network.*
+
+</details>
+
+<details>
+<summary>How do we call the process of finding the optimal hyperparameters?</summary>
+
+Hyperparameter tuning!
+
+</details>
+
+#### Task 05
+
+**Description:**
+
+Create a script that samples several `(lr, momentum)` pairs from seeded uniform ranges, runs SGD on the same function from Task 04 for a fixed number of steps for each pair, and prints one row per sampled configuration (learning rate, momentum, final `x`, final `f(x)`) followed by the single best configuration.
+
+**Acceptance criteria:**
+
+- Hyperparameter tuning is performed.
+
+**Example output:**
+
+```bash
+python run.py -w 6 -t 5
+```
+
+```text
+      lr   momentum    final x       f(x)
+  0.0480     0.9194    -2.0007   -12.0000
+  0.0075     0.0823     1.2500    -3.4180
+  0.0426     0.7139    -2.0000   -12.0000
+  0.0351     0.2989     1.2500    -3.4180
+  0.0323     0.5886     1.2500    -3.4180
+  0.0312     0.1536     1.2500    -3.4180
+  0.0244     0.3817     1.2500    -3.4180
+  0.0375     0.9650    -1.9199   -11.9201
+Best config: lr=0.0426, momentum=0.7139 -> x=-2.0000, f(x)=-12.0000
+```
+
+<details>
+<summary>What does the table show?</summary>
+
+- Most low-momentum configurations never escape the shallow dip at `x = 1.25`.
+- Only the pairs with enough momentum (roughly `momentum > 0.7`) carry the point over the hump and into the deeper minimum. This is why usually momentum is usually set to be at least `0.9`. See the example here: <https://docs.pytorch.org/docs/2.15/generated/torch.optim.SGD.html>.
+
+</details>
+
+### Adaptive gradients
+
+<details>
+<summary>What are the limitations of SGD (with and without momentum)?</summary>
+
+The learning rate is fixed across every parameter - what if some parameters need bigger steps than others?
+
+- A parameter whose gradient is consistently small moves slowly under a shared learning rate.
+- A parameter whose gradient is consistently large can overshoot at that same rate.
+
+</details>
+
+<details>
+<summary>How can we fix this?</summary>
+
+Let's give each parameter its own learning rate.
+
+We'll scaled it down by how large that parameter's gradients have been so far.
+
+</details>
+
+<details>
+<summary>What is the exact AdaGrad update?</summary>
+
+$$v_{i,t} = v_{i,t-1} + g_{i,t}^2$$
+
+$$w_{i,t+1} = w_{i,t} - \lambda\frac{g_{i,t}}{\sqrt{v_{i,t}}+\epsilon}$$
+
+starting from $v_{i,0} = 0$.
+
+</details>
+
+#### Task 06
+
+**Description:**
+
+Define a class `AdaGrad` extending `Optimizer`.
+
+- Constructed with an `eps` for numerical stability (default `1e-10`), it initializes a list of zero tensors - `accumulators`, one per parameter and in the same order as `params`.
+- Its `step` per parameter:
+  - adds the squared gradient to that parameter's entry in `accumulators`.
+  - updates the parameter so parameters with a larger accumulated gradient history take smaller steps.
+
+Create a script that runs SGD with momentum and AdaGrad from the same starting point on the ravine function.
+
+It then runs AdaGrad twice on a separate, one-parameter function: `f(x) = 0.5 * x**2`, both starting from the same point, except that one run receives a single much larger gradient on the very first step. It records both trajectories and plots them together, along with each run's final value.
+
+**Acceptance criteria:**
+
+- The `AdaGrad` algorithm is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_optim/test_optimizers.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 6 -t 6
+```
+
+```text
+SGD (momentum) final: x=-0.0747, y=-0.0566
+AdaGrad final:        x=0.0000, y=0.0000
+AdaGrad (no spike) final x: 0.0275
+AdaGrad (early spike) final x: 3.3492
+```
+
+![AdaGrad vs. SGD with momentum on an elongated ravine](assets/w06_task06_adagrad_ravine.png "AdaGrad vs. SGD with momentum on an elongated ravine")
+
+![AdaGrad stalls after one unusually large early gradient](assets/w06_task06_adagrad_spike.png "AdaGrad stalls after one unusually large early gradient")
+
+<details>
+<summary>What do these graphs show?</summary>
+
+In the ravine, SGD with momentum keeps overshooting across the steep direction while barely moving along the shallow one. AdaGrad shrinks its steps in the steep direction and keeps them larger in the shallow one, so it heads straight for the minimum instead.
+
+In the spike plot, both runs face identical gradients after step 1. The run that saw one oversized gradient early on never catches up: that single step inflated its accumulator forever, so its learning rate stays small for the rest of training.
+
+</details>
+
+<details>
+<summary>What is the limitation of AdaGrad?</summary>
+
+AdaGrad's accumulator only ever grows, so after enough steps it becomes so large that the effective learning rate collapses to almost zero.
+
+</details>
+
+<details>
+<summary>What does this mean for training?</summary>
+
+It effectively stops.
+
+</details>
+
+<details>
+<summary>How can we fix it?</summary>
+
+We can replace the raw running sum with an exponential moving average.
+
+In this way the old gradient history fades out instead of piling up forever, keeping the effective learning rate from vanishing.
+
+The algorithm that does this is called `RMSprop`:
+
+$$v_{i,t} = \rho v_{i,t-1} + (1-\rho) g_{i,t}^2$$
+
+$$w_{i,t+1} = w_{i,t} - \lambda\frac{g_{i,t}}{\sqrt{v_{i,t}}+\epsilon}$$
+
+where $\rho$ is the decay rate (called `alpha` in the code), starting from $v_{i,0} = 0$.
+
+</details>
+
+#### Task 07
+
+**Description:**
+
+Define a class `RMSprop` that is constructed with a decay rate `alpha` (default `0.99`) and an `eps` for numerical stability (default `1e-8`).
+
+It too initializes a list of zero tensors - `accumulators`, one per parameter and in the same order as `params`.
+
+Its step, per parameter:
+
+- updates that parameter's entry in `accumulators` as an exponential moving average.
+- updates the parameter with the same rule `AdaGrad` uses.
+
+Create a script that runs `AdaGrad` and `RMSprop` on the same one-parameter function.
+
+It then runs `RMSprop` twice more on that same function from the same starting point, once with the exact gradient at every step and once with a fixed amount of random noise added to the gradient at every step.
+
+**Acceptance criteria:**
+
+- The `RMSprop` algorithm is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_optim/test_optimizers.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 6 -t 7
+```
+
+```text
+AdaGrad (early spike) final x: 3.3492
+RMSprop (early spike) final x: 0.0000
+RMSprop (clean gradient) final x: 0.0000
+RMSprop (noisy gradient) final x: 0.2565
+```
+
+![RMSprop recovers from an early gradient spike where AdaGrad stalls](assets/w06_task07_rmsprop_spike_recovery.png "RMSprop recovers from an early gradient spike where AdaGrad stalls")
+
+<details>
+<summary>What does this graph show?</summary>
+
+Both runs see the same oversized gradient on step 1. `AdaGrad`'s accumulator keeps that spike forever, so its effective learning rate stays tiny for the rest of training. `RMSprop`'s exponential moving average discounts that same spike more and more with every later step, so it recovers and reaches the minimum almost immediately.
+
+</details>
+
+![RMSprop jitters around the minimum under noisy gradients](assets/w06_task07_rmsprop_noise_jitter.png "RMSprop jitters around the minimum under noisy gradients")
+
+<details>
+<summary>What does this graph show?</summary>
+
+RMSprop only rescales how large a step is; it has **no memory of which direction previous steps moved** in, so it cannot average away noise in the gradient's direction the way momentum does.
+
+</details>
+
+<details>
+<summary>How can we fix it?</summary>
+
+`SGD` with momentum smooths the update direction; `RMSprop` adapts the learning rate per parameter. `Adam` combines both ideas into a single update rule, with a correction for the fact that both running averages start at zero and are biased low early in training.
+
+$$\tilde g_{i,t} = g_{i,t} + \gamma w_{i,t} \quad \text{(when weight decay } \gamma \text{ is set)}$$
+
+$$m_{i,t} = \beta_1 m_{i,t-1} + (1-\beta_1) \tilde g_{i,t}$$
+
+$$v_{i,t} = \beta_2 v_{i,t-1} + (1-\beta_2) \tilde g_{i,t}^2$$
+
+$$\widehat{m}_{i,t} = \frac{m_{i,t}}{1-\beta_1^t}, \qquad \widehat{v}_{i,t} = \frac{v_{i,t}}{1-\beta_2^t}$$
+
+$$w_{i,t+1} = w_{i,t} - \lambda\frac{\widehat{m}_{i,t}}{\sqrt{\widehat{v}_{i,t}}+\epsilon}$$
+
+starting from $m_{i,0} = 0$ and $v_{i,0} = 0$.
+
+</details>
+
+You can notice that there is a correction done on the values of $m$ and $v$. This is known as Adam's **bias correction** for the initial steps of the optimizer.
+
+Suppose the first gradient is \(g_1=2\), with Adam's usual \(\beta_1=0.9\) and \(\beta_2=0.999\). Since both running averages start at zero:
+
+\[
+m_1=0.9(0)+0.1(2)=0.2
+\]
+\[
+v_1=0.999(0)+0.001(2^2)=0.004
+\]
+
+Those averages are much smaller than the gradient and its square because they’ve only had one step to build up. Bias correction gives:
+
+\[
+\hat m_1=\frac{0.2}{1-0.9}=2,
+\qquad
+\hat v_1=\frac{0.004}{1-0.999}=4
+\]
+
+So for learning rate \(\lambda\), Adam’s first update is approximately
+
+\[
+-\lambda\frac{\hat m_1}{\sqrt{\hat v_1}}
+=-\lambda\frac{2}{2}
+=-\lambda.
+\]
+
+The correction adjusts the averages for the fact that they started at zero.
+
+#### Task 08
+
+**Description:**
+
+Define a class `Adam` that is constructed with:
+
+- `beta1` (default `0.9`);
+- `beta2` (default `0.999`);
+- `eps` (default `1e-8`);
+- an optional `weight_decay` (default `0.0`).
+
+It initializes a first-moment list `m` and a second-moment list `v`, both zero tensors per parameter and in the same order as `params`, and a shared step counter `t` starting at `0`.
+
+Its `step`, per parameter:
+
+- folds `weight_decay * p` into the gradient first, when `weight_decay` is set (the L2-style approach);
+- updates `m` and `v`;
+- bias-corrects both with `t` across all parameters;
+- updates the parameter.
+
+Create a script that runs `RMSprop` and `Adam` on the same one-parameter function from the same starting point, with a fixed amount of random noise added to the gradient at every step. It records both trajectories and plots them together, along with each run's final value.
+
+It then constructs two `Adam` optimizers with the same `weight_decay`, one whose second-moment estimate already holds a large value and one whose second-moment estimate already holds a small value, simulating two parameters with very different histories of gradient magnitude. It runs each for the same number of steps with no other gradient signal. It records both trajectories and plots them together, along with each run's final value.
+
+**Acceptance criteria:**
+
+- The `Adam` algorithm is implemented.
+- It is validated visually that Adam's momentum smooths out noisy gradients that make RMSprop jitter.
+- It is validated visually that Adam decays two parameters with the same `weight_decay` at different rates when their gradient histories differ.
+
+**Test cases:** See `tests/test_dl_lib/test_optim/test_optimizers.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 6 -t 8
+```
+
+```text
+RMSprop (noisy gradient) final x: 0.2565
+Adam (noisy gradient) final x: 0.0095
+Adam (large gradient history) final p: 0.9743
+Adam (small gradient history) final p: 0.8763
+```
+
+![Adam's momentum smooths out noisy gradients where RMSprop jitters](assets/w06_task08_adam_noise_smoothing.png "Adam's momentum smooths out noisy gradients where RMSprop jitters")
+
+<details>
+<summary>What does this graph show?</summary>
+
+Both runs see the exact same noisy gradients at every step. RMSprop's rescaled step still follows each step's noisy direction, so it jitters once it nears the minimum. Adam's first-moment estimate averages that same noisy direction across recent steps, so its path stays smooth all the way down.
+
+</details>
+
+![Adam decays two parameters with the same weight_decay at different rates](assets/w06_task08_adam_uneven_decay.png "Adam decays two parameters with the same weight_decay at different rates")
+
+<details>
+<summary>What does this graph show?</summary>
+
+Both parameters start at the same value, see no gradient other than the weight decay term, and share the same `weight_decay`. Adam folds `weight_decay * p` into the gradient before dividing by `sqrt(v_hat)`, so the parameter whose second moment is already large gets divided down more and decays more slowly, while the one with a small second moment decays faster - the same nominal decay rate produces two different outcomes.
+
+</details>
+
+<details>
+<summary>What is the limitation of Adam?</summary>
+
+Adam's `weight_decay` is added directly into the gradient before the moment estimates are computed, so it gets divided by `sqrt(v_hat)` along with the rest of the gradient - a parameter with large gradients gets *less* decay than one with small gradients, which is an accident of the adaptive learning rate, not an intentional design choice.
+
+</details>
+
+<details>
+<summary>How can we fix it?</summary>
+
+Apply weight decay as a separate term after the adaptive update instead, so every parameter decays by the same proportion regardless of its gradient history.
+
+This is the one change that makes AdamW the more common default for training large models today.
+
+</details>
+
+<details>
+<summary>What is the exact AdamW update?</summary>
+
+$$m_{i,t} = \beta_1 m_{i,t-1} + (1-\beta_1) g_{i,t}$$
+
+$$v_{i,t} = \beta_2 v_{i,t-1} + (1-\beta_2) g_{i,t}^2$$
+
+$$\widehat{m}_{i,t} = \frac{m_{i,t}}{1-\beta_1^t}, \qquad \widehat{v}_{i,t} = \frac{v_{i,t}}{1-\beta_2^t}$$
+
+$$w_{i,t+1} = (1-\lambda\gamma) w_{i,t} - \lambda\frac{\widehat{m}_{i,t}}{\sqrt{\widehat{v}_{i,t}}+\epsilon}$$
+
+where $g_{i,t}$ excludes the weight-decay term, and $\gamma \ge 0$ is the weight-decay coefficient (called `weight_decay` in the code), starting from $m_{i,0} = 0$ and $v_{i,0} = 0$.
+
+</details>
+
+#### Task 09
+
+**Description:**
+
+Define a class `AdamW` extending `Adam`.
+
+It overrides `step` to use the exact same moment updates and bias correction as `Adam`, but computes them from the raw gradient only (never adding `weight_decay * p` into it), and after the adaptive update applies the parameter update as a separate term when `weight_decay` is set.
+
+Create a script that constructs two `AdamW` optimizers with the same `weight_decay`, one whose second-moment estimate already holds a large value and one whose second-moment estimate already holds a small value, simulating two parameters with very different histories of gradient magnitude. It runs each for the same number of steps with no other gradient signal. It records both trajectories and plots them together, along with each run's final value.
+
+**Acceptance criteria:**
+
+- The `AdamW` algorithm is implemented.
+- It is validated visually that AdamW decays both parameters by the same proportion regardless of their gradient history, where Adam decayed them at different rates.
+
+**Test cases:** See `tests/test_dl_lib/test_optim/test_optimizers.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 6 -t 9
+```
+
+```text
+AdamW (large gradient history) final p: 0.8605
+AdamW (small gradient history) final p: 0.8605
+```
+
+![AdamW decays both parameters by the same proportion](assets/w06_task09_adamw_even_decay.png "AdamW decays both parameters by the same proportion")
+
+<details>
+<summary>What does this graph show?</summary>
+
+Both parameters start at the same value and share the same `weight_decay`, but now AdamW applies that decay as a separate term after the adaptive update, instead of folding it into the gradient. It no longer gets divided by `sqrt(v_hat)`, so the two parameters, despite their very different second-moment histories, shrink by the exact same proportion at every step - the two curves sit on top of each other.
+
+</details>
+
+### Comparing the five optimizers
+
+Every optimizer this week has been exercised on a toy tensor in isolation. This task puts all five to work on the same real-looking problem, a small linear regression, and reports which one actually gets there fastest.
+
+#### Task 10
+
+**Description:**
+
+Create a script that:
+
+- builds a synthetic linear dataset (`y = 2.5x - 1.0` plus Gaussian noise, seeded for reproducibility) using `torch.linspace` for `x`.
+- trains bias, starting from zero, a single weight with each of `SGD`, `AdaGrad`, `RMSprop`, `Adam`, and `AdamW` for the same fixed number of epochs, each with a learning rate tuned on this problem (`Adam` and `AdamW` additionally use a small `weight_decay` so the two are visibly different).
+- prints a model report: a baseline row holding the mean predictor's mean-squared-error loss, followed by one row per optimizer in the order they were tried, each showing its final loss and the signed percent change versus the baseline, and a comment.
+- names the single best-performing optimizer explicitly at the bottom of the report.
+
+**Acceptance criteria:**
+
+- Optimizers are compared on a regression task.
+
+**Example output:**
+
+```bash
+python run.py -w 6 -t 10
+```
+
+```text
+optimizer    final loss    vs baseline  comment
+baseline       18.76643 +         0.0%  mean predictor, ignores x
+SGD             0.97043 -        94.8%  plain gradient descent, no momentum
+AdaGrad         0.24180 -        98.7%  per-parameter learning rate, needs a bigger lr here
+RMSprop         0.23746 -        98.7%  decayed accumulator, fastest to converge here
+Adam            3.76134 -        80.0%  L2-style decay folded into the gradient
+AdamW           4.42134 -        76.4%  decoupled decay, differs from Adam above
+Best optimizer: RMSprop (final loss = 0.23746)
+```
+
+> [!WARNING]
+> There is no single/direct answer to the question *Which is the best optimizer?*! As you can see different tasks may be solved with different optimizers.
+>
+> Always do experiments and use their outcomes to gain experience on what would work in a similar context.
+
+### Update rules
+
+**SGD**
+
+$$
+\boxed{
+w_{i,t+1} = w_{i,t} - \lambda g_{i,t}
+}
+$$
+
+**SGD with momentum**
+
+$$
+\boxed{
+v_{i,t} = \mu v_{i,t-1} + g_{i,t}
+}
+$$
+
+$$
+\boxed{
+w_{i,t+1} = w_{i,t} - \lambda v_{i,t}
+}
+$$
+
+starting from $v_{i,0} = 0$.
+
+**SGD with Nesterov momentum**
+
+$$
+\boxed{
+w_{i,t+1} = w_{i,t} - \lambda \left(g_{i,t} + \mu v_{i,t}\right)
+}
+$$
+
+with $v_{i,t}$ updated the same way as in SGD with momentum above.
+
+**AdaGrad**
+
+$$
+\boxed{
+v_{i,t} = v_{i,t-1} + g_{i,t}^2
+}
+$$
+
+$$
+\boxed{
+w_{i,t+1} = w_{i,t} - \lambda\frac{g_{i,t}}{\sqrt{v_{i,t}}+\epsilon}
+}
+$$
+
+starting from $v_{i,0} = 0$.
+
+**RMSprop**
+
+$$
+\boxed{
+v_{i,t} = \rho v_{i,t-1} + (1-\rho) g_{i,t}^2
+}
+$$
+
+$$
+\boxed{
+w_{i,t+1} = w_{i,t} - \lambda\frac{g_{i,t}}{\sqrt{v_{i,t}}+\epsilon}
+}
+$$
+
+where $\rho$ is the decay rate (called `alpha` in the code), starting from $v_{i,0} = 0$.
+
+**Adam**
+
+$$
+\boxed{
+\tilde g_{i,t} = g_{i,t} + \gamma w_{i,t} \quad \text{(when weight decay } \gamma \text{ is set)}
+}
+$$
+
+$$
+\boxed{
+m_{i,t} = \beta_1 m_{i,t-1} + (1-\beta_1) \tilde g_{i,t}
+}
+$$
+
+$$
+\boxed{
+v_{i,t} = \beta_2 v_{i,t-1} + (1-\beta_2) \tilde g_{i,t}^2
+}
+$$
+
+$$
+\boxed{
+\widehat{m}_{i,t} = \frac{m_{i,t}}{1-\beta_1^t}
+}
+$$
+
+$$
+\boxed{
+\widehat{v}_{i,t} = \frac{v_{i,t}}{1-\beta_2^t}
+}
+$$
+
+$$
+\boxed{
+w_{i,t+1} = w_{i,t} - \lambda\frac{\widehat{m}_{i,t}}{\sqrt{\widehat{v}_{i,t}}+\epsilon}
+}
+$$
+
+starting from $m_{i,0} = 0$ and $v_{i,0} = 0$.
+
+**AdamW**
+
+$$
+\boxed{
+m_{i,t} = \beta_1 m_{i,t-1} + (1-\beta_1) g_{i,t}
+}
+$$
+
+$$
+\boxed{
+v_{i,t} = \beta_2 v_{i,t-1} + (1-\beta_2) g_{i,t}^2
+}
+$$
+
+$$
+\boxed{
+\widehat{m}_{i,t} = \frac{m_{i,t}}{1-\beta_1^t}
+}
+$$
+
+$$
+\boxed{
+\widehat{v}_{i,t} = \frac{v_{i,t}}{1-\beta_2^t}
+}
+$$
+
+$$
+\boxed{
+w_{i,t+1} = (1-\lambda\gamma) w_{i,t} - \lambda\frac{\widehat{m}_{i,t}}{\sqrt{\widehat{v}_{i,t}}+\epsilon}
+}
+$$
+
+where $g_{i,t}$ excludes the weight-decay term, and $\gamma \ge 0$ is the weight-decay coefficient (called `weight_decay` in the code), starting from $m_{i,0} = 0$ and $v_{i,0} = 0$.
+
+## Week 07 - Regularization and Normalization
+
+### Task 01
+
+**Description:**
+
+Create a script that builds a two-hidden-layer `Tanh` MLP (ex. `10 -> 64 -> 64 -> 1`), trains it on a small (20-example) synthetic linear-regression dataset, and evaluates it on a larger (200-example) held-out set drawn from the same distribution after every epoch.
+
+For each example, sample standard-normal inputs `(n, 10)`, then standard-normal noise/error `(n, 1)` scaled by `0.1`. The targets would be `x @ true_w + noise`, where `true_w` is `(10, 1)` standard-normal sampled using a separate generator. Train for 300 full-batch epochs with MSE and learning rate `0.01`.
+
+Plot the train and test loss curves over training and print the final train loss and test loss.
+
+> [!NOTE]
+> If you can produce the same outcome with another/simpler architecture or training process, this is completely fine for the task.
+
+**Acceptance criteria:**
+
+- The trend of the below graph is reproduced.
+
+**Example output:**
+
+```bash
+python run.py -w 7 -t 1
+```
+
+```text
+Final losses: train loss = 0.0000, test loss = 6.1239
+```
+
+![w07_task01_overfitting.png](assets/w07_task01_overfitting.png "w07_task01_overfitting.png")
+
+<details>
+<summary>How can we interpret this chart?</summary>
+
+We see overfitting!
+
+The train loss collapses to zero while the test loss keeps climbing: the model has memorized its 20 training examples instead of learning the underlying linear relationship.
+
+</details>
+
+<details>
+<summary>How can we solve this?</summary>
+
+We can add regularization and counter the high variance by introducing bias.
+
+One of the ways this can be done is weight decay / L2 regularization.
+
+Another is Dropout and that's what we'll use today.
+
+</details>
+
+<details>
+<summary>What is the added value of Dropout?</summary>
+
+It does regularization by introducing bias into the network while it is training.
+
+The general idea is to zero out a randomly chosen number of activations of the preceding layer.
+
+> [!NOTE]
+> Read the paper that introduced Dropout: Srivastava, Hinton, Krizhevsky, Sutskever, Salakhutdinov, ["Dropout: A Simple Way to Prevent Neural Networks from Overfitting"](https://jmlr.org/papers/v15/srivastava14a.html), JMLR 2014.
+
+</details>
+
+<details>
+<summary>Which figure in the paper provides an example of this?</summary>
+
+![w07_dropout_example.png](assets/w07_dropout_example.png "w07_dropout_example.png")
+
+</details>
+
+<details>
+<summary>Does it also do that during inference/validation time?</summary>
+
+No - then the predictions use the full network.
+
+</details>
+
+<details>
+<summary>Which figure in the paper provides an example of this?</summary>
+
+![w07_dropout_inference.png](assets/w07_dropout_inference.png "w07_dropout_inference.png")
+
+</details>
+
+<details>
+<summary>How would be able to deal with this switch programmatically?</summary>
+
+We have to use the state of the module. We'll need to have a property - `training`, of each instance of `nn.Module` that'll dictate the behavior of the module when it is called.
+
+</details>
+
+### Task 02
+
+**Description:**
+
+Add a `training` flag on `Module`, defaulting to `True`, together with `train()` and `eval()` methods that set it to `True` and `False`.
+
+`Sequential` overrides both methods so that calling `train()`/`eval()` on it also calls `train()`/`eval()` on every submodule it holds, including submodules nested inside another `Sequential`.
+
+**Acceptance criteria:**
+
+- The flag `training` is implemented.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_nn/test_module.py` and `tests/test_dl_lib/test_nn/test_sequential.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 7 -t 2
+```
+
+```text
+Before eval: outer.training = True, inner.training = True
+After eval:  outer.training = False, inner.training = False
+After train: outer.training = True, inner.training = True
+```
+
+Let's say we have created a dropout layer with `p=0.5` and it receives the following input:
+
+$$
+x = [1,1,1,1,1,1,1,1]
+$$
+
+<details>
+<summary>Open the PyTorch documentation - is <code>p</code> the probability of keeping or zeroing an activation?</summary>
+
+It is the probability to zero out an element:
+
+![w07_dropout_docs.png](assets/w07_dropout_docs.png "w07_dropout_docs.png")
+
+</details>
+
+<details>
+<summary>What about in the paper?</summary>
+
+> [!IMPORTANT]
+> In the paper (<https://jmlr.org/papers/v15/srivastava14a.html>) `p` is the probability to keep an element!
+
+</details>
+
+<details>
+<summary>What is the next step?</summary>
+
+We sample a random mask for each element. You can think of it as throwing a coin `len(x)` times. Suppose this call produces:
+
+$$
+m = [0,1,0,0,0,1,0,1]
+$$
+
+</details>
+
+<details>
+<summary>What is the next step?</summary>
+
+We apply the mask:
+
+$$
+\widetilde{x} = x \odot m
+$$
+
+and get:
+
+$$
+\widetilde{x} = [0,1,0,0,0,1,0,1]
+$$
+
+</details>
+
+Suppose the next neuron adds these eight values using weights of \(2\) and a bias of \(-8\):
+
+$$
+z = 2\sum_{i=1}^{8}\widetilde{x}_i - 8.
+$$
+
+During training, four values survive on average (because `p=0.5`), so its average weighted input is:
+
+$$
+\mathbb{E}[z_{\text{train}}] = 2(4)-8=0.
+$$
+
+For our particular mask, only three survive, giving \(z=2(3)-8=-2\).
+
+During evaluation, dropout is disabled and all eight values reach the neuron:
+
+$$
+z_{\text{eval}} = 2(8)-8=8.
+$$
+
+The weights and bias have not changed, but the neuron's input has shifted from a training average of \(0\) to an evaluation value of \(8\).
+
+<details>
+<summary>What is the problem we have?</summary>
+
+The learned weights and bias are not suited to this new input scale.
+
+</details>
+
+<details>
+<summary>How do we solve this?</summary>
+
+We **scale surviving values** by \(1/(1-p)\).
+
+With \(p=0.5\), this doubles them:
+
+$$
+y = \frac{x \odot m}{1-p}
+= [0,2,0,0,0,2,0,2].
+$$
+
+Now four values survive on average, each contributing \(2\). Their expected sum is \(8\), so the same neuron's average weighted input becomes:
+
+$$
+\mathbb{E}[z_{\text{train,scaled}}]
+=2(4\times2)-8
+=8.
+$$
+
+During evaluation, all eight original values pass through unchanged:
+
+$$
+z_{\text{eval}}=2(8)-8=8.
+$$
+
+The expected training input now matches the evaluation input.
+
+Individual masks still produce fluctuations but switching off dropout no longer introduces a systematic shift in the mean.
+
+</details>
+
+During backpropagation we reuse the mask. For each element:
+
+\[
+y_i=\frac{w_i m_i}{1-p}.
+\]
+
+The sampled mask \(m_i\) is treated as constant, so:
+
+\[
+\frac{\partial y_i}{\partial w_i}
+= \frac{m_i}{1-p}
+\underbrace{\frac{\partial w_i}{\partial w_i}}_{1}
+= \frac{m_i}{1-p}.
+\]
+
+Applying the chain rule:
+
+\[
+\boxed{
+\frac{\partial\mathcal L}{\partial w_i}
+= \frac{\partial\mathcal L}{\partial y_i}
+\frac{\partial y_i}{\partial w_i}
+= \frac{\partial\mathcal L}{\partial y_i}
+\frac{m_i}{1-p}
+}
+\]
+
+<details>
+<summary>What gradient do masked elements receive?</summary>
+
+\(m_i=0\) => zero gradient
+
+</details>
+
+<details>
+<summary>What about surviving elements?</summary>
+
+They receive the incoming gradient multiplied by \(1/(1-p)\), matching the forward-pass scaling.
+
+</details>
+
+### Task 03
+
+**Description:**
+
+Define the `Dropout` class. It provides:
+
+- construction: takes a drop probability `p`, defaulting to `0.5`. Raises `ValueError` if `p` is outside `[0, 1]`.
+- `forward`: in evaluation mode, or when `p` is `0.0`, returns the input unchanged. In training mode, zeroes each element independently with probability `p`, and scales every surviving element.
+
+Rerun the previous task with dropout layers inserted after each hidden layer's activations and plot the train/test loss curves.
+
+**Acceptance criteria:**
+
+- The effects of `Dropout` are visualized.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_nn/test_dropout.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 7 -t 3
+```
+
+```text
+With Dropout: train loss = 2.7817, test loss = 2.2676
+```
+
+![w07_task03_dropout_narrows_gap.png](assets/w07_task03_dropout_narrows_gap.png "w07_task03_dropout_narrows_gap.png")
+
+### Task 04
+
+**Description:**
+
+Apply the script from the first task on one synthetic dataset of `128` examples, without noise or a held-out set.
+
+This time build a `12` hidden linear layers of width `32`, placing `Tanh` in-between, followed by a final `32 -> 1` output layer. Initialize weights as standard-normal values scaled by `0.1` and set biases to zero. Train for 50 epochs with a learning rate of `0.01`.
+
+Objectives:
+
+- Print three training losses: the MSE at epochs `0`, `25`, and `49` (the first, middle, and last epochs). Record each loss before updating the model's parameters.
+- Measure the gradients of the layers: use the weight gradients calculated during the final epoch's backward pass. Take the absolute value of every weight gradient, then average them to obtain one number per layer. Do not include bias gradients.
+- Print the 13 gradient averages: list them in order, starting with the first hidden layer and ending with the output layer.
+- Plot the gradient averages: use layer numbers `1–13` on the x-axis and their gradient averages on a logarithmic y-axis. A logarithmic scale makes very small values and differences between layers easier to see.
+
+> [!NOTE]
+> If you can produce the same outcome with another/simpler architecture or training process, this is completely fine for the task.
+
+**Acceptance criteria:**
+
+- The trend in the below graph is reproduced.
+
+**Example output:**
+
+```bash
+python run.py -w 7 -t 4
+```
+
+```text
+Without BatchNorm1d: loss[0] = 7.4629, loss[25] = 7.4627, loss[-1] = 7.4626
+Without BatchNorm1d: gradient magnitude per layer = [0.00017717968148645014, 8.156227704603225e-05, 8.813239401206374e-05, 0.00010215472138952464, 9.533659613225609e-05, 8.347261609742418e-05, 8.155079558491707e-05, 0.00010097638005390763, 9.482887253398076e-05, 0.00010848169040400535, 9.530266834190115e-05, 8.592824451625347e-05, 0.0005417605862021446]
+```
+
+![w07_task04_vanishing_gradients.png](assets/w07_task04_vanishing_gradients.png "w07_task04_vanishing_gradients.png")
+
+<details>
+<summary>What does this chart show?</summary>
+
+The loss is frozen to four decimal places across all 50 epochs, and every layer's gradient magnitude sits in the same tiny `1e-4`-`1e-5` band regardless of depth: a textbook example of a **vanishing gradient**.
+
+</details>
+
+<details>
+<summary>How can we solve this?</summary>
+
+We mentioned several possible ways:
+
+- smarter weight initialization;
+  - the biases may help here.
+- smarter input preprocessing;
+- maybe the activation function is not appropriate;
+- residual connections.
+
+Today we'll look at another way of solving this - **batch normalization**!
+
+> [!NOTE]
+> Read the paper that introduced BatchNorm: Ioffe, Szegedy, ["Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift"](https://arxiv.org/abs/1502.03167), ICML 2015.
+
+</details>
+
+<details>
+<summary>How does BatchNorm1d behave during training?</summary>
+
+For each feature, it normalizes the current batch to zero mean and unit variance, using that batch's own mean and variance, then applies a learnable per-feature scale: `gamma`, and shift: `beta`.
+
+</details>
+
+Let's say we have a batch normalization layer. During training, we get this batch:
+
+$$
+X = \begin{bmatrix}
+1 & 10 \\
+1 & 18 \\
+5 & 10 \\
+5 & 18
+\end{bmatrix}.
+$$
+
+Each **row is an example**, and each **column is a feature**.
+
+<details>
+<summary>What is our first step?</summary>
+
+Batch normalization treats each feature separately, using its values across the batch:
+
+- First feature: $[1,1,5,5]$
+- Second feature: $[10,18,10,18]$
+
+We calculate one mean and one variance per column:
+
+$$
+\mu_1 = \frac{1+1+5+5}{4}=3
+$$
+
+$$
+\mu_2 = \frac{10+18+10+18}{4}=14
+$$
+
+So the batch mean is:
+
+$$
+\mu=[3,14].
+$$
+
+Subtracting it from every row gives:
+
+$$
+X-\mu = \begin{bmatrix}
+-2 & -4 \\
+-2 & 4 \\
+2 & -4 \\
+2 & 4
+\end{bmatrix}.
+$$
+
+Both columns now have zero mean, but their scales still differ.
+
+</details>
+
+<details>
+<summary>What is our next step?</summary>
+
+Calculate each feature's **biased variance**: the average squared distance from its mean, dividing by the batch size $N=4$.
+
+$$
+v_1=\frac{(-2)^2+(-2)^2+2^2+2^2}{4}=4
+$$
+
+$$
+v_2=\frac{(-4)^2+4^2+(-4)^2+4^2}{4}=16.
+$$
+
+Divide the centered values by their feature's standard deviation:
+
+$$
+\widehat{X}=\frac{X-\mu}{\sqrt{v+\varepsilon}}.
+$$
+
+Ignoring the tiny $\varepsilon$ for this calculation:
+
+$$
+\widehat{X} = \begin{bmatrix}
+-1 & -1 \\
+-1 & 1 \\
+1 & -1 \\
+1 & 1
+\end{bmatrix}.
+$$
+
+Each column now has zero mean and unit variance.
+
+</details>
+
+<details>
+<summary>What is our next step?</summary>
+
+We apply a (learnable) scale $\gamma$ and a (learnable) shift $\beta$ for each feature:
+
+$$
+Y=\gamma\odot\widehat{X}+\beta.
+$$
+
+Initially:
+
+$$
+\gamma=[1,1],\qquad \beta=[0,0],
+$$
+
+so the normalized values pass through unchanged.
+
+Suppose training later learns:
+
+$$
+\gamma=[2,0.5],\qquad \beta=[1,-1].
+$$
+
+Then our output becomes approximately:
+
+$$
+Y= \begin{bmatrix}
+-1 & -1.5 \\
+-1 & -0.5 \\
+3 & -1.5 \\
+3 & -0.5
+\end{bmatrix}.
+$$
+
+The network can learn the scale and offset it needs after normalization.
+
+</details>
+
+<details>
+<summary>What is our next step?</summary>
+
+We maintain two non-learnable values per feature:
+
+- `running_mean`, initially $[0,0]$.
+- `running_var`, initially $[1,1]$.
+
+During training, update each using:
+
+$$
+\text{running}
+\leftarrow
+(1-m)\,\text{running}+m\,\text{batch statistic},
+$$
+
+where $m$ is `momentum`, defaulting to $0.1$.
+
+For our batch:
+
+$$
+\text{running mean}
+=0.9[0,0]+0.1[3,14]
+=[0.3,1.4].
+$$
+
+To match PyTorch, the running variance uses the **unbiased** batch variance, dividing by $N-1$:
+
+$$
+v_{\text{unbiased}}
+=\frac{N}{N-1}v
+=\left[\frac{16}{3},\frac{64}{3}\right].
+$$
+
+Therefore:
+
+$$
+\text{running variance}
+=0.9[1,1]+0.1
+\left[\frac{16}{3},\frac{64}{3}\right]
+\approx[1.4333,3.0333].
+$$
+
+These updates do not participate in gradient computation.
+
+</details>
+
+<details>
+<summary>What changes when we call <code>eval()</code>?</summary>
+
+The layer uses the saved statistics:
+
+$$
+Y= \gamma\odot
+\frac{X-\text{running mean}}
+{\sqrt{\text{running variance}+\varepsilon}}
++\beta.
+$$
+
+</details>
+
+During backpropagation gradients flow through the normalization, including the batch mean and variance.
+
+Unlike dropout's sampled mask, these statistics **depend on the inputs**. We must account for that dependence.
+
+For one feature, let:
+
+$$
+g_i=\frac{\partial\mathcal L}{\partial y_i}.
+$$
+
+The learnable parameters receive:
+
+$$
+\frac{\partial\mathcal L}{\partial\beta}
+=\sum_i g_i,
+\qquad
+\frac{\partial\mathcal L}{\partial\gamma}
+=\sum_i g_i\widehat{x}_i.
+$$
+
+The input gradient is:
+
+$$
+\boxed{
+\frac{\partial\mathcal L}{\partial x_i}
+= \frac{\gamma}{\sqrt{v+\varepsilon}}
+\left(
+g_i-\operatorname{mean}(g)
+-\widehat{x}_i\operatorname{mean}(g\widehat{x})
+\right)
+}
+$$
+
+All means and sums here run over the batch for that feature.
+
+### Task 05
+
+**Description:**
+
+Define the class `BatchNorm1d`. It should provide:
+
+- construction: accept `num_features`, `eps=1e-5`, and `momentum=0.1`. Create learnable per-feature `gamma` (ones) and `beta` (zeros), plus non-learnable `running_mean` (zeros) and `running_var` (ones).
+- `forward` when training: compute each feature's batch mean and biased variance. Return `gamma * (x - mean) / sqrt(variance + eps) + beta`. Update running statistics without tracking gradients, using `(1 - momentum) * running + momentum * batch_stat`. Use the unbiased batch variance for updating `running_var`.
+- `forward` when not training: normalize using running statistics, apply `gamma` and `beta`, and leave running statistics unchanged.
+- `parameters`: return only `gamma` and `beta`.
+
+Create a demonstration script that:
+
+- Prints input/output feature means and biased variances during training.
+- Prints running statistics before and after one training call, then switches to evaluation and prints the output mean.
+- Repeats Task 04 with `BatchNorm1d` before every `Tanh`, keeping its data, initialization, and training settings. Print the same losses and gradient measurements, and save a logarithmic gradient plot for comparison.
+
+**Acceptance criteria:**
+
+- Compared with Task 04, loss falls substantially and early-layer gradients are larger.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_nn/test_normalization.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 7 -t 5
+```
+
+```text
+gamma = tensor([1., 1., 1.], requires_grad=True)
+beta  = tensor([0., 0., 0.], requires_grad=True)
+x.mean(dim=0) = tensor([ 4.6368,  0.5793, -3.1433])
+x.var(dim=0, unbiased=False) = tensor([11.9421, 12.4851, 18.8823])
+batch_norm(x).mean(dim=0) = tensor([ 2.9802e-08,  3.7253e-08, -2.9802e-08], grad_fn=<MeanBackward1>)
+batch_norm(x).var(dim=0, unbiased=False) = tensor([1.0000, 1.0000, 1.0000], grad_fn=<VarBackward0>)
+Before any forward call: running_mean = tensor([0., 0., 0.])
+                         running_var  = tensor([1., 1., 1.])
+After one training call: running_mean = tensor([0.1788, 0.1956, 0.2559])
+                         running_var  = tensor([3.9490, 4.8103, 2.5452])
+Evaluating: batch_norm(x).mean(dim=0) = tensor([0.8099, 0.8027, 1.4436], grad_fn=<MeanBackward1>)
+With BatchNorm1d: loss[0] = 7.4267, loss[25] = 0.5486, loss[-1] = 0.3091
+With BatchNorm1d: gradient magnitude per layer = [0.12924525141716003, 0.06648257374763489, 0.05176399275660515, 0.04867493733763695, 0.05708292871713638, 0.06382918357849121, 0.060660116374492645, 0.05594765394926071, 0.06290805339813232, 0.05174217373132706, 0.03969079628586769, 0.01466367021203041, 0.06459763646125793]
+```
+
+![w07_task05_batchnorm_recovers_gradients.png](assets/w07_task05_batchnorm_recovers_gradients.png "w07_task05_batchnorm_recovers_gradients.png")
+
+Compare the training run to Task 04:
+
+- the loss collapses from 7.4267 to 0.3091 instead of staying frozen near 7.46;
+- and every layer's gradient magnitude now sits in the `0.01`-`0.13` range, two to three orders of magnitude larger than Task 04's vanished `1e-4`-`1e-5` band.
+
+### Task 06
+
+**Description:**
+
+Create a script that builds a single `BatchNorm1d` layer and a fixed example `x_fixed`.
+
+For each of three batch sizes (64, 8, and 2), it runs 30 trials: each trial surrounds `x_fixed` with freshly sampled random companions filling out the rest of the batch, and normalizes the whole batch.
+
+It collects `x_fixed`'s normalized output across the 30 trials, computes its standard deviation, and prints one line per batch size.
+
+It also plots the standard deviation against batch size.
+
+**Acceptance criteria:**
+
+- The standard deviation of `x_fixed`'s normalized output grows as batch size shrinks.
+
+**Example output:**
+
+```bash
+python run.py -w 7 -t 6
+```
+
+```text
+Batch size 64: std of BatchNorm1d(x_fixed) across 30 random batches = 0.1458
+Batch size 8: std of BatchNorm1d(x_fixed) across 30 random batches = 0.4098
+Batch size 2: std of BatchNorm1d(x_fixed) across 30 random batches = 0.8062
+```
+
+![w07_task06_batchnorm_batch_size.png](assets/w07_task06_batchnorm_batch_size.png "w07_task06_batchnorm_batch_size.png")
+
+<details>
+<summary>What is the limitation of BatchNorm?</summary>
+
+One example can affect another example's gradient.
+
+During training, examples share the batch mean and variance. Changing one example can change both the outputs and the input gradients of other examples.
+
+We can see that in the graph above: the same layer, the same fixed input, and yet its normalized output's standard deviation across repeated random batches is nearly six times higher at batch size 2 than at batch size 64, purely because of which other examples happened to share the batch.
+
+</details>
+
+LayerNorm can solve this. It normalizes each example using only that example's own features, never another example's.
+
+There is nothing batch-dependent to estimate or to fall back on, so the same computation applies unchanged whether the layer is training or evaluating.
+
+Read the paper that introduced LayerNorm: LayerNorm: Ba, Kiros, Hinton, ["Layer Normalization"](https://arxiv.org/abs/1607.06450), 2016.
+
+Let's create a `LayerNorm` layer and it receives two examples, each containing four features:
+
+$$
+X= \begin{bmatrix}
+1 & 1 & 5 & 5\\
+10 & 18 & 10 & 18
+\end{bmatrix}.
+$$
+
+<details>
+<summary>What is our first step?</summary>
+
+Layer normalization treats each example separately:
+
+- First example: $[1,1,5,5]$
+- Second example: $[10,18,10,18]$
+
+We calculate one mean and one variance **per row**, across its four features.
+
+For the first example:
+
+$$
+\mu_1=\frac{1+1+5+5}{4}=3.
+$$
+
+For the second:
+
+$$
+\mu_2=\frac{10+18+10+18}{4}=14.
+$$
+
+Subtract each example's mean from its features:
+
+$$
+X-\mu= \begin{bmatrix}
+-2 & -2 & 2 & 2\\
+-4 & 4 & -4 & 4
+\end{bmatrix}.
+$$
+
+Each row now has zero mean.
+
+</details>
+
+<details>
+<summary>What is our next setup?</summary>
+
+Calculate each example's **biased variance**, dividing by its number of features, $D=4$:
+
+$$
+v_1=\frac{(-2)^2+(-2)^2+2^2+2^2}{4}=4.
+$$
+
+$$
+v_2=\frac{(-4)^2+4^2+(-4)^2+4^2}{4}=16.
+$$
+
+Divide each centered row by its own standard deviation:
+
+$$
+\widehat{x}_{ij}
+= \frac{x_{ij}-\mu_i}{\sqrt{v_i+\varepsilon}}.
+$$
+
+Ignoring the tiny $\varepsilon$ for this calculation:
+
+$$
+\widehat{X}= \begin{bmatrix}
+-1 & -1 & 1 & 1\\
+-1 & 1 & -1 & 1
+\end{bmatrix}.
+$$
+
+Each row now has zero mean and unit variance.
+
+</details>
+
+<details>
+<summary>What is our next step?</summary>
+
+There is one learnable scale and shift **per feature**, shared across examples:
+
+$$
+y_{ij}=\gamma_j\widehat{x}_{ij}+\beta_j.
+$$
+
+Initially:
+
+$$
+\gamma=[1,1,1,1],
+\qquad
+\beta=[0,0,0,0].
+$$
+
+Suppose training later learns:
+
+$$
+\gamma=[2,2,0.5,0.5],
+\qquad
+\beta=[1,1,-1,-1].
+$$
+
+Our output becomes approximately:
+
+$$
+Y= \begin{bmatrix}
+-1 & -1 & -0.5 & -0.5\\
+-1 & 3 & -1.5 & -0.5
+\end{bmatrix}.
+$$
+
+The normalization statistics belong to each **example**, while the learnable parameters belong to each **feature**.
+
+</details>
+
+<details>
+<summary>What changes when we call <code>eval()</code>?</summary>
+
+Nothing in the layer's calculation.
+
+During both training and evaluation, LayerNorm uses each example's own feature mean and variance:
+
+$$
+y_{ij}
+= \gamma_j
+\frac{x_{ij}-\mu_i}{\sqrt{v_i+\varepsilon}}
++\beta_j.
+$$
+
+There are no running statistics or momentum updates.
+
+With the same input and parameters, training-mode and evaluation-mode outputs are identical.
+
+</details>
+
+During backpropagation gradients flow through each example's mean and variance, as well as through $\gamma$ and $\beta$.
+
+Let:
+
+$$
+g_{ij}=\frac{\partial\mathcal L}{\partial y_{ij}}.
+$$
+
+Because the learnable parameters are shared across examples:
+
+$$
+\frac{\partial\mathcal L}{\partial\beta_j}
+=\sum_i g_{ij},
+\qquad
+\frac{\partial\mathcal L}{\partial\gamma_j}
+=\sum_i g_{ij}\widehat{x}_{ij}.
+$$
+
+To calculate input gradients, first include each feature's scale:
+
+$$
+h_{ij}=g_{ij}\gamma_j.
+$$
+
+Then, for each example:
+
+$$
+\boxed{
+\frac{\partial\mathcal L}{\partial x_{ij}}
+= \frac{
+h_{ij}
+-\operatorname{mean}_j(h_{ij})
+-\widehat{x}_{ij}\operatorname{mean}_j(h_{ij}\widehat{x}_{ij})
+}{
+\sqrt{v_i+\varepsilon}
+}
+}
+$$
+
+Here, both means run across the features of that example.
+
+<details>
+<summary>Can one feature affect another feature's gradient?</summary>
+
+Yes. Features within an example share its mean and variance, so their gradients are connected.
+
+</details>
+
+<details>
+<summary>Can one example affect another example's gradient?</summary>
+
+No - layer normalization does not connect different examples.
+
+Each example's statistics are calculated independently, during both training and evaluation.
+
+</details>
+
+### Task 07
+
+**Description:**
+
+Task 06 showed that BatchNorm1d's output for one example depends on which other examples share its batch.
+LayerNorm solves this by normalizing each example independently of every other example in the batch.
+
+Define the `LayerNorm` class in `dl_lib.nn.normalization`, extending `Module`. It provides:
+
+- **construction**: takes `normalized_shape`, and a defaulting argument `eps=1e-5`. It creates a learnable `gamma` (initialized to ones) and `beta` (initialized to zeros), matching `normalized_shape`.
+- **forward**: normalizes each example along its feature dimension to zero mean and unit variance, using `eps` for numerical stability, then scales by `gamma` and shifts by `beta`. This computation does not depend on the `training` flag.
+- **parameters**: return only `gamma` and `beta`.
+
+Create a script that builds a `LayerNorm`, and prints an input alongside its training-mode and evaluation-mode outputs, together with whether the two are identical.
+The same script then reuses Task 06's exact fixed-example-with-random-companions experiment, this time normalizing with `LayerNorm` instead of `BatchNorm1d`, and plots its own standard-deviation-vs-batch-size graph so it can be compared side by side with Task 06's.
+
+**Acceptance criteria:**
+
+- The standard deviation of `x_fixed`'s normalized output is (numerically) zero at every batch size.
+
+**Test cases:**
+
+See `tests/test_dl_lib/test_nn/test_normalization.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 7 -t 7
+```
+
+```text
+x = tensor([[ 4.0820,  0.4131, -3.3576,  2.1369],
+        [-1.1690, -1.7972,  1.8067,  2.6761],
+        [-0.4385,  0.1933, -0.1933,  1.3641]])
+Training:   layer_norm(x) = tensor([[ 1.1918, -0.1481, -1.5251,  0.4814],
+        [-0.8146, -1.1452,  0.7512,  1.2086],
+        [-0.9686, -0.0551, -0.6140,  1.6376]], grad_fn=<AddBackward0>)
+Evaluating: layer_norm(x) = tensor([[ 1.1918, -0.1481, -1.5251,  0.4814],
+        [-0.8146, -1.1452,  0.7512,  1.2086],
+        [-0.9686, -0.0551, -0.6140,  1.6376]], grad_fn=<AddBackward0>)
+Identical regardless of mode: True
+Batch size 64: std of LayerNorm(x_fixed) across 30 random batches = 0.0000
+Batch size 8: std of LayerNorm(x_fixed) across 30 random batches = 0.0000
+Batch size 2: std of LayerNorm(x_fixed) across 30 random batches = 0.0000
+```
+
+![w07_task07_layernorm_stable.png](assets/w07_task07_layernorm_stable.png "w07_task07_layernorm_stable.png")
+
+Where Task 06's `BatchNorm1d` showed a standard deviation growing to 0.8062 at batch size 2, `LayerNorm`'s output for the same fixed example never moves at all, regardless of its batchmates: it is a flat line at zero across all three batch sizes.
+
+### Task 08
+
+**Description:**
+
+This task closes the week with a single model report that puts Dropout, BatchNorm1d, and LayerNorm on the same footing, using the overfitting setup from Task 01.
+
+Create a script that trains four models on Task 01's 20-example dataset, and evaluates each on its 200-example test set:
+
+- a plain two-hidden-layer `Tanh` MLP (Task 01's baseline);
+- the same MLP with `Dropout(p=0.5)` after each hidden layer (Task 03);
+- the same MLP with `BatchNorm1d` before each hidden layer's `Tanh` (Task 05);
+- the same MLP with `LayerNorm` before each hidden layer's `Tanh` (Task 07).
+
+It computes each model's test-set $R^2$ against a mean-predictor baseline, prints a model report table with one row per model and a short comment, and names the best model.
+
+**Acceptance criteria:**
+
+- A draft model report is created.
+
+**Example output:**
+
+```bash
+python run.py -w 7 -t 8
+```
+
+```text
+model             test r2  comment
+baseline           0.0000  mean predictor, ignores x
+plain MLP          0.5319  no regularization, overfits the 20-example train set
++Dropout           0.1211  randomly zeroes activations, narrows the train/test gap
++BatchNorm1d       0.4549  normalizes over the batch, mainly a training stabilizer here
++LayerNorm         0.3401  normalizes per sample, stable even with this tiny batch
+Best model: plain MLP (test r2 = 0.5319)
+```
+
+### Task 09
+
+**Description:**
+
+Create a script that tries to beat Task 08's model report.
+
+**Acceptance criteria:**
+
+- A higher $R^2$ is obtained.
+
+## Week 08 - Convolutional Neural Networks
+
+### ImageNet
+
+Today we'll look at the paper that arguably started the deep learning evolution:
+
+Krizhevsky, Sutskever, and Hinton, "ImageNet Classification with Deep Convolutional Neural Networks": <https://proceedings.neurips.cc/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html>
+
+Let's analyze it!
+
+<details>
+<summary>Read the abstract - what did the authors achieve?</summary>
+
+They created a neural network that classifies an image into one of $1000$ classes.
+
+</details>
+
+<details>
+<summary>What dataset did they use?</summary>
+
+[Wikipedia](https://en.wikipedia.org/wiki/ImageNet): *The ImageNet project is a large visual database designed for use in visual object recognition software research.*.
+
+It has more than 14 million total images categorized into a total of 21,841 classes (or in ImageNet's terms - `synset`s).
+
+They used a subset of the original dataset, called "ImageNet-1K" (sometimes also referred to as "ImageNet Large Scale Visual Recognition Challenge (ILSVRC) 2010"). You can explore it [on Hugging Face](https://huggingface.co/datasets/ILSVRC/imagenet-1k).
+
+</details>
+
+<details>
+<summary>Which figure provides examples of the instances in ImageNet-1K?</summary>
+
+![w08_imagenet_samples.png](assets/w08_imagenet_samples.png "w08_imagenet_samples.png")
+
+</details>
+
+<details>
+<summary>What metrics did they observe?</summary>
+
+![w08_alexnet_error_rates.png](assets/w08_alexnet_error_rates.png "w08_alexnet_error_rates.png")
+
+</details>
+
+<details>
+<summary>What is this term "error rate" - what does it mean?</summary>
+
+It is the complement of accuracy: `error rate = 100% - accuracy`.
+
+</details>
+
+<details>
+<summary>But wait - didn't we say accuracy is bad?</summary>
+
+Yep, it is.
+
+And the dataset they used is not balanced, though they do not give any statistics on the class distribution.
+
+</details>
+
+<details>
+<summary>So why did they use this "metric"?</summary>
+
+Because everybody else did it. Afterwards, this did change and most papers started using mainly the F1 score.
+
+</details>
+
+<details>
+<summary>How do we interpret the top-1 error rate then?</summary>
+
+It is the percentage of images where its highest-ranked class is wrong.
+
+AlexNet's $37.5\%$ top-1 error means it got the top prediction **right on $62.5\%$ of test images**.
+
+</details>
+
+<details>
+<summary>How do we interpret the top-5 error rate?</summary>
+
+It is the percentage where the correct class wasn’t among its five highest-ranked guesses.
+
+Its $17.0\%$ top-5 error means **the correct class appeared in the top five for $83.0\%$ of the test images**.
+
+</details>
+
+<details>
+<summary>Which section talks about the performance of the runner up?</summary>
+
+![w08_imagenet_results_runner.png](assets/w08_imagenet_results_runner.png "w08_imagenet_results_runner.png")
+
+</details>
+
+<details>
+<summary>What type of neural network did the runner up use?</summary>
+
+They did not use a neural network!
+
+Instead they used a complex system of hand-engineered features and passed them on to (ML) classifiers (often SVM or similar).
+
+![w08_imagenet_intro.png](assets/w08_imagenet_intro.png "w08_imagenet_intro.png")
+
+</details>
+
+<details>
+<summary>Which table shows comparison with previous winners?</summary>
+
+![w08_imagenet_results_table.png](assets/w08_imagenet_results_table.png "w08_imagenet_results_table.png")
+
+</details>
+
+And this paper changed everything - look at what the future models achieved:
+
+![w08_imagenet_results.png](assets/w08_imagenet_results.png "w08_imagenet_results.png")
+
+<details>
+<summary>Do you know the name of the model in 2015?</summary>
+
+ReNet - we'll talk about it next time.
+
+</details>
+
+<details>
+<summary>What was the other breakthrough the authors talked about?</summary>
+
+This was the first paper to also show that you can use GPUs / CUDA to train deep neural networks.
+
+</details>
+
+#### Task 01
+
+**Description:**
+
+Define the `Conv1d` class. It provides:
+
+- `construction`: takes `in_channels` (default `1`), `out_channels` (default `1`), `kernel_size`, `stride` (default `1`), and `padding` (default `0`). It creates a `weight` tensor and a `bias` tensor, shaped and initialized the same way `torch.nn.Conv1d` shapes and initializes its own `weight` and `bias`, with `requires_grad=True`.
+- `forward`: takes a single-channel, unbatched signal shaped `(in_channels, length)` (`(1, length)` for this task) and computes each output position by summing the `kernel_size` products of the input window and the kernel, plus the bias.
+- `parameters`: returns the weight and bias.
+
+Create a script that copies a real `torch.nn.Conv1d(1, 1, kernel_size)`'s weight and bias into our `Conv1d` under `torch.no_grad()`, runs both on the same random input, and prints whether the two outputs match.
+
+**Acceptance criteria:**
+
+- A simple convolution in 1D is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_conv.py`:
+
+- `TestConv1dInit`;
+- `TestConv1dParameters`;
+- `TestConv1dForward.test_when_input_is_unbatched_then_output_is_unbatched`;
+- `TestConv1dForward.test_when_single_channel_unbatched_then_matches_torch_nn_conv1d`.
+
+**Example output:**
+
+```bash
+python run.py -w 8 -t 1
+```
+
+```text
+Copied torch.nn.Conv1d's weight and bias into our Conv1d.
+Input shape: (1, 12)
+Our output shape: (1, 10)
+Matches torch.nn.Conv1d: True
+```
+
+### Class-Based PyTorch Model
+
+In the previous session we used `nn.Sequential` to create models. It a functional style that provides a really fast way to create deep neural networks, but it takes away the control we have over how data flows from one layer to the next.
+
+<details>
+<summary>What is the main assumption of the functional style model creation in PyTorch?</summary>
+
+It is that the data flows in a linear fashion without intermediate transformations. It is really just a chain of classes that get executed in the particular order.
+
+</details>
+
+To alleviate this, we'll use another syntax to define models: the `class-based` approach.
+
+Here's an example of sequential model definition:
+
+```python
+import torch.nn as nn
+
+net = nn.Sequential(
+  nn.Linear(9, 16),
+  nn.ReLU(),
+  nn.Linear(16, 8),
+  nn.ReLU(),
+  nn.Linear(8, 1),
+  nn.Sigmoid(),
+)
+```
+
+Here's how it can be re-written using the `class-based` approach:
+
+```python
+class Net(nn.Module):
+  def __init__(self):
+    super(Net, self).__init__()
+    self.fc1 = nn.Linear(9, 16)
+    self.fc2 = nn.Linear(16, 8)
+    self.fc3 = nn.Linear(8, 1)
+  
+  def forward(self, x):
+    x = nn.functional.relu(self.fc1(x))
+    x = nn.functional.relu(self.fc2(x))
+    x = nn.functional.sigmoid(self.fc3(x))
+    return x
+
+net = Net()
+```
+
+As can be seen above, every model should define the following two methods:
+
+- `__init__()`: defines the layers that are used in the `forward()` method;
+- `forward()`: defines what happens to the model inputs once it receives them; this is where you pass inputs through pre-defined layers.
+
+By convention `torch.nn.functional` gets imported with an alias `F`. That means that the above body of `forward` can be rewritten like:
+
+```python
+import torch.nn.functional as F
+
+...
+
+x = F.relu(self.fc1(x))
+x = F.relu(self.fc2(x))
+x = F.sigmoid(self.fc3(x))
+```
+
+### Working with images in PyTorch
+
+### The Clouds dataset
+
+We will be working with a dataset containing pictures of various types of clouds.
+
+![w08_task05.png](assets/w08_task05.png "w08_task05.png")
+
+<details>
+
+<summary>How can we load one of those images in Python?</summary>
+
+We can use the [`pillow`](https://pypi.org/project/pillow/) package. It is imported with the name `PIL` and has a very handly [`Image.open` function](https://pillow.readthedocs.io/en/latest/handbook/tutorial.html#using-the-image-class).
+
+</details>
+
+<details>
+
+<summary>Wait - what is an image again?</summary>
+
+- The image is a matrix of pixels ("picture elements").
+- Each pixel contains color information.
+
+![w08_image_pixels.png](assets/w08_image_pixels.png "w08_image_pixels.png")
+
+- Grayscale images: integer in the range $[0 - 255]$.
+  - 30:
+
+    ![w08_image_gray.png](assets/w08_image_gray.png "w08_image_gray.png")
+
+- Color images: three/four integers, one for each color channel (**R**ed, **G**reen, **B**lue, sometimes also **A**lpha).
+  - RGB = $(52, 171, 235)$:
+
+    ![w08_image_blue.png](assets/w08_image_blue.png "w08_image_blue.png")
+
+</details>
+
+### Converting pixels to tensors and tensors to pixels
+
+[`ToTensor()`](https://pytorch.org/vision/main/generated/torchvision.transforms.ToTensor.html#totensor):
+
+- Converts pixels to float tensors (PIL image => `torch.float`).
+- Scales values to $[0.0, 1.0]$.
+
+[`PILToTensor()`](https://pytorch.org/vision/main/generated/torchvision.transforms.PILToTensor#piltotensor):
+
+- Converts pixels to `8`-bit unsigned integers (PIL image => `torch.uint8`).
+- Does not scale values: they stay in the interval $[0, 255]$.
+
+[`ToPILImage()`](https://pytorch.org/vision/0.9/transforms.html#torchvision.transforms.ToPILImage):
+
+- Converts a tensor or an numpy `ndarray` to PIL Image.
+- Does not change values.
+
+### Loading images with PyTorch
+
+The easiest way to build a `Dataset` object when we have a classification task is with a predefined directory structure.
+
+As we load the images, we could also apply preprocessing steps using `torchvision.transforms`.
+
+```text
+clouds_train
+  - cumulus
+    - 75cbf18.jpg
+    - ...
+  - cumulonimbus
+  - ...
+clouds_test
+  - cumulus
+  - cumulonimbus
+```
+
+- Main folders: `clouds_train` and `clouds_test`.
+  - Inside: one folder per category.
+    - Inside: image files.
+
+```python
+from torchvision.datasets import ImageFolder
+from torchvision import transforms
+from torch.utils import data
+
+train_transforms = transforms.Compose([
+  transforms.ToTensor(), # convert the object into a tensor
+  transforms.Resize((128, 128)), # resize the images to be of size 128x128
+])
+
+dataset_train = ImageFolder(
+  'DATA/clouds/clouds_train',
+  transform=train_transforms,
+)
+
+dataloader_train = data.DataLoader(
+  dataset_train,
+  shuffle=True,
+  batch_size=1,
+)
+
+image, label = next(iter(dataloader_train))
+print(image.shape)
+```
+
+```console
+torch.Size([1, 3, 128, 128])
+```
+
+In the above output:
+
+- `1`: batch size;
+- `3`: three color channels;
+- `128`: height;
+- `128`: width.
+
+We could display these images as well, but we'll have to do two transformations:
+
+1. We need to have a three dimensional matrix. The above shape represents a `4D` one. To remove all dimensions with size `1`, we can use the `squeeze` method of the `image` object.
+2. The number of color channels must come after the height and the width. To change the order of the dimensions, we can use the `permute` method of the `image` object.
+
+```python
+image = image.squeeze().permute(1, 2, 0)
+print(image.shape)
+```
+
+```console
+torch.Size([128, 128, 3])
+```
+
+We can now, plot this using `matplotlib`:
+
+```python
+import matplotlib.pyplot as plt
+plt.imshow(image)
+plt.axis('off')
+plt.show()
+```
+
+![w08_loading_image_result.png](assets/w08_loading_image_result.png "w08_loading_image_result.png")
+
+### Data augmentation
+
+<details>
+
+<summary>What is data augmentation?</summary>
+
+Applying random transformations to original data points.
+
+</details>
+
+<details>
+
+<summary>What is the goal of data augmentation?</summary>
+
+Generating more data.
+
+</details>
+
+<details>
+
+<summary>On which set should data augmentation be applied to - train, validation, test, all, some?</summary>
+
+Only to the training set.
+
+</details>
+
+<details>
+
+<summary>What is the added value of data augmentation?</summary>
+
+- Increase the size of the training set.
+- Increase the diversity of the training set.
+- Improve model robustness.
+- Reduce overfitting.
+
+</details>
+
+All supported image augmentation transformation can be found in [the documentation of torchvision](https://pytorch.org/vision/stable/transforms.html#v2-api-reference-recommended).
+
+<details>
+
+<summary>Image augmentation operations can sometimes negatively impact the training process. Can you think of two deep learning tasks in which specific image augmentation operations should not be used?</summary>
+
+- Fruit classification and changing colors:
+
+One of the supported image augmentation transformations is [`ColorJitter`](https://pytorch.org/vision/stable/auto_examples/transforms/plot_transforms_illustrations.html#colorjitter) - it randomly changes brightness, contrast, saturation, hue, and other properties of an image.
+
+If we are doing fruit classification and decide to apply a color shift augmentation to an image of the lemon, the augmented image will still be labeled as lemon although it would represent a lime.
+
+![w08_data_augmentation_problem.png](assets/w08_data_augmentation_problem.png "w08_data_augmentation_problem.png")
+
+- Hand-written characters classification and vertical flip:
+
+![w08_data_augmentation_problem2.png](assets/w08_data_augmentation_problem2.png "w08_data_augmentation_problem2.png")
+
+</details>
+
+<details>
+
+<summary>So, how do we choose appropriate augmentation operations?</summary>
+
+- Whether an augmentation operation is appropriate depends on the task and data.
+- Remember: Augmentations impact model performance.
+
+<details>
+
+<summary>Ok, but then how do we see the dependence in terms of data?</summary>
+
+Explore, explore, explore!
+
+</details>
+
+</details>
+
+<details>
+
+<summary>What transformations can you think of for our current task (cloud classification)?</summary>
+
+```python
+train_transforms = transforms.Compose([
+  transforms.RandomHorizontalFlip(), # simulate different viewpoints of the sky
+  transforms.RandomRotation(45), # expose model to different angles of cloud formations
+  transforms.RandomAutocontrast(), # simulate different lighting conditions
+  transforms.ToTensor(), # convert the object into a tensor
+  transforms.Resize((128, 128)), # resize the images to be of size 128x128
+])
+```
+
+![w08_data_augmentation.png](assets/w08_data_augmentation.png "w08_data_augmentation.png")
+
+</details>
+
+Which of the following statements correctly describe data augmentation? (multiple selection)
+
+```text
+A. Using data augmentation allows the model to learn from more examples.
+B. Using data augmentation increases the diversity of the training data.
+C. Data augmentation makes the model more robust to variations and distortions commonly found in real-world images.
+D. Data augmentation reduces the risk of overfitting as the model learns to ignore the random transformations.
+E. Data augmentation introduces new information to the model that is not present in the original dataset, improving its learning capability.
+F. None of the above.
+```
+
+<details>
+
+<summary>Reveal answer</summary>
+
+Answers: A, B, C, D.
+
+Data augmentation allows the model to learn from more examples of larger diversity, making it robust to real-world distortions.
+
+It tends to improve the model's performance, but it does not create more information than is already contained in the original images.
+
+<details>
+
+<summary>What should we prefer - using more real training data or generating it artificially?</summary>
+
+If available, using more training data is preferred to creating it artificially with data augmentation.
+
+</details>
+
+</details>
+
+You are building a model to recognize different flower species. You consider three augmentations to use: `color shift`, `rotation`, and `texture change`. The graphic below shows the examples of these three augmentations. Which of the augmentations could be used for the flower classifier?
+
+![w08_checkpoint.png](assets/w08_checkpoint.png "w08_checkpoint.png")
+
+```text
+A. Only color shift
+B. Only rotation
+C. Only texture shift
+D. All three
+E. None of the three
+```
+
+<details>
+
+<summary>Reveal answer</summary>
+
+Answer: B.
+
+The flower is still the same species when it's rotated, so this augmentation will not introduce noise in training labels; rather, it will increase the diversity of the training samples.
+
+For this task having the right color is important. The other two operations can change the color which could negatively impact the performance of the model.
+
+</details>
+
+### Convolutional Neural Networks
+
+Let's say that we have the following image:
+
+![w08_linear_layers_problem.png](assets/w08_linear_layers_problem.png "w08_linear_layers_problem.png")
+
+<details>
+
+<summary>What is the problem of using linear layers to solve the classification task?</summary>
+
+Too many parameters.
+
+If the input size is `256x256`, that means that the network has `65,536` inputs!
+
+If the first linear layer has `1000` neurons, only it alone would result in over `65` **million** parameters! For a color image, this number would be even higher.
+
+![w08_linear_layers_problem2.png](assets/w08_linear_layers_problem2.png "w08_linear_layers_problem2.png")
+
+So, the three main problems are:
+
+- Incredible amount of resources needed.
+- Slow training.
+- Overfitting.
+
+</details>
+
+<details>
+
+<summary>What is another more subtle problem of using linear layers only?</summary>
+
+They are not space-invariant.
+
+Linearly connected neurons could learn to detect the cat, but the same cat **won't be recognized if it appears in a *different* location**.
+
+![w08_space_invariance.png](assets/w08_space_invariance.png "w08_space_invariance.png")
+
+</details>
+
+<details>
+
+<summary>So, ok - the alternative is using CNNs. How do they work?</summary>
+
+![w08_cnn.png](assets/w08_cnn.png "w08_cnn.png")
+
+- Parameters are collected in one or more small grids called **filters**.
+- **Slide** filter(s) over the input.
+- At each step, perform the **convolution** operation.
+  - We'll show what this means shortly.
+- The end result (after the whole image has been traversed with **one filter**) is called a **feature map**:
+  - Preserves spatial patterns from the input.
+  - Uses fewer parameters than linear layer.
+- Remember: one filter = one feature map. We can slide **multiple filters over an original image**, to get multiple feature maps.
+- We can then apply activations to the feature maps.
+- The set of all feature maps combined, form the output of a single convolutional layer.
+- Available in `torch.nn`: [`nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3)`](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html):
+  - `in_channels`: number of input dimensions.
+  - `out_channels`: number of filters.
+  - `kernel_size`: height and width of the filter(s).
+
+</details>
+
+<details>
+
+<summary>What does the convolution operation comprise of?</summary>
+
+![w08_cnn_dot.png](assets/w08_cnn_dot.png "w08_cnn_dot.png")
+
+</details>
+
+<details>
+
+<summary>What is zero padding? What added value does it have?</summary>
+
+![w08_cnn_zero_pad.png](assets/w08_cnn_zero_pad.png "w08_cnn_zero_pad.png")
+
+- Add a frame of zeros to the input of the convolutional layer.
+- This maintains the spatial dimensions of the input and output tensors.
+- Ensures border pixels are treated equally to others.
+
+Available as `padding` argument: `nn.Conv2d(3, 32, kernel_size=3, padding=1)`.
+
+</details>
+
+<details>
+
+<summary>What is max pooling? What added value does it have?</summary>
+
+![w08_cnn_max_pool.png](assets/w08_cnn_max_pool.png "w08_cnn_max_pool.png")
+
+- Slide non-overlapping window over input.
+- At each position, retain only the maximum value.
+  - This is analogous to our brain: we remember things for which our neurons produce a high electrical signal.
+- Used after convolutional layers to reduce spatial dimensions.
+
+Available in `torch.nn`: [`nn.MaxPool2d(kernel_size=2)`](https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html).
+
+</details>
+
+<details>
+
+<summary>But what happens when the input is three dimensional - what do the filters look like?</summary>
+
+The `2D` part of a `2D` convolution does not refer to the dimension of the convolution input, nor of dimension of the filter itself, but rather of the space in which the filter is allowed to move (`2` directions only).
+
+Different `2D`-array filters are applied to each dimension and then their outputs are summed up (you can also think of this as a single `3D` matrix):
+
+![w08_rgb_convolution.png](assets/w08_rgb_convolution.png "w08_rgb_convolution.png")
+
+$$(1*1+2*2+4*3+5*4)+(0*0+1*1+3*2+4*3) = 56$$
+
+More on this [here](https://stackoverflow.com/a/62544803/16956119) and [here](https://d2l.ai/chapter_convolutional-neural-networks/channels.html).
+
+</details>
+
+### Visualizing the weights
+
+Let's compare the visual interpretation of a `Linear` layer to that of a 2D convolution `nn.Conv2d`.
+
+<details>
+
+<summary>What are the one main characteristic of linear layers?</summary>
+
+Every input connects to every neuron via a weight.
+
+</details>
+
+<details>
+
+<summary>Do the weights get shared across neurons - for example, can neuron X use the same weight that neuron Y used?</summary>
+
+No. Each weight is tied to a neuron and is independent from every other weight.
+
+</details>
+
+<details>
+
+<summary>What architecture would we get if we drew a single linear layer with nine inputs and four outputs?</summary>
+
+![w08_drawing_linear.png](./assets/w08_drawing_linear.png "w08_drawing_linear.png")
+
+</details>
+
+Ok - great! Let's compare this to a CNN.
+
+<details>
+
+<summary>What are two aspects in which the connections in a convolutional layer differ from those in a linear layer?</summary>
+
+- Every input connects only to the neurons that "see it", i.e. that have it in their receptive field.
+- Arrows/weights form kernels. Weights in a single kernel **are shared for every output neuron**.
+
+</details>
+
+<details>
+
+<summary>What architecture would we get if we drew a single convolutional layer with one input channel and two output channels?</summary>
+
+![w08_drawing_cnn.png](./assets/w08_drawing_cnn.png "w08_drawing_cnn.png")
+
+Take a moment to ensure you truly understand how the weights are connected and shared in a single kernel.
+
+</details>
+
+### Convolutions in different dimensions
+
+So far, we've been discussing the class [`nn.Conv2d`](https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv2d.html). There are two more ways we can apply convolutions in PyTorch - [`nn.Conv1d`](https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv1d.html) and [`nn.Conv3d`](https://docs.pytorch.org/docs/stable/generated/torch.nn.Conv3d.html). Let's see how they'd work.
+
+If in 2D convolutions, we have as input:
+
+![w08_2d_input.png](./assets/w08_2d_input.png "w08_2d_input.png")
+
+<details>
+
+<summary>How would a 2D convolution with two output channels look like?</summary>
+
+![w08_2d_input_conv.png](./assets/w08_2d_input_conv.png "w08_2d_input_conv.png")
+
+</details>
+
+<details>
+
+<summary>How many dimensions does the output of a single kernel have?</summary>
+
+The output of each kernel is a 2D tensor.
+
+</details>
+
+<details>
+
+<summary>So many dimensions does the output of a single 2D convolutional layer have?</summary>
+
+The output of a layer is a 3D tensor because the multiple kernels form a new channel/depth axis.
+
+</details>
+
+<details>
+
+<summary>How would the feature map look in our case?</summary>
+
+![w08_2d_input_conv_out.png](./assets/w08_2d_input_conv_out.png "w08_2d_input_conv_out.png")
+
+</details>
+
+Ok - perfect! We also showed how we can apply a 2D convolution to a 3D input.
+
+Can you draw how the first iteration of the first kernel would compute on the following image?
+
+![w08_3d_input.png](./assets/w08_3d_input.png "w08_3d_input.png")
+
+<details>
+
+<summary>Reveal answer</summary>
+
+Note that here a single kernel spans all of the channels.
+
+![w08_3d_input_conv.png](./assets/w08_3d_input_conv.png "w08_3d_input_conv.png")
+
+</details>
+
+Great! Let's now think about how a 3D convolution would look like for the above input.
+
+<details>
+
+<summary>Can you intuit what the drawing would look like?</summary>
+
+It is a bit harder to visualize, but the main difference is that now the kernels do not span the full channel axis. Instead, the number of channels they span is a property (i.e. user-configurable) of the kernels:
+
+![w08_3d_input_3d_conv.png](./assets/w08_3d_input_3d_conv.png "w08_3d_input_3d_conv.png")
+
+Arguably a clearer vitalization is the following:
+
+![w08_3d_input_3d_conv2.png](./assets/w08_3d_input_3d_conv2.png "w08_3d_input_3d_conv2.png")
+
+and the following:
+
+![w08_3d_input_3d_conv3.png](./assets/w08_3d_input_3d_conv3.png "w08_3d_input_3d_conv3.png")
+
+</details>
+
+So what about 1D convolutions?
+
+<details>
+
+<summary>How would an example of a 1D convolution look like?</summary>
+
+When the input is one dimensional (i.e. has one row), we just move across this row:
+
+![w08_1d_ex.png](./assets/w08_1d_ex.png "w08_1d_ex.png")
+
+</details>
+
+And just like we were able to apply 2D convolutions on 3D input, we can also apply 1D convolutions to 2D input.
+
+<details>
+
+<summary>How would an example of a 1D convolution look like on 2D input?</summary>
+
+We'll treat the height as channels. A single kernel would encompass the full height and slide along the width.
+
+![w08_1d_ex2.png](./assets/w08_1d_ex2.png "w08_1d_ex2.png")
+
+</details>
+
+A great website to view the logic behind padding, stride and groups for 2D convolutions is available in [animatedai's github page](https://animatedai.github.io/).
+
+#### Task 02
+
+**Description:**
+
+We did the core operation on a single channel; real inputs arrive batched and with multiple channels.
+
+Extend `Conv1d.forward` to accept a batched, multi-channel input shaped `(batch, in_channels, length)` and a weight shaped `(out_channels, in_channels, kernel_size)`. The sliding part of the computation is still a visible loop - over the batch, over each output channel, over each output position - but the window-times-kernel-and-sum that spelled out one tap at a time becomes a dot product rather than a further manual loop.
+
+Create a script that copies a real `torch.nn.Conv1d(in_channels=3, out_channels=4, kernel_size=5)`'s weight and bias into our `Conv1d`, runs both on the same `(2, 3, 20)` batch, and prints whether the two outputs match.
+
+**Acceptance criteria:**
+
+- Multiple inputs can be handled by the convolution operation.
+- Inputs with multiple channels can be handled by the convolution operation.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_conv.py`:
+
+- `TestConv1dForward.test_when_input_is_batched_then_output_keeps_the_batch_dimension`;
+- `TestConv1dForward.test_when_multiple_channels_and_batched_then_matches_torch_nn_conv1d`.
+
+**Example output:**
+
+```bash
+python run.py -w 8 -t 2
+```
+
+```text
+Copied torch.nn.Conv1d's weight and bias into our Conv1d.
+Input shape: (2, 3, 20)
+Our output shape: (2, 4, 16)
+Matches torch.nn.Conv1d: True
+```
+
+#### Task 03
+
+**Description:**
+
+Extend `Conv1d.forward` to pad the input with `padding` zeros on each side, then walk output positions `stride` apart instead of one at a time.
+
+Create a script that runs three configurations - no padding with stride 2, padding with stride 1, and both together - against `torch.nn.Conv1d`, printing each configuration's hand-computed output length next to the length the layer actually reports, and whether the outputs match.
+
+**Acceptance criteria:**
+
+- Padding is supported.
+- Stride is supported.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_conv.py`:
+
+- `TestConv1dForward.test_when_stride_and_padding_given_then_output_length_matches_the_formula`;
+- `TestConv1dForward.test_when_stride_given_then_matches_torch_nn_conv1d`;
+- `TestConv1dForward.test_when_padding_given_then_matches_torch_nn_conv1d`;
+- `TestConv1dForward.test_when_stride_and_padding_both_given_then_matches_torch_nn_conv1d`.
+
+**Example output:**
+
+```bash
+python run.py -w 8 -t 3
+```
+
+```text
+Config: {'kernel_size': 3, 'stride': 2, 'padding': 0}
+  Computed output length: 8, reported: 8
+  Matches torch.nn.Conv1d: True
+Config: {'kernel_size': 3, 'stride': 1, 'padding': 2}
+  Computed output length: 19, reported: 19
+  Matches torch.nn.Conv1d: True
+Config: {'kernel_size': 4, 'stride': 3, 'padding': 2}
+  Computed output length: 6, reported: 6
+  Matches torch.nn.Conv1d: True
+```
+
+#### Task 04
+
+**Description:**
+
+Define the `Conv2d` class following the same recipe as `Conv1d`. It provides:
+
+- `construction`: takes a square `kernel_size`, `stride`, and `padding`. It creates a `weight` tensor shaped `(out_channels, in_channels, kernel_size, kernel_size)` and a `bias` tensor.
+- `forward`: accepts a batched or an unbatched input, and pads, strides, and slides over both spatial axes the way `Conv1d` slides over its one axis.
+
+Create a script that runs three configurations against `torch.nn.Conv2d` on a `(2, in_channels, 64, 64)` batch and prints each configuration's output shape and whether it matches.
+
+**Acceptance criteria:**
+
+- Two dimensional convolutions are supported.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_conv.py`:
+
+- `TestConv2dInit`;
+- `TestConv2dForward`;
+- `TestConv2dParameters`.
+
+**Example output:**
+
+```bash
+python run.py -w 8 -t 4
+```
+
+```text
+Config: {'in_channels': 3, 'out_channels': 4, 'kernel_size': 3, 'stride': 1, 'padding': 0}
+  Output shape: (2, 4, 62, 62)
+  Matches torch.nn.Conv2d: True
+Config: {'in_channels': 3, 'out_channels': 4, 'kernel_size': 5, 'stride': 2, 'padding': 2}
+  Output shape: (2, 4, 32, 32)
+  Matches torch.nn.Conv2d: True
+Config: {'in_channels': 3, 'out_channels': 96, 'kernel_size': 11, 'stride': 4, 'padding': 2}
+  Output shape: (2, 96, 15, 15)
+  Matches torch.nn.Conv2d: True
+The last config is AlexNet's real conv1: in_channels=3, out_channels=96, kernel_size=11, stride=4, padding=2.
+```
+
+#### Task 05
+
+**Description:**
+
+Let's do a performance analysis.
+
+Create a script that builds our `Conv2d` and a reference `torch.nn.Conv2d`, both configured exactly like AlexNet's conv1 (`in_channels=3, out_channels=96, kernel_size=11, stride=4, padding=2`), runs each once untimed as a warm-up, then times one more call to each on a `(4, 3, 64, 64)` batch, printing both times, the speedup, and whether the outputs match.
+
+**Acceptance criteria:**
+
+- Our implementation is compared to the PyTorch implementation.
+
+**Example output:**
+
+```bash
+python run.py -w 8 -t 5
+```
+
+```text
+Input shape: (4, 3, 64, 64)
+Our Conv2d: 0.7160s
+torch.nn.Conv2d: 0.0003s
+Speedup: 2684.7x
+Matches torch.nn.Conv2d: True
+```
+
+<details>
+<summary>What does max pool do with the padding?</summary>
+
+A zero pad would win the max whenever every real value in that window happens to be negative.
+
+Negative infinity can never be the largest value in a window that contains at least one real pixel, so it behaves like "not here" rather than "zero signal".
+
+</details>
+
+#### Task 06
+
+**Description:**
+
+Define the `MaxPool2d` class. It provides:
+
+- `construction`: takes `kernel_size`, an optional `stride` (defaults to `kernel_size`), and an optional `padding` (defaults to `0`).
+- `forward`: accepts either an unbatched or a batched input and does the pooling.
+
+Create a script that runs three configurations against `torch.nn.MaxPool2d` on a `(2, 96, 15, 15)` batch - AlexNet's own `features` activation shape after conv1 - the last configuration being AlexNet's exact pool config (`kernel_size=3, stride=2`), printing each configuration's output shape and whether it matches.
+
+**Acceptance criteria:**
+
+- Max pooling is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_pooling.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 8 -t 6
+```
+
+```text
+Config: {'kernel_size': 2, 'stride': 2, 'padding': 0}
+  Output shape: (2, 96, 7, 7)
+  Matches torch.nn.MaxPool2d: True
+Config: {'kernel_size': 3, 'stride': 1, 'padding': 1}
+  Output shape: (2, 96, 15, 15)
+  Matches torch.nn.MaxPool2d: True
+Config: {'kernel_size': 3, 'stride': 2, 'padding': 0}
+  Output shape: (2, 96, 7, 7)
+  Matches torch.nn.MaxPool2d: True
+The last config is AlexNet's real pool1/pool2/pool5: kernel_size=3, stride=2.
+```
+
+#### Task 07
+
+**Description:**
+
+Define the `Linear` class in `dl_lib.nn.linear`. It provides:
+
+- `construction`: takes `in_features` and `out_features`, creates a `weight` tensor shaped `(out_features, in_features)` and a `bias` tensor.
+- `forward`: computes the forward pass, handling both an unbatched and a batched input.
+- `to`: takes a `device` and moves `weight` and `bias` onto it, re-wrapping each as a leaf tensor with `requires_grad=True`, then returns the layer itself.
+
+Create a script that, for three configurations matching AlexNet's real classifier shapes (256->1024, 1024->1024, 1024->10), copies a reference `torch.nn.Linear`'s weight and bias into ours and prints whether the outputs match, then times one more call to each on the first configuration and prints both times and the speedup.
+
+**Acceptance criteria:**
+
+- A fully connected layer is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_linear.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 8 -t 7
+```
+
+```text
+Config: in_features=256, out_features=1024
+  Output shape: (4, 1024)
+  Matches torch.nn.Linear: True
+Config: in_features=1024, out_features=1024
+  Output shape: (4, 1024)
+  Matches torch.nn.Linear: True
+Config: in_features=1024, out_features=10
+  Output shape: (4, 10)
+  Matches torch.nn.Linear: True
+These three shapes are AlexNet's real classifier: 256->1024, 1024->1024, 1024->10.
+Timing on in_features=256, out_features=1024:
+Our Linear: 0.0000s
+torch.nn.Linear: 0.0001s
+Speedup: 0.48x
+Matches torch.nn.Linear: True
+```
+
+<details>
+<summary>AlexNet's first layer uses an 11x11 kernel with stride 4, much larger than any later layer - why start so large?</summary>
+
+The input is large (227x227 in the paper, 64x64 here) and a large kernel with a large stride gives the first layer a wide receptive field while aggressively downsampling the spatial size in a single step, which keeps the next layer's input - and its memory footprint - manageable. The paper's own authors cite GPU memory as part of this choice: in 2012, a large first-layer stride was also what made the network fit in the memory of a single consumer GPU at all.
+
+</details>
+
+Here is the architecture we'll build now:
+
+| Layer | Type | Kernel | Stride | Pad | Out channels | Output shape |
+|---|---|---|---|---|---|---|
+| conv1 | Conv2d | 11x11 | 4 | 2 | 96 | 15x15x96 |
+| pool1 | MaxPool2d | 3x3 | 2 | 0 | - | 7x7x96 |
+| conv2 | Conv2d | 5x5 | 1 | 2 | 256 | 7x7x256 |
+| pool2 | MaxPool2d | 3x3 | 2 | 0 | - | 3x3x256 |
+| conv3 | Conv2d | 3x3 | 1 | 1 | 384 | 3x3x384 |
+| conv4 | Conv2d | 3x3 | 1 | 1 | 384 | 3x3x384 |
+| conv5 | Conv2d | 3x3 | 1 | 1 | 256 | 3x3x256 |
+| pool5 | MaxPool2d | 3x3 | 2 | 0 | - | 1x1x256 |
+| flatten | Flatten | - | - | - | - | 256 |
+| fc1 | Linear+ReLU+Dropout(0.5) | - | - | - | 1024 | 1024 |
+| fc2 | Linear+ReLU+Dropout(0.5) | - | - | - | 1024 | 1024 |
+| fc3 | Linear | - | - | - | 10 | 10 |
+
+Let's define the feature extraction part first.
+
+#### Task 08
+
+**Description:**
+
+Define the class `AlexNet`:
+
+- `construction`: takes `in_channels` (defaulting to `3`) and builds a `features` extractor: a `dl_lib.nn.Sequential` of five `torch.nn.Conv2d` layers each followed by `torch.nn.ReLU`, with a `torch.nn.MaxPool2d` after the first, second, and fifth convolution. Use the per-layer table above for each conv's `kernel_size`, `stride`, `padding`, and `out_channels`.
+
+Create a script that constructs `AlexNet(in_channels=3)`, runs a batch of random noise shaped `(4, 3, 64, 64)` through `model.features`, and prints the input shape and the resulting output shape.
+
+**Acceptance criteria:**
+
+- The convolutional part of the AlexNet architecture is defined.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_alexnet.py`: `TestInit`.
+
+**Example output:**
+
+```bash
+python run.py -w 8 -t 8
+```
+
+```text
+Input shape: (4, 3, 64, 64)
+features(x) output shape: (4, 256, 1, 1)
+```
+
+<details>
+<summary>The paper applies Local Response Normalization after the first two conv+ReLU blocks and splits channels across two GPUs - why does this implementation do neither?</summary>
+
+Local Response Normalization was the paper's 2012-era answer to stabilizing activations across nearby channels; Week 07 already taught `BatchNorm1d` and `LayerNorm`, the normalization techniques that superseded it, so we name LRN, say where the paper used it, and deliberately leave it out rather than silently dropping it. The two-GPU split existed only because a single 2012 GPU could not fit the whole network's memory footprint - a hardware constraint of its time, not a modelling decision, so there is nothing to reproduce.
+
+</details>
+
+Ok - let's now finish off with the classifier on top.
+
+#### Task 09
+
+**Description:**
+
+Extend `AlexNet`:
+
+- `construction`: also takes `num_classes` (defaulting to `10`) and builds a `classifier`: a `dl_lib.nn.Sequential` of `torch.nn.Flatten`, then two `(torch.nn.Linear, torch.nn.ReLU, torch.nn.Dropout(0.5))` blocks of `1024` units each, then a final `torch.nn.Linear` down to `num_classes`.
+- `forward`: does the forward pass.
+- `parameters`: returns all parameters.
+- `train` / `eval`: propagate the mode change into the sub-networks.
+- `to`: takes a `device` and moves every child held inside `features` and `classifier` onto it, then returns the model itself. Neither `features` nor `classifier` is a `torch.nn.Module` - both are our own `dl_lib.nn.Sequential`, which doesn't inherit `torch.nn`'s recursive `.to()` - so the loop calls `.to(device)` directly on each child layer it holds, the same duck typing that already lets `Sequential` treat any child uniformly.
+
+Create a script that constructs `AlexNet()`, runs the same batch of random noise through it twice in `.train()` mode and twice in `.eval()` mode, and prints both logits' shapes plus whether the two passes are identical in each mode.
+
+**Acceptance criteria:**
+
+- Training for a few steps on a small fixed batch lowers the loss.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_alexnet.py`:
+
+- `TestTo`;
+- `TestForward`;
+- `TestTrain`;
+- `TestEval`;
+- `TestParameters`.
+
+**Example output:**
+
+```bash
+python run.py -w 8 -t 9
+```
+
+```text
+Train mode: first logits (2, 10), second logits (2, 10)
+Train mode: two forward passes identical? False
+Eval mode:  first logits (2, 10), second logits (2, 10)
+Eval mode:  two forward passes identical? True
+```
+
+### The Model Report File
+
+Whenever we're building a model, we're going to have to produce the so-called **Model report**. This is an Excel file, but serves as the basis of our work and tells the story of our journey. It is typically **presented to your clients** and shows what has been tried out, what worked, what didn't and, ultimately, which is the best model for the task.
+
+Here're the guidelines we'll follow:
+
+1. Each row is a hypothesis - a model that was trained and evaluated.
+2. The columns are divided into two sets: the first set of columns represent the values of the hyperparameters of the model, the second set: the metrics on the **test** set. Do not use more than `3` metrics.
+3. The first row holds the so-called **baseline model**. This model can be only one of two things: if currently there is a deployed model on the client's environment, then it is taken to be the baseline model. Otherwise the baseline model is the greediest statistical model. For example, this is the model that predicts the most common class in classification problems.
+4. The columns that show the metrics express both the value of the metric as well as the percentage of change **compared to the *baseline* model** (we're striving for percentage increase, but should report every case).
+5. The rightmost column should be titled `Comments` and should hold our interpretation of the model (what do we see as metrics, is it good, is it bad, etc). We may include the so-called `Error Analysis` which details where this model makes mistakes.
+6. Above or below the main table there should be a cell that **explicitly** states which is the best model and why.
+7. Below the table or in other sheets there should be the following diagrams: `train vs validation metric` (the main metric used) and if the model outputs a loss, we should have a `train vs validation loss` diagram.
+8. The table should not be a pandas export - it should be coloured and tell the story of modelling. Bold and/or highlight the entries in which the metric is highest or to which you want to draw attention to.
+9. Do not sort the table after completing the experiments - it should be in the order of the created models. This lets you build up on the section `Comments` and easily track the changes made.
+10. Do not create a very wide table - it **should be easy to understand which is the best model** in one to two seconds of looking at it. Focus on the user experience.
+11. Optionally, you could create an additional sheet for the best model in which you put 4-5 examples of correct and incorrect predictions. This will control the client's expectations.
+
+> **Tip**: Since we're talking about doing a lot of experiments (typically `50` - `200`), you'll find it tedious to use Jupyter notebooks. Instead, create **scripts** and run them **in parallel**. This will speed up modelling speed tremendously!
+
+The end result is a table that is present in most scientific papers. Here are some examples:
+
+- [EXAMS-V: A Multi-Discipline Multilingual Multimodal Exam Benchmark for Evaluating Vision Language Models](https://arxiv.org/pdf/2403.10378)
+
+![w08_ex_table1.png](./assets/w08_ex_table1.png "w08_ex_table1.png")
+
+- [ImageNet Classification with Deep Convolutional Neural Networks](https://proceedings.neurips.cc/paper_files/paper/2012/file/c399862d3b9d6b76c8436e924a68c45b-Paper.pdf)
+
+![w08_imagenet_results_table.png](./assets/w08_imagenet_results_table.png "w08_imagenet_results_table.png")
+
+- [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/pdf/1810.04805)
+
+![w08_ex_table3.png](./assets/w08_ex_table3.png "w08_ex_table3.png")
+
+### Precision & Recall for Multiclass Classification (revisited)
+
+#### Computing total value
+
+In the previous session we introduced the metrics `precision` and `recall` in the context of binary classification. We also touched very slightly on the usecase for multiclass classification - let's elaborate more on how we can interpret the metrics.
+
+Let's say we get the following table:
+
+```console
+              precision    recall  f1-score   support
+
+     class 0       0.50      1.00      0.67         1
+     class 1       0.00      0.00      0.00         1
+     class 2       1.00      0.67      0.80         3
+
+    accuracy                           0.60         5
+   macro avg       0.50      0.56      0.49         5
+weighted avg       0.70      0.60      0.61         5
+```
+
+`Support` represents the number of instances for each class within the true labels. If the column with `support` has different numbers, then we have class imbalance.
+
+- `macro average` = $\frac{F1_{class1} + F1_{class2} + F1_{class3}}{3}$
+- `weighted average` = $\frac{F1_{class1}*SUPPORT_{class1} + F1_{class2}*SUPPORT_{class2} + F1_{class3}*SUPPORT_{class3}}{3}$
+- `micro average` = $\frac{F1_{class1}*SUPPORT_{class1} + F1_{class2}*SUPPORT_{class2} + F1_{class3}*SUPPORT_{class3}}{SUPPORT_{class1} + SUPPORT_{class2} + SUPPORT_{class3}}$
+
+To calculate them with `torch`, we can use the classes [`torchmetrics.Recall`](https://lightning.ai/docs/torchmetrics/stable/classification/recall.html) and [`torchmetrics.Precision`](https://lightning.ai/docs/torchmetrics/stable/classification/precision.html):
+
+```python
+from torchmetrics import Recall
+
+recall_per_class = Recall(task='multiclass', num_classes=7, average=None)
+recall_micro = Recall(task='multiclass', num_classes=7, average='micro')
+recall_macro = Recall(task='multiclass', num_classes=7, average='macro')
+recall_weighted = Recall(task='multiclass', num_classes=7, average='weighted')
+```
+
+When to use each:
+
+- `micro`: imbalanced datasets.
+- `macro`: consider errors in small classes as equally important as those in larger classes.
+- `weighted`: consider errors in larger classes as most important.
+
+We also have the [F1 score metric](https://lightning.ai/docs/torchmetrics/stable/classification/f1_score.html). **Remember that it is always best to use the *F1 score* instead of accuracy to handle class imbalances!**
+
+<details>
+
+<summary>What does multilabel classification mean?</summary>
+
+When one instance can get multiple classes assigned to it. This is the case, for example, in research article authorship identification: one article has multiple authors.
+
+</details>
+
+<details>
+
+<summary>Can you give an example for multilabel classification?</summary>
+
+- For example, in research article authorship identification: one article has multiple authors.
+- We also saw examples above with the character and alphabet classification.
+
+</details>
+
+#### Computing per class value
+
+- We can also analyze the performance per class.
+- To do this, compute the metric, setting `average=None`.
+  - This gives one score per each class:
+
+```python
+print(f1)
+```
+
+```console
+tensor([0.6364, 1.0000, 0.9091, 0.7917,
+        0.5049, 0.9500, 0.5493],
+        dtype=torch.float32)
+```
+
+- Then, use the `Dataset`'s `.class_to_idx` attribute that maps class names to indices.
+
+```python
+dataset_test.class_to_idx
+```
+
+```console
+{'cirriform clouds': 0,
+ 'clear sky': 1,
+ 'cumulonimbus clouds': 2,
+ 'cumulus clouds': 3,
+ 'high cumuliform clouds': 4,
+ 'stratiform clouds': 5,
+ 'stratocumulus clouds': 6}
+```
+
+### FashionMNIST
+
+#### Task 10
+
+**Description:**
+
+Define `load_fashion_mnist_loaders`: it takes a `batch_size` and downloads `torchvision.datasets.FashionMNIST`'s train and test splits to `DATA/fashion_mnist/` if not already present, resizes every image to 64x64 (AlexNet's expected spatial size), and returns a train `DataLoader`, a test `DataLoader`, and the list of the 10 class names.
+
+Create a script that loads one batch of images and plots the first 8.
+
+See `cheat_sheet.md`'s Week 08 `torchvision` section for `torchvision.datasets.FashionMNIST` and the `torchvision.transforms.v2` pipeline (`Compose`, `ToImage`, `ToDtype`, `Resize`) used here.
+
+**Acceptance criteria:**
+
+- The first 8 examples of FashionMNIST are shown.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 8 -t 10
+```
+
+![AlexNet task10 FashionMNIST samples](assets/w08_task10_samples.png)
+
+#### Task 11
+
+**Description:**
+
+Train a model report that compares our own from-scratch `AlexNet`, and `torchvision.models.alexnet`, then keep improving it in your own time.
+
+Create a model report file in which you do at least one experiment with the model from task 9 and several experiments with the built-in implementation while attempting to create the best model/architecture for this dataset.
+
+See `cheat_sheet.md`'s Week 08 `torchvision` section for `torchvision.models.alexnet`.
+
+**Acceptance criteria:**
+
+- A model report file is created.
+
+### CIFAR-10
+
+[CIFAR-10](https://www.cs.toronto.edu/~kriz/cifar.html) is a second, harder image dataset: 60,000 32x32 RGB photos (50,000 train / 10,000 test) split evenly across 10 real-world classes (`airplane`, `automobile`, `bird`, `cat`, `deer`, `dog`, `frog`, `horse`, `ship`, `truck`). Unlike FashionMNIST it is already 3-channel, so no channel-repeating trick is needed to feed it into `AlexNet`.
+
+This is also where we introduce a proper **three-way train/validation/test split**. So far we've only used train/test. From here on: pick the best model/configuration using **validation**, and touch **test** only once, at the very end, to report a final, honest, never-tuned-against score.
+
+#### Task 12
+
+**Description:**
+
+Define `load_cifar10_loaders`: it takes a `batch_size`, downloads `torchvision.datasets.CIFAR10`'s train and test splits to `DATA/cifar10/` if not already present, resizes every image to 64x64, splits the official test data into an equal-sized val and test set (so you end up with train/val/test, not just train/test), and returns a train `DataLoader`, a val `DataLoader`, a test `DataLoader`, and the list of the 10 class names.
+
+Create a script that loads one batch of images and plots the first 8.
+
+See `cheat_sheet.md`'s Week 08 `torchvision` section for `torchvision.datasets.CIFAR10` and the `torchvision.transforms.v2` pipeline (`Compose`, `ToImage`, `ToDtype`, `Resize`) used here.
+
+**Acceptance criteria:**
+
+- The first 8 examples of CIFAR-10 are shown.
+- Images are loaded via a three-way train/val/test split, not a two-way train/test split.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_functional.py`.
+
+#### Task 13
+
+**Description:**
+
+Train a model report that compares our own from-scratch `AlexNet`, and `torchvision.models.alexnet`, then keep improving it in your own time.
+
+Create a model report file in which you do at least one experiment with the model from task 9 and several experiments with the built-in implementation while attempting to create the best model/architecture for this dataset. Pick the best model/configuration using the validation set, and touch the test set only once, at the very end, to report its final score - this is why `load_cifar10_loaders` gives you three loaders instead of two.
+
+See `cheat_sheet.md`'s Week 08 `torchvision` section for `torchvision.models.alexnet`.
+
+**Acceptance criteria:**
+
+- A model report file is created.
+- The report's comparison table is scored on the validation set, and the chosen best model's test-set score is reported separately.
+
+### Clouds
+
+The [Clouds dataset](https://www.kaggle.com/datasets/mikolajbabula/clouds-dataset) is a third, smaller, **imbalanced** image dataset: ~474 train / ~486 test JPEG photos of clouds, spread unevenly across 7 classes (`cirriform clouds`, `clear sky`, `cumulonimbus clouds`, `cumulus clouds`, `high cumuliform clouds`, `stratiform clouds`, `stratocumulus clouds`) - from as few as 14 training images (`cumulonimbus clouds`) to as many as 133 (`high cumuliform clouds`).
+
+Unlike FashionMNIST and CIFAR-10, it is **not auto-downloaded** by `torchvision`: it is a directory of raw JPEGs, one subfolder per class, meant to be loaded with `torchvision.datasets.ImageFolder` rather than a built-in `torchvision.datasets` class. Download it and place it at `DATA/clouds/clouds_train/<class name>/*.jpg` and `DATA/clouds/clouds_test/<class name>/*.jpg` before running the tasks below.
+
+Because the classes are so imbalanced, accuracy is a misleading metric here (a model that only ever predicts `high cumuliform clouds` would already score decently) - prefer a macro-averaged metric, same as the rest of this week's model reports.
+
+#### Task 14
+
+**Description:**
+
+Define `load_clouds_loaders`: it takes a `batch_size`, loads the Clouds dataset from `DATA/clouds/clouds_train` and `DATA/clouds/clouds_test` with `torchvision.datasets.ImageFolder`, resizes every image to 64x64, splits the official test folder into an equal-sized val and test set (the same train/val/test discipline as `load_cifar10_loaders`), and returns a train `DataLoader`, a val `DataLoader`, a test `DataLoader`, and the list of the 7 class names.
+
+Create a script that loads one batch of images and plots the first 8.
+
+See `cheat_sheet.md`'s Week 08 `torchvision` section for `torchvision.datasets.ImageFolder` and the `torchvision.transforms.v2` pipeline (`Compose`, `ToImage`, `ToDtype`, `Resize`) used here.
+
+**Acceptance criteria:**
+
+- The first 8 examples of the Clouds dataset are shown.
+- Images are loaded via a three-way train/val/test split, not a two-way train/test split.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_functional.py`.
+
+#### Task 15
+
+**Description:**
+
+Train a model report that compares our own from-scratch `AlexNet`, and `torchvision.models.alexnet`, then keep improving it in your own time.
+
+Create a model report file in which you do at least one experiment with the model from task 9 and several experiments with the built-in implementation while attempting to create the best model/architecture for this dataset. Pick the best model/configuration using the validation set, and touch the test set only once, at the very end, to report its final score. Report a macro-averaged metric rather than accuracy, since the 7 classes are imbalanced.
+
+See `cheat_sheet.md`'s Week 08 `torchvision` section for `torchvision.models.alexnet`.
+
+**Acceptance criteria:**
+
+- A model report file is created.
+- The report's comparison table is scored on the validation set, and the chosen best model's test-set score is reported separately.
+- The report's metric is macro-averaged, not plain accuracy.
+
+## Week 09 - VGG and ResNet
+
+Today we'll talk about two of the models that improved the results of AlexNet in the ImageNet competition: VGG and ResNet:
+
+![w09_intro.png](assets/w09_intro.png "w09_intro.png")
+
+AlexNet was introduced in 2012 and in many ways it set the overall structure that future architectures would share.
+
+<details>
+<summary>What were the major components of the structure?</summary>
+
+A feature extraction part, made up of several convolutional layers, and a feature interpretation part, made up of several linear layers.
+
+![w09_anarch.png](assets/w09_anarch.png "w09_anarch.png")
+
+We can represent this with modern day PyTorch as follows:
+
+```python
+class AlexNet(nn.Module):
+    def __init__(self, num_classes: int = 1000):
+        super().__init__()
+
+        self.features = nn.Sequential(
+            # (N, 3, 224, 224) -> (N, 96, 55, 55)
+            nn.Conv2d(3, 96, kernel_size=11, stride=4, padding=2),
+            nn.ReLU(),
+            # PyTorch divides alpha by size:
+            # we use 5e-4 / 5 to match the paper's coefficient of 1e-4
+            nn.LocalResponseNorm(size=5, alpha=5e-4, beta=0.75, k=2),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+
+            # (N, 96, 27, 27) -> (N, 256, 13, 13)
+            nn.Conv2d(96, 256, kernel_size=5, padding=2, groups=2),
+            nn.ReLU(),
+            nn.LocalResponseNorm(size=5, alpha=5e-4, beta=0.75, k=2),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+
+            # (N, 256, 13, 13) -> (N, 384, 13, 13)
+            nn.Conv2d(256, 384, kernel_size=3, padding=1),
+            nn.ReLU(),
+
+            # (N, 384, 13, 13) -> (N, 384, 13, 13)
+            nn.Conv2d(384, 384, kernel_size=3, padding=1, groups=2),
+            nn.ReLU(),
+
+            # (N, 384, 13, 13) -> (N, 256, 6, 6)
+            nn.Conv2d(384, 256, kernel_size=3, padding=1, groups=2),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=3, stride=2),
+        )
+
+        self.classifier = nn.Sequential(
+            nn.Flatten(), nn.Linear(256 * 6 * 6, 4096), nn.ReLU(), nn.Dropout(p=0.5),
+            nn.Linear(4096, 4096), nn.ReLU(), nn.Dropout(p=0.5),
+            nn.Linear(4096, num_classes),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.classifier(self.features(x))
+```
+
+</details>
+
+It had some peculiarities though.
+
+<details>
+<summary>Which decisions of the authors did we note last time would be subject to change in newer architectures?</summary>
+
+- Large kernels in the beginning. Small kernels towards the end.
+  - NOTE: Padding 2 in the beginning. Padding 1 towards the end.
+- They use `LocalResponseNorm` to improve the error rate.
+  - NOTE: They apply the normalization after the activations.
+- The `MaxPool2d` is overlapping. Default stride is `kernel_size`.
+
+</details>
+
+Let's now open the paper that introduced VGG and see what changed!
+
+### The VGG model
+
+Simonyan and Zisserman, "Very Deep Convolutional Networks for Large-Scale Image Recognition" (VGG): <https://arxiv.org/abs/1409.1556>.
+
+<details>
+<summary>What is the main contribution of the authors?</summary>
+
+They created deep CNNs with a kernel 3x3 in each layer. This gave lower error rate.
+
+![w09_kernels.png](assets/w09_kernels.png "w09_kernels.png")
+
+</details>
+
+<details>
+<summary>Read the introduction - which other aspect(s) of the original architecture do they address?</summary>
+
+- The models from 2013 and 2014 had **smaller receptive fields**.
+- They also had a **smaller stride**.
+- VGG kept these changes and achieved better accuracy by **increasing the depth**.
+
+![w09_pintro.png](assets/w09_pintro.png "w09_pintro.png")
+
+</details>
+
+<details>
+<summary>Which section talks about the padding, convolution stride and max pool stride?</summary>
+
+2.1:
+
+![w09_hyperpa.png](assets/w09_hyperpa.png "w09_hyperpa.png")
+
+</details>
+
+<details>
+<summary>Which table shows the general architecture that the authors experimented with?</summary>
+
+![w09_t1.png](assets/w09_t1.png "w09_t1.png")
+
+</details>
+
+<details>
+<summary>What does the second column represent?</summary>
+
+It is a network with 11 weight layers that uses `LocalResponseNorm` after the first convolution.
+
+</details>
+
+<details>
+<summary>What do they conclude about this variant?</summary>
+
+It does not improve the performance:
+
+![w09_lrn.png](assets/w09_lrn.png "w09_lrn.png")
+
+Note that this was the opposite in the case of AlexNet (extract below taken from AlexNet paper):
+
+![w09_lrn_an.png](assets/w09_lrn_an.png "w09_lrn_an.png")
+
+</details>
+
+<details>
+<summary>What does this show us?</summary>
+
+This type of normalization is not scalable - while it may work on shallower models, it has no added value as parameter count grows.
+
+</details>
+
+<details>
+<summary>What is another peculiar (at first) change the authors made in the architecture?</summary>
+
+They used blocks of convolutions.
+
+</details>
+
+<details>
+<summary>What is the authors' argument for doing this?</summary>
+
+![w09_a1.png](assets/w09_a1.png "w09_a1.png")
+![w09_a2.png](assets/w09_a2.png "w09_a2.png")
+
+</details>
+
+<details>
+<summary>How can we visualize this?</summary>
+
+We can look at the simpler 1D case:
+
+![w09_clviz.png](assets/w09_clviz.png "w09_clviz.png")
+
+</details>
+
+<details>
+<summary>How do the authors explain the added value of this?</summary>
+
+- We get fewer parameters for the same receptive field, because parameter count grows with the square of the kernel size.
+- We get a more complex function as we have multiple non-linearities.
+
+![w09_benefits.png](assets/w09_benefits.png "w09_benefits.png")
+
+</details>
+
+#### Task 01
+
+**Description:**
+
+Define `compute_receptive_field` in `dl_lib/vision/functional.py`.
+
+It takes `layers`, a list of `(kernel_size, stride)` tuples ordered from the input side of a network to the output side, and returns the receptive field: the width (equivalently height, since every kernel here is square) of the patch of input pixels that a single output unit can "see", after passing through every one of those layers.
+
+Create a script that compares one 7x7 convolution against three stacked 3x3 convolutions (same input/output channel count): the receptive field of each, the parameter count of each, and the output spatial shape each produces on the same random input.
+
+**Acceptance criteria:**
+
+- A function for computing the receptive field of convolutional layers is defined.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_functional.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 1
+```
+
+```text
+Receptive field of one 7x7 conv:        7
+Receptive field of three stacked 3x3s:   7
+Params in one 7x7 conv (64 -> 64 channels):      200,768
+Params in three stacked 3x3 convs (64 -> 64 channels): 110,784
+Stacking 3x3s uses 1.81x fewer parameters for the same receptive field.
+Output shape of the 7x7 conv:      (2, 64, 32, 32)
+Output shape of the stacked 3x3s:   (2, 64, 32, 32)
+```
+
+#### Task 02
+
+**Description:**
+
+Define the `Vgg` class. It provides:
+
+- `construction`: takes `num_classes`, an optional `cfg`, and `batch_norm` (default `False`, when `True` inserts a `BatchNorm2d` after every conv **and before** its `ReLU`). It builds:
+  - a VGG-shaped configuration:
+    - if `cfg` is not passed, it defaults to VGG-11 without local response normalization (we won't support this in our implementations);
+    - if `cfg` is passed, then it will hold either output channel count or the string `"M"`, representing a 2x2 stride-2 max pool.
+  - `self.features`: the conv stack, built from `cfg`;
+  - `self.classifier`: a small fully connected head, assuming a 64x64 input to match `load_cifar10_loaders`.
+- `forward`: runs the forward pass;
+- `parameters`, `train`, `eval`, `to`: delegate to `features` and `classifier`.
+
+Create a script that builds a default model, runs one real CIFAR-10 batch through, printing the receptive field after every max pool, then runs the classifier and reports the parameter counts.
+
+**Acceptance criteria:**
+
+- The class Vgg is defined.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_vgg.py`.
+
+**Example output:**
+
+> [!NOTE]
+> Depending on how you prepare your input you may have different labels and this is fine for this task.
+
+```bash
+python run.py -w 9 -t 2
+```
+
+```text
+Classes (10): ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+Batch shape: (4, 3, 64, 64), labels: [6, 0, 4, 1]
+After MaxPool2d    shape=(4, 64, 32, 32) receptive_field=4
+After MaxPool2d    shape=(4, 128, 16, 16) receptive_field=10
+After MaxPool2d    shape=(4, 256, 8, 8) receptive_field=30
+After MaxPool2d    shape=(4, 512, 4, 4) receptive_field=70
+After MaxPool2d    shape=(4, 512, 2, 2) receptive_field=150
+Logits shape: (4, 10)
+Params in features:   9,220,480
+Params in classifier: 3,158,026
+Total params:         12,378,506
+```
+
+<details>
+<summary>What can we say about the last receptive field?</summary>
+
+150 pixels exceeds the 64x64 input - every unit at that depth can see the entire image!
+
+</details>
+
+This paper was published a little over a month after the paper for batch normalization.
+
+It's quite possible that the authors did not know of its existence.
+
+Nevertheless let's experiment and see what they would have seen, had they employed it.
+
+#### Task 03
+
+**Description:**
+
+Create a script that:
+
+- builds two VGG models: one with batch normalization and one - without;
+- runs one real CIFAR-10 batch and a backward pass through each;
+- and measures the mean absolute gradient of every conv layer's weight, from the layer closest to the input to the layer closest to the output.
+
+Plot the gradient magnitude on a log scale against layer depth for both models to see the effects of this normalization.
+
+**Acceptance criteria:**
+
+- The effects of batch normalization are visualized.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 3
+```
+
+```text
+Layer depth vs mean |gradient| of the weights:
+  layer 1: plain=1.58e-06  batch_norm=2.82e-02
+  layer 2: plain=9.11e-07  batch_norm=1.36e-02
+  layer 3: plain=7.23e-07  batch_norm=8.01e-03
+  layer 4: plain=6.59e-07  batch_norm=6.62e-03
+  layer 5: plain=5.87e-07  batch_norm=4.07e-03
+  layer 6: plain=8.20e-07  batch_norm=3.37e-03
+  layer 7: plain=1.30e-06  batch_norm=3.05e-03
+  layer 8: plain=3.10e-06  batch_norm=2.57e-03
+```
+
+![w09 task03 vanishing gradients](assets/w09_task03_vanishing_gradients.png "w09 task03 vanishing gradients")
+
+### Kaiming and Xavier initialization strategies
+
+Let's say we have this code:
+
+```python
+import torch
+import matplotlib.pyplot as plt
+x = torch.randn(1000, 10) # 1000 samples, each with 10 features
+w = torch.randn(10, 200) # turn each of the 10 features into 200
+y = x @ w
+print(x.mean(), x.std())
+print(y.mean(), y.std())
+plt.figure(figsize=(20, 5))
+plt.subplot(121)
+plt.hist(x.view(-1).tolist(), 50, density=True)
+plt.subplot(122)
+plt.hist(y.view(-1).tolist(), 50, density=True)
+plt.tight_layout()
+plt.show()
+```
+
+<details>
+<summary>What numbers do you expect to see on the first line of the output?</summary>
+
+$\sim0$ and $\sim1$
+
+</details>
+
+<details>
+<summary>Would the numbers on the second line of the output be larger or smaller than the ones on the first line?</summary>
+
+- The mean could change slightly (can go either direction, but by a small amount).
+- The variance will be much larger.
+
+```console
+tensor(0.0023) tensor(0.9991)
+tensor(0.0024) tensor(3.1895)
+```
+
+![w09_prod1.png](assets/w09_prod1.png "w09_prod1.png")
+
+</details>
+
+Now, let's say we have this code:
+
+```python
+import torch
+import matplotlib.pyplot as plt
+k = 5
+x = torch.randn(1000, 10)
+w = torch.randn(10, 200) * k
+y = x @ w
+print(x.mean(), x.std())
+print(y.mean(), y.std())
+plt.figure(figsize=(20, 5))
+plt.subplot(121)
+plt.hist(x.view(-1).tolist(), 50, density=True)
+plt.subplot(122)
+plt.hist(y.view(-1).tolist(), 50, density=True)
+plt.tight_layout()
+plt.show()
+```
+
+<details>
+<summary>What would we get on the second line now compared to the second line before?</summary>
+
+The variance again will be much larger.
+
+```console
+tensor(-0.0056) tensor(1.0016)
+tensor(0.0393) tensor(15.6916)
+```
+
+![w09_prod2.png](assets/w09_prod2.png "w09_prod2.png")
+
+</details>
+
+Now, we let's say we have this code:
+
+```python
+import torch
+import matplotlib.pyplot as plt
+k = 0.05
+x = torch.randn(1000, 10)
+w = torch.randn(10, 200) * k
+y = x @ w
+print(x.mean(), x.std())
+print(y.mean(), y.std())
+plt.figure(figsize=(20, 5))
+plt.subplot(121)
+plt.hist(x.view(-1).tolist(), 50, density=True)
+plt.subplot(122)
+plt.hist(y.view(-1).tolist(), 50, density=True)
+plt.tight_layout()
+plt.show()
+```
+
+<details>
+<summary>What would we get on the second line now compared to the second line before?</summary>
+
+The variance will be much smaller.
+
+```console
+tensor(-0.0071) tensor(0.9955)
+tensor(-0.0001) tensor(0.1610)
+```
+
+![w09_prod3.png](assets/w09_prod3.png "w09_prod3.png")
+
+</details>
+
+<details>
+<summary>Ok, so what is the problem that we have to solve?</summary>
+
+What is the value of $k$ that preserves a standard deviation of $1$?
+
+</details>
+
+The paper that gives an answer to this is the ["Kaiming init" paper](https://arxiv.org/abs/1502.01852).
+
+<details>
+<summary>Open it and find the formula the authors suggest using for obtaining the value of "k".</summary>
+
+$$k = \sqrt{2/n_l}$$
+
+![w09_kaiming_init_paper.png](assets/w09_kaiming_init_paper.png "w09_kaiming_init_paper.png")
+
+Implemented in PyTorch as [nn.init.kaiming_normal_](https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.kaiming_normal_).
+
+- The authors of the paper studied the activation `ReLU`, so the above formula is only for it.
+- Depending on the activation function we would have slightly different numbers.
+  - If the activation function is a *squashing* one (i.e. has flat tails), we have positive *gain*:
+    - the possible gains can be found in [PyTorch's documentation](https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.calculate_gain)
+      - in `ReLU` was have `gain=2`, because we discard half of the population
+      - in our current example we don't use any activation, so we can regard it as an identity
+    - `mode='fan_in'` means that we use the number of incoming neurons.
+
+</details>
+
+<details>
+<summary>So what is the correct answer for our case?</summary>
+
+1 divided by the square root of the number of input features - in our case $10$.
+
+```python
+import torch
+import matplotlib.pyplot as plt
+x = torch.randn(1000, 10)
+w = torch.randn(10, 200) / 10**0.5
+y = x @ w
+print(x.mean(), x.std())
+print(y.mean(), y.std())
+plt.figure(figsize=(20, 5))
+plt.subplot(121)
+plt.hist(x.view(-1).tolist(), 50, density=True)
+plt.subplot(122)
+plt.hist(y.view(-1).tolist(), 50, density=True)
+plt.tight_layout()
+plt.show()
+```
+
+```console
+tensor(0.0005) tensor(0.9872)
+tensor(0.0005) tensor(1.0064)
+```
+
+![w09_prod4.png](assets/w09_prod4.png "w09_prod4.png")
+
+</details>
+
+#### Task 04
+
+**Description:**
+
+Define four functions in `dl_lib/nn/init.py`:
+
+- `calculate_gain`: looks up the recommended scaling factor for a given nonlinearity (for example `"relu"`, or `"leaky_relu"` with its negative slope) using [`torch.nn.init.calculate_gain`](https://docs.pytorch.org/docs/stable/nn.init.html#torch.nn.init.calculate_gain).
+- `_calculate_fan_in_and_fan_out`: reads a weight tensor's shape and returns how many inputs (fan-in) and outputs (fan-out) each unit connects to.
+- `kaiming_normal_`: fills a weight tensor in place from a normal distribution scaled for ReLU-family nonlinearities.
+  - Takes the tensor to fill, the nonlinearity's negative slope (defaulting to `0`), whether to scale by fan-in or fan-out (defaulting to `"fan_in"`), and which nonlinearity follows (defaulting to `"leaky_relu"`).
+  - Returns the same tensor.
+- `kaiming_uniform_`: the same idea as `kaiming_normal_`, but draws from a uniform distribution.
+
+Create a script that builds two VGG models without batch normalization: one left at PyTorch's own default `Conv2d` initialization, the other re-initialized with `kaiming_normal_(nonlinearity="relu")`. It measures the activation standard deviation after every ReLU, and the mean absolute gradient of every conv layer, on one real CIFAR-10 batch, and plots the gradient comparison on a log scale.
+
+**Acceptance criteria:**
+
+- A layer can be initialized using the Kaiming normal initialization logic.
+- A layer can be initialized using the Kaiming uniform initialization logic.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_init.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 4
+```
+
+```text
+Activation std per ReLU block:
+  block 1: default=1.64e-01  kaiming=3.17e-01
+Mean |gradient| per conv layer:
+  layer 1: default=2.12e-06  kaiming=1.08e-03
+```
+
+![w09 task04 kaiming init](assets/w09_task04_kaiming_init.png "w09 task04 kaiming init")
+
+Same story as BatchNorm, from a different angle: Kaiming init alone also lifts gradient magnitude just by starting the weights at the right scale.
+
+<details>
+<summary>What does PyTorch do differently from us?</summary>
+
+The default `Conv2d` initialization uses `kaiming_uniform_(weight, a=√5)`. Since `kaiming_uniform_` defaults to `nonlinearity="leaky_relu"`, it calculates the gain for a leaky ReLU with slope \(\sqrt{5}\), which is \(1/\sqrt{3}\).
+
+> [!NOTE]
+> The \(\sqrt{5}\) is an implementation choice of the PyTorch developers. It doesn't mean the network uses (or should use) a leaky ReLU with that slope.
+
+In our implementation since we are calling `kaiming_normal_(weight, nonlinearity="relu")` we use the ReLU gain \(\sqrt{2}\).
+
+</details>
+
+ReLU is not symmetric around $0$ (it kills every negative input), so Kaiming's formula accounts for that asymmetry with its gain factor.
+
+`tanh` is symmetric and bounded in `(-1, 1)`, so it needs a different gain, and that's what Xavier (also called Glorot) initialization provides - it also balances fan-in against fan-out, not just fan-in.
+
+Glorot and Bengio, "Understanding the difficulty of training deep feedforward neural networks": <https://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf>.
+
+<details>
+<summary>Which equation shows the distribution formula?</summary>
+
+![w09_xavier_init](assets/w09_xavier_init.png "w09_xavier_init")
+
+</details>
+
+#### Task 05
+
+**Description:**
+
+Define the Xavier initialization logic:
+
+- `xavier_normal_`: fills a weight tensor in place from a normal distribution scaled by both fan-in and fan-out, the formula Glorot and Bengio derived for symmetric, bounded nonlinearities like `tanh`. Takes the tensor to fill and a gain factor (use task 4's `calculate_gain` to get the right one for the nonlinearity that follows); returns the same tensor.
+- `xavier_uniform_`: the same idea as `xavier_normal_`, but draws from a uniform distribution instead of a normal one.
+
+Create a script that builds a 10-layer `Linear(256, 256) -> Tanh` stack three times, with identical starting random seed: once initialized with `kaiming_normal_` (ReLU gain - the "wrong" tool for a tanh network), once with `xavier_normal_(gain=calculate_gain("tanh"))`, once with a deliberately too-small fixed `std=0.01` normal init. It measures the activation standard deviation after every tanh layer and plots all three.
+
+**Acceptance criteria:**
+
+- A layer can be initialized using the Xavier normal initialization logic.
+- A layer can be initialized using the Xavier uniform initialization logic.
+
+**Test cases:** See `tests/test_dl_lib/test_nn/test_init.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 5
+```
+
+```text
+Tanh gain used for Xavier: 1.667
+Activation std per tanh layer, a 10-layer Linear+Tanh stack:
+  layer  1: kaiming(relu-tuned)=0.721  xavier(tanh-tuned)=0.759  too_small(std=0.01)=1.56e-01
+  layer 10: kaiming(relu-tuned)=0.553  xavier(tanh-tuned)=0.647  too_small(std=0.01)=1.04e-08
+```
+
+![w09 task05 xavier init](assets/w09_task05_xavier_init.png "w09 task05 xavier init")
+
+The too-small init decays from std 0.16 to std 1e-8 over just 10 layers - by layer 10 the activations are indistinguishable from zero, and no gradient signal can flow back through them.
+
+Kaiming and Xavier both stay close to each other here and close to the tanh-saturation line; the ReLU-tuned gain is not catastrophically wrong for tanh in this case, just not the formally correct one.
+
+### Residual learning
+
+After VGG won the ImageNet competition in 2014 it started a trend.
+
+<details>
+<summary>What is the most obvious conclusion from seeing VGG winning?</summary>
+
+Deeper is better!
+
+We should aim to combine lots of individual features to build more and more expressive features.
+
+This meme started circulating the web:
+
+![w09_imagenet_meme.png](assets/w09_imagenet_meme.png "w09_imagenet_meme.png")
+
+</details>
+
+People started experimenting with it but a problem quickly arised. Let's open the ResNet paper and explore it:
+
+He, Zhang, Ren, and Sun, "Deep Residual Learning for Image Recognition" (ResNet): <https://arxiv.org/abs/1512.03385>.
+
+<details>
+<summary>Which figure shows the problem that arised as deeper nets were created?</summary>
+
+![w09_deepres.png](assets/w09_deepres.png "w09_deepres.png")
+
+</details>
+
+<details>
+<summary>We an interesting jump after the third iteration - what does it is show?</summary>
+
+This is learning rate decay! We'll come back to it later.
+
+</details>
+
+<details>
+<summary>Which figure shows how the "plain" networks look like?</summary>
+
+![w09_deepnet.png](assets/w09_deepnet.png "w09_deepnet.png")
+
+</details>
+
+<details>
+<summary>So what is the fundamental question we have to answer in order to reveal the solution?</summary>
+
+Why does the addition of more layers lead to worse performance?
+
+</details>
+
+<details>
+<summary>What is first reason might we think of for a network to stop learning?</summary>
+
+Maybe its gradients have vanished!
+
+</details>
+
+Ok - this would be easy then - we just add batch normalization and we're done.
+
+Right?
+
+Let's see:
+
+#### Task 06
+
+**Description:**
+
+Create a script that defines a function `build_plain_cnn(depth)`.
+
+It should return a plain CNN network as described in the ResNet paper (blocks of `Conv2d -> BatchNorm2d -> ReLU` repeated several times and ending with 2D adaptive average pool).
+
+Train a `depth=20` and a `depth=56` plain CNN, with same hyperparameters, on the same small CIFAR-10 subset, and plot the training loss per epoch for both.
+
+**Acceptance criteria:**
+
+- A visual confirmation that a deeper network is not guaranteed to reach a lower training loss.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 6
+```
+
+```text
+Plain CNN depth=20: 123,898 params
+  depth=20 epoch=5 train_loss=1.3417
+Plain CNN depth=56: 415,546 params
+  depth=56 epoch=5 train_loss=1.6570
+```
+
+![w09 task06 degradation](assets/w09_task06_degradation.png "w09 task06 degradation")
+
+<details>
+<summary>In which section(s) do the authors discuss this possiblity (vanishing gradients)?</summary>
+
+In the introduction:
+
+![w09_grad1](assets/w09_grad1.png "w09_grad1")
+
+and also in the experiments section:
+
+![w09_grad2](assets/w09_grad2.png "w09_grad2")
+
+</details>
+
+<details>
+<summary>What is another possiblity for lack of learning?</summary>
+
+Overfitting can also cause this!
+
+</details>
+
+<details>
+<summary>Where do the authors discuss the possibility?</summary>
+
+![w09_grad3](assets/w09_grad3.png "w09_grad3")
+
+</details>
+
+<details>
+<summary>What is our intution about this - if we compare the performance of a deep model to the performance of a shallow model what sign would we put between them?</summary>
+
+The deeper model be at least as good as the shallow one!
+
+`perf(deep_model) >= perf(shallow_model)`
+
+</details>
+
+<details>
+<summary>Ok - great - what would need to be true in order for the equality to hold?</summary>
+
+For every shallow model I can prove that there exists a deeper model that learns the same function **by having the extra layers learn *the identity function***!
+
+![w09_grad4](assets/w09_grad4.png "w09_grad4")
+
+</details>
+
+<details>
+<summary>So what is the next question we should ask?</summary>
+
+Why don't these extra layers learn the identity function?
+
+</details>
+
+<details>
+<summary>Hmmm - but in the context of convolutions what whould these identity functions look like?</summary>
+
+They would have to have $1$ in the center of the kernel and zeros everywhere else (assuming padding and stride are $1$ which is fine for this context).
+
+</details>
+
+<details>
+<summary>Given this what do you think - why don't they learn such filters?</summary>
+
+There is an inherent bias in the training process to have weights near zero:
+
+- both the Kaiming and Xavier initializations give values around $0$;
+- we often employ weight decay -> that leads to small weights;
+- we also often employ (L2) regularization -> that also leads to small weights.
+
+So it turns out that **learning the identity function is as difficult as learning any other function**! <- this is our core problem
+
+</details>
+
+<details>
+<summary>So which function is the easiest to learn according to this biased process?</summary>
+
+The zero function! Essentially, we are fighting the network to learn the zero function and it is fighting back trying to warp around its weights so that they work well while still being around zero.
+
+</details>
+
+<details>
+<summary>If that is the problem what effect should the solution have on this default function?</summary>
+
+It should make the default function be the identity function.
+
+</details>
+
+One way to do this is to learn to transform X via (multiple) layers to come out the same X.
+
+This can be done in theory - we can measure the loss at different stages throughout the forward pass and try to minimize it that way.
+
+<details>
+<summary>Which figure shows the approach used by the authors?</summary>
+
+Why don't we have X **stay X** and then **learn whatever we need change**?
+
+This problem is solved by having skip connections:
+
+![w09_insight](assets/w09_insight.png "w09_insight")
+
+</details>
+
+<details>
+<summary>What hypothesis does this point to?</summary>
+
+*It is good to not change much.*
+
+which is the same as:
+
+*We can still learn the zero function provided we have information about the initial state.*
+
+which is the same as:
+
+*The deeper you go the less, the more careful you should be when changing what the ones before you have learned.*
+
+</details>
+
+A residual block (like the one in figure 2) would then learn the following formula: `H(x) = F(x) + x`.
+
+<details>
+<summary>What is H(x)?</summary>
+
+The output of the block.
+
+</details>
+
+<details>
+<summary>What is F(x)?</summary>
+
+It represents the output of the layers in-between.
+
+</details>
+
+<details>
+<summary>What would we get if F(x) learns the zero function?</summary>
+
+***We get the identity function!***
+
+Thus, the default function of the network becomes the identity function.
+
+</details>
+
+Chaining such blocks produces a residual network.
+
+> [!NOTE]
+> While the authors do not happen to fall in this context, remember that residual connections are just as powerful as batch and layer normalizations and weight initialization strategies when it comes to vanishing gradients.
+
+#### Task 07
+
+**Description:**
+
+Define the class `ResidualBlock`. It provides:
+
+- `construction`: takes `in_channels`, `out_channels`, `stride`. Builds the path `conv3x3 -> BatchNorm -> ReLU -> conv3x3 -> BatchNorm`.
+  - If `stride != 1` or `in_channels != out_channels`, also builds a `shortcut_conv`/`shortcut_bn` 1x1 projection (otherwise both are `None` and the shortcut is the input unchanged).
+- `_layers`: a helper that lists the main path's sublayers in order, appending the shortcut's two sublayers when the block has one. `parameters`, `train`, `eval`, and `to` all loop over this list instead of repeating it.
+- `forward`: runs the forward pass.
+- `parameters`, `train`, `eval`, `to`: cover every sublayer, including the shortcut when present.
+
+Create a script that zeros out a `ResidualBlock`'s second conv and second BatchNorm's scale and shift (so `F(x)` starts at exactly 0), then compares the block's real output against what the same main path would output with no shortcut add at all.
+
+**Acceptance criteria:**
+
+- A residual block is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_resnet.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 7
+```
+
+```text
+With conv2/bn2 zeroed, F(x) starts at 0 for both paths:
+  mean |F(x) + x - x| (residual block output vs input): 0.000000
+  mean |H(x) - x|     (plain block output vs input):    0.098624
+```
+
+Without the shortcut, "do nothing" is not the natural resting state of a block of conv layers; with it, it is.
+
+Let's examine figure 3 again.
+
+<details>
+<summary>What are FLOPs?</summary>
+
+Floating-point operations. This is the count of numerical operations, such as additions and multiplications, needed to perform one forward pass.
+
+</details>
+
+<details>
+<summary>What can we notice in relation to that?</summary>
+
+Even though it may not look like it VGG has far more parameters than the residual network.
+
+</details>
+
+There are three design choices that allowed this:
+
+1. Strided convolutions instead of max pooling;
+2. 1x1 2D convolutions to regulate the number of channels;
+3. Global average pooling.
+
+<details>
+<summary>Which table shows the stride the authors use for their experiments?</summary>
+
+They use a stride of $2$.
+
+![w09_t2](assets/w09_t2.png "w09_t2")
+
+</details>
+
+<details>
+<summary>What benefit does this have over max pooling?</summary>
+
+The network learns the downsampling as it creates features.
+
+Here's the usual stride-1 convolution (with padding):
+
+![w09_s1_p](assets/w09_s1_p.gif "w09_s1_p")
+
+And here is how it looks like when we do stride-2:
+
+![w09_s2_p](assets/w09_s2_p.gif "w09_s2_p")
+
+You can see how we downsample and feature engineer at the same time.
+
+</details>
+
+<details>
+<summary>What is one limitation?</summary>
+
+More parameters, more FLOPs.
+
+</details>
+
+#### Task 08
+
+**Description:**
+
+Create a script that builds two small CNNs (layers apart from the ones below are not important - you can choose yourself) with the same channel plan and the same number of downsampling steps:
+
+- one downsamples with `MaxPool2d(2)`;
+- the other with a stride-2 `conv3x3-BatchNorm-ReLU` block instead.
+
+It reports parameter count and conv FLOPs for each, then trains both on the same small CIFAR-10 subset and reports final validation F1.
+
+**Acceptance criteria:**
+
+- The effect of stride-2 convolutions is shown.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 8
+```
+
+```text
+MaxPool downsampler:  5,466 params, 12,976,128 conv FLOPs per image
+Stride-2 downsampler: 17,082 params, 22,413,312 conv FLOPs per image
+Stride-2 uses 3.13x the params and 1.73x the FLOPs of MaxPool.
+MaxPool downsampler: final train_loss=1.9891 val_f1=0.230
+Stride-2 downsampler: final train_loss=1.9168 val_f1=0.283
+```
+
+Next is the 1x1 convolution in 2D.
+
+<details>
+<summary>What is its added value?</summary>
+
+We can control the number of filters while keeping the features intact:
+
+![w09_pointwise](assets/w09_pointwise.gif "w09_pointwise")
+
+> [!NOTE]
+> The above GIF shows two things: a depthwise convolution followed by a 1x1 convolution.
+
+</details>
+
+<details>
+<summary>In which figure do the authors show how they used this?</summary>
+
+You can save computation if you first project down to 64 channels, do the convolution and then project back again to 256:
+
+![w09_pointwise_use](assets/w09_pointwise_use.png "w09_pointwise_use")
+
+> [!NOTE]
+> Notice the depth here - they go for 101 and 152 layers!
+
+</details>
+
+#### Task 09
+
+**Description:**
+
+Create a script that compares a 1x1 convolution against a 3x3 convolution for the same channel-reduction job (64 input channels to 16 output channels on a 16x16 feature map): parameter count, FLOPs, and the effect each has on receptive field.
+
+**Acceptance criteria:**
+
+- The effects of a 1x1 convolution are shown.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 9
+```
+
+```text
+Changing 64 -> 16 channels on a 16x16 map:
+  1x1 conv: 1,040 params, 524,288 FLOPs
+  3x3 conv: 9,232 params, 4,718,592 FLOPs
+  3x3 uses 9x the params and 9x the FLOPs of 1x1.
+Receptive field after two 3x3 convs: 5
+  + one more 1x1 conv: 5 (unchanged, 1x1 only mixes channels)
+  + one more 3x3 conv: 7 (grows, 3x3 also looks at neighbors)
+```
+
+#### Task 10
+
+**Description:**
+
+Define the class `ResNet` in `dl_lib/vision/resnet.py`.
+
+It is composed from `self.stem` (a `torch.nn.Sequential` conv-BatchNorm-ReLU) and `self.stage1`/`self.stage2`/`self.stage3` (lists of `ResidualBlock`).
+
+It provides:
+
+- `construction`: takes `num_classes`, `depth` (must satisfy `(depth - 2) % 6 == 0`, raising `ValueError` otherwise, to match the paper's depth family of 20/32/44/56/...), and `global_avg_pool` (default `True`). Channel plan is `16 -> 16 -> 32 -> 64`, with the first block of stage 2 and stage 3 using `stride=2` to halve the spatial size.
+- `_make_stage` (a `staticmethod`): builds one stage's list of `ResidualBlock`s. Takes `in_channels`, `out_channels`, `num_blocks`, `stride`; only the first block uses the given `in_channels`/`stride` (so it is the one that projects), every later block is `out_channels -> out_channels` with `stride=1`.
+- `_stages`: a helper that returns `[stage1, stage2, stage3]` in order, so `forward`, `parameters`, `train`, `eval`, and `to` all loop over it instead of repeating the three stages by name.
+- `forward`: runs the forward pass.
+- `parameters`, `train`, `eval`, `to`: cover `stem`, every stage's blocks, and the classification head.
+
+Create a script that builds `ResNet` at `depth=20`, `32`, and `56`, each with `global_avg_pool=False` (so task 11's comparison has a well-defined "before" state), and reports total parameter count, the classification head's own parameter count, and the output logits shape for each.
+
+**Acceptance criteria:**
+
+- A residual network is implemented.
+
+**Test cases:** See `tests/test_dl_lib/test_vision/test_resnet.py`.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 10
+```
+
+```text
+Batch shape: (4, 3, 64, 64), labels: [6, 0, 4, 1]
+depth=20: logits=(4, 10) total_params=435,674 head_params=163,850
+depth=32: logits=(4, 10) total_params=630,106 head_params=163,850
+depth=56: logits=(4, 10) total_params=1,018,970 head_params=163,850
+```
+
+<details>
+<summary>How does this global average pooling work?</summary>
+
+It collapses a channel to a single number - its spatial average.
+
+Suppose a feature map has two channels, each \(2\times2\):
+
+\[
+\text{Channel 1}=
+\begin{bmatrix}
+1 & 3\\
+5 & 7
+\end{bmatrix}
+\qquad
+\text{Channel 2}=
+\begin{bmatrix}
+2 & 4\\
+6 & 8
+\end{bmatrix}
+\]
+
+Their averages are:
+
+\[
+\frac{1+3+5+7}{4}=4,\qquad
+\frac{2+4+6+8}{4}=5.
+\]
+
+The output is therefore **[4, 5]**—channels remain separate.
+
+In PyTorch:
+
+```python
+import torch
+from torch import nn
+
+x = torch.tensor([[
+    [[1., 3.], [5., 7.]],  # Channel 1
+    [[2., 4.], [6., 8.]],  # Channel 2
+]])  # Shape: (batch=1, channels=2, height=2, width=2)
+
+pooled = nn.AdaptiveAvgPool2d(1)(x)  # Shape: (1, 2, 1, 1)
+output = pooled.flatten(1)          # Shape: (1, 2)
+
+print(output)  # tensor([[4., 5.]])
+```
+
+In general, the shape changes from \((N,C,H,W)\) to \((N,C,1,1)\). There are **no learned parameters**.
+
+</details>
+
+<details>
+<summary>What is adaptive about it?</summary>
+
+You can specify an output size.
+
+For an \(8\times8\) input, `AdaptiveAvgPool2d((2, 2))` behaves like `AvgPool2d(kernel_size=4, stride=4)`: it splits each channel into four nonoverlapping \(4\times4\) regions and averages each one.
+
+For dimensions that don't divide evenly, the averaging regions can overlap. For example, a \(5\times5\) input produces a \(2\times2\) output using \(3\times3\) regions starting at row/column indices 0 and 2—equivalent in this case to `kernel_size=3, stride=2`.
+
+</details>
+
+#### Task 11
+
+**Description:**
+
+Create a script that builds `ResNet` at `depth=20`, `32`, and `56`, each once with `global_avg_pool=False` and once with `global_avg_pool=True` (`AdaptiveAvgPool2d(1) -> Flatten -> Linear`), and compares the head's own parameter count, the model's total parameter count, and the output logits shape between the two.
+
+**Acceptance criteria:**
+
+- The effect of global average pooling is shown.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 11
+```
+
+```text
+depth=20:
+  flatten+Linear head: head_params=163,850 total_params=435,674 logits=(4, 10)
+  global_avg_pool head: head_params=650 total_params=272,474 logits=(4, 10)
+  head params shrink 252.1x, total params shrink 1.60x
+depth=56:
+  flatten+Linear head: head_params=163,850 total_params=1,018,970 logits=(4, 10)
+  global_avg_pool head: head_params=650 total_params=855,770 logits=(4, 10)
+  head params shrink 252.1x, total params shrink 1.19x
+```
+
+<details>
+<summary>Where can we see the hyperparameters used by the authors?</summary>
+
+Section 3.4 Implementation:
+
+![w09_hyperparams](assets/w09_hyperparams.png "w09_hyperparams")
+
+</details>
+
+> [!NOTE]
+> They use (batch) normalization before the activation! This seems to be the prevaling way of doing it till today.
+
+<details>
+<summary>How do they change the learning rate?</summary>
+
+It starts from 0.1 and they divide it by 10 when the loss plateus.
+
+</details>
+
+<details>
+<summary>But how would we notice that the loss plateud during training?</summary>
+
+We compare the current loss with the previous $k$, for example $3$ and if there is no change, we decay the learning rate.
+
+</details>
+
+<details>
+<summary>What does figure 4 show?</summary>
+
+The trend from the beginning is reversed:
+
+![w09_trend](assets/w09_trend.png "w09_trend")
+
+</details>
+
+Let's check this for ourselves!
+
+#### Task 12
+
+**Description:**
+
+Create a script that trains three models of matched depth on the same small CIFAR-10 subset, same hyperparameters, same number of epochs:
+
+- `Vgg(batch_norm=True)`.
+- `build_plain_cnn(depth=56)`;
+- `ResNet(depth=56, global_avg_pool=True)`;
+
+It plots training loss and validation F1 per epoch.
+
+**Acceptance criteria:**
+
+- The effect of residual connections is visualized.
+
+**Example output:**
+
+```bash
+python run.py -w 9 -t 12
+```
+
+```text
+VGG (batch_norm=True): 12,384,010 params
+  epoch=19 train_loss=1.6611 val_f1=0.255
+plain CNN (depth=56): 415,546 params
+  epoch=19 train_loss=1.5310 val_f1=0.266
+ResNet (depth=56): 855,770 params
+  epoch=19 train_loss=1.0996 val_f1=0.409
+Final val F1:
+  VGG (batch_norm=True): 0.255
+  plain CNN (depth=56): 0.266
+  ResNet (depth=56): 0.409
+```
+
+![w09 task12 payoff](assets/w09_task12_payoff.png "w09 task12 payoff")
+
+<details>
+<summary>What does table 2 show?</summary>
+
+- Row 1: if you introduce residual connections to the shallower network it is marginally better.
+- Row 2: but it gets better the deeper the network is.
+
+![w09_reseffect](assets/w09_reseffect.png "w09_reseffect")
+
+</details>
+
+<details>
+<summary>What two interesting things does table 6 show?</summary>
+
+![w09_reseffect2](assets/w09_reseffect2.png "w09_reseffect2")
+
+1. The 110-layer ResNet has less parameters than previous networks of only 19 layers!
+2. At 1,202 layers (which is enormous, btw) we get something seeminly peculiar: the validation error climbs up again!
+
+</details>
+
+The authors did this because they wanted to study depth - it's an overkill for the CIFAR-10 dataset.
+
+<details>
+<summary>Which figure interprets this?</summary>
+
+![w09_reseffect3](assets/w09_reseffect3.png "w09_reseffect3")
+
+</details>
+
+<details>
+<summary>What does it show?</summary>
+
+Now this is overfitting!
+
+Notice how the training error is basically 0, while the validator error is climbing.
+
+Also, notice how adding more layers does not result in higher training error - only the validation error moves upwards.
+
+</details>
+
+And like we said last time, this is actually also a win, because this is the first paper to put a higher bound and actually overfit the training CIFAR 10 dataset!
+
+Finally, let's go back to the authors' hypothesis - if each layers learns only a little bit then the change in the signal should be much less when compared to plain CNNs.
+
+<details>
+<summary>What could we graph to check our hypothesis?</summary>
+
+We can check the standard deviation of the pre-activations across layers:
+
+![w09_reseffect4](assets/w09_reseffect4.png "w09_reseffect4")
+
+You can see clearly how in the plain networks, there is much more change in the earlier layers compared to the residual networks.
+
+</details>
+
+#### Task 13
+
+**Description:**
+
+Try to improve the F1 score from the previous task.
+
+**Acceptance criteria:**
+
+- A model report file describing a better model is created.

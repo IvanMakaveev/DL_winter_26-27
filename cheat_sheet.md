@@ -12,6 +12,9 @@
     - [pytest](#pytest)
   - [Week 04](#week-04)
     - [graphviz](#graphviz)
+  - [Week 06](#week-06)
+    - [torch](#torch-1)
+    - [matplotlib](#matplotlib-1)
 
 ## Week 01
 
@@ -897,3 +900,237 @@ print(svg_bytes[:15])
 bytes
 b'<?xml version="'
 ```
+
+## Week 06
+
+### torch
+
+- [`torch.linspace`](https://pytorch.org/docs/stable/generated/torch.linspace.html#torch.linspace) - Returns a 1-D tensor of evenly spaced values between the given start and end, inclusive, with the given number of steps.
+
+```python
+import torch
+
+print(torch.linspace(-1.0, 1.0, 5))
+```
+
+```text
+tensor([-1.0000, -0.5000,  0.0000,  0.5000,  1.0000])
+```
+
+- [`torch.meshgrid`](https://pytorch.org/docs/stable/generated/torch.meshgrid.html#torch.meshgrid) - Builds coordinate grids from 1-D coordinate tensors, returning one tensor per input broadcast to the full grid shape; `indexing='xy'` matches the Cartesian (x horizontal, y vertical) convention.
+
+```python
+import torch
+
+grid_x, grid_y = torch.meshgrid(
+    torch.tensor([0.0, 1.0, 2.0]), torch.tensor([10.0, 20.0]), indexing="xy"
+)
+print(grid_x)
+print(grid_y)
+```
+
+```text
+tensor([[0., 1., 2.],
+        [0., 1., 2.]])
+tensor([[10., 10., 10.],
+        [20., 20., 20.]])
+```
+
+### matplotlib
+
+- [`matplotlib.axes.Axes.contour`](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.contour.html#matplotlib.axes.Axes.contour) - Draws contour lines of a 2-D scalar field over a coordinate grid, connecting points of equal value; closer-spaced lines mark a steeper gradient.
+
+A contour plot needs a value $z = f(x, y)$ at every point of a 2-D grid, then draws lines connecting points of equal $z$.
+
+To create one we'll use the following procedure:
+
+1. Build the grid of $(x, y)$ coordinates with [`torch.meshgrid`](https://docs.pytorch.org/docs/stable/generated/torch.meshgrid.html), passing the two axes' coordinate ranges (e.g. from `torch.linspace`) and `indexing="xy"` so the first returned tensor varies along columns (x) and the second along rows (y), matching how `contour` expects them.
+2. Evaluate the function on the whole grid at once (it is just tensor arithmetic, e.g. `10 * grid_x**2 + 0.1 * grid_y**2`) to get `grid_z`.
+3. Call [`ax.contour(grid_x, grid_y, grid_z, levels=..., cmap=...)`](https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.contour.html) to draw the lines; `levels` controls how many lines (more levels = finer detail), and `cmap` colors them (e.g. `"Greys"` for a neutral background that does not compete with the trajectory plotted on top).
+4. Overlay the optimizer's recorded trajectory as a normal `ax.plot(...)` call on the same axes.
+
+Closer-spaced lines mark a steeper gradient - this is exactly why the ravine's contours in Task 04 look like a narrow stack of vertical bands: the function is far steeper across x than along y.
+
+```python
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import torch
+
+grid_x, grid_y = torch.meshgrid(
+    torch.linspace(-4.5, 4.5, 200), torch.linspace(-4.5, 4.5, 200), indexing="xy"
+)
+grid_z = 10 * grid_x**2 + 0.1 * grid_y**2
+
+figure, axis = plt.subplots()
+axis.plot([0, 1], [0, 1])
+axis.contour(grid_x, grid_y, grid_z, levels=30, cmap="Greys")
+```
+
+Without: ![before](assets/w06_cheatsheet_contour_before.png)
+With:    ![after](assets/w06_cheatsheet_contour_after.png)
+
+## Week 08
+
+### torch
+
+- [`torch.nn.Conv1d`](https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html#torch.nn.Conv1d) - Slides a learnable kernel along a 1-D sequence, computing a weighted sum over each window plus a bias; `stride` and `padding` control the step size and edge handling.
+
+```python
+import torch
+from torch import nn
+
+torch.manual_seed(0)
+layer = nn.Conv1d(1, 1, kernel_size=3, stride=1, padding=1)
+print(layer(torch.ones(1, 1, 5)).shape)
+```
+
+```text
+torch.Size([1, 1, 5])
+```
+
+- [`torch.nn.Conv2d`](https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d) - A 2-D convolution layer sliding learnable kernels over an image; `stride=2` halves the spatial size while `padding` keeps the arithmetic clean.
+
+```python
+import torch
+from torch import nn
+
+torch.manual_seed(0)
+layer = nn.Conv2d(3, 16, kernel_size=3, stride=2, padding=1)
+print(layer(torch.ones(1, 3, 8, 8)).shape)
+```
+
+```text
+torch.Size([1, 16, 4, 4])
+```
+
+- [`torch.nn.MaxPool2d`](https://pytorch.org/docs/stable/generated/torch.nn.MaxPool2d.html#torch.nn.MaxPool2d) - Slides a window over a 4-D image batch and keeps the maximum value in each window, downsampling while keeping the strongest activation.
+
+```python
+import torch
+from torch import nn
+
+layer = nn.MaxPool2d(kernel_size=2, stride=2)
+x = torch.arange(16.0).reshape(1, 1, 4, 4)
+print(x)
+print(layer(x))
+```
+
+```text
+tensor([[[[ 0.,  1.,  2.,  3.],
+          [ 4.,  5.,  6.,  7.],
+          [ 8.,  9., 10., 11.],
+          [12., 13., 14., 15.]]]])
+tensor([[[[ 5.,  7.],
+          [13., 15.]]]])
+```
+
+- [`torch.nn.Flatten`](https://pytorch.org/docs/stable/generated/torch.nn.Flatten.html#torch.nn.Flatten) - Collapses every dimension after the batch dimension into one, turning a `(batch, C, H, W)` feature map into a `(batch, C*H*W)` vector for a fully-connected layer.
+
+```python
+import torch
+from torch import nn
+
+x = torch.randn(2, 3, 4, 4)
+flatten = nn.Flatten()
+print(flatten(x).shape)
+```
+
+```text
+torch.Size([2, 48])
+```
+
+### torchvision
+
+- [`torchvision.datasets.FashionMNIST`](https://pytorch.org/vision/stable/generated/torchvision.datasets.FashionMNIST.html#torchvision.datasets.FashionMNIST) - Downloads (if needed) and loads the Fashion-MNIST dataset of 28x28 grayscale clothing photos, one of 10 classes each.
+
+```python
+import torchvision
+
+dataset = torchvision.datasets.FashionMNIST(
+    root="DATA/fashion_mnist", train=True, download=True
+)
+print(len(dataset))
+image, label = dataset[0]
+print(image.size, dataset.classes[label])
+```
+
+```text
+60000
+(28, 28) Ankle boot
+```
+
+- [`torchvision.transforms.v2.Compose`](https://pytorch.org/vision/stable/generated/torchvision.transforms.v2.Compose.html#torchvision.transforms.v2.Compose) - Chains transforms into one callable, applied left to right; this is the v2 transforms API (the modern replacement for `torchvision.transforms`), used here to convert a PIL image to a scaled float tensor and resize it in one pipeline.
+
+```python
+import torch
+import torchvision
+from torchvision.transforms import v2
+
+transform = v2.Compose(
+    [
+        v2.ToImage(),
+        v2.ToDtype(torch.float32, scale=True),
+        v2.Resize([64, 64], antialias=True),
+    ]
+)
+dataset = torchvision.datasets.FashionMNIST(
+    root="DATA/fashion_mnist", train=True, download=True, transform=transform
+)
+image, label = dataset[0]
+print(image.shape, image.dtype, round(image.max().item(), 4))
+```
+
+```text
+torch.Size([1, 64, 64]) torch.float32 0.9817
+```
+
+- [`torchvision.models.alexnet`](https://pytorch.org/vision/stable/models/generated/torchvision.models.alexnet.html#torchvision.models.alexnet) - Builds a real AlexNet, optionally with ImageNet-pretrained weights; here constructed with random weights and a custom `num_classes` as a structural reference to compare a from-scratch AlexNet against.
+
+```python
+import torch
+import torchvision
+
+torch.manual_seed(0)
+model = torchvision.models.alexnet(num_classes=10)
+x = torch.randn(2, 3, 64, 64)
+print(model(x).shape)
+```
+
+```text
+torch.Size([2, 10])
+```
+
+- [`torchvision.datasets.CIFAR10`](https://pytorch.org/vision/stable/generated/torchvision.datasets.CIFAR10.html#torchvision.datasets.CIFAR10) - Downloads (if needed) and loads the CIFAR-10 dataset of 32x32 RGB photos, one of 10 classes each; already 3-channel, unlike `FashionMNIST`.
+
+```python
+import torchvision
+
+dataset = torchvision.datasets.CIFAR10(root="DATA/cifar10", train=True, download=True)
+print(len(dataset))
+image, label = dataset[0]
+print(image.size, dataset.classes[label])
+```
+
+```text
+50000
+(32, 32) frog
+```
+
+- [`torchvision.datasets.ImageFolder`](https://pytorch.org/vision/stable/generated/torchvision.datasets.ImageFolder.html#torchvision.datasets.ImageFolder) - Loads raw images from a directory of per-class subfolders; unlike `FashionMNIST`/`CIFAR10` there is no `download=True`, so the directory must already exist on disk. Classes are assigned label indices in sorted folder-name order.
+
+```python
+import torchvision
+
+dataset = torchvision.datasets.ImageFolder("DATA/clouds/clouds_train")
+print(len(dataset))
+image, label = dataset[0]
+print(image.size, dataset.classes[label])
+```
+
+```text
+474
+(256, 256) cirriform clouds
+```
+
