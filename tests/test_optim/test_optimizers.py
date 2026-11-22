@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from dl_lib.optim.optimizers import SGD
+from dl_lib.optim.optimizers import SGD, AdaGrad
 
 
 class TestSGDInit(unittest.TestCase):
@@ -113,59 +113,59 @@ class TestSGDMomentumStep(unittest.TestCase):
         self.assertTrue(torch.allclose(p, expected))
 
 
-# class TestAdaGradInit(unittest.TestCase):
-#     def test_when_eps_not_given_then_defaults_to_1e_minus_10(self):
-#         # Arrange
-#         p = torch.tensor([1.0])
-#         expected = 1e-10
+class TestAdaGradInit(unittest.TestCase):
+    def test_when_eps_not_given_then_defaults_to_1e_minus_10(self):
+        # Arrange
+        p = torch.tensor([1.0])
+        expected = 1e-10
 
-#         # Act
-#         actual = AdaGrad([p], lr=0.1).eps
+        # Act
+        actual = AdaGrad([p], lr=0.1).eps
 
-#         # Assert
-#         self.assertEqual(actual, expected)
+        # Assert
+        self.assertEqual(actual, expected)
 
-#     def test_when_constructed_then_accumulators_are_zero_for_every_parameter(self):
-#         # Arrange
-#         p1 = torch.tensor([1.0, 2.0])
-#         p2 = torch.tensor([3.0])
-#         expected = [torch.zeros_like(p1), torch.zeros_like(p2)]
+    def test_when_constructed_then_accumulators_are_zero_for_every_parameter(self):
+        # Arrange
+        p1 = torch.tensor([1.0, 2.0])
+        p2 = torch.tensor([3.0])
+        expected = [torch.zeros_like(p1), torch.zeros_like(p2)]
 
-#         # Act
-#         actual = AdaGrad([p1, p2], lr=0.1).accumulators
+        # Act
+        actual = AdaGrad([p1, p2], lr=0.1).accumulators
 
-#         # Assert
-#         self.assertEqual(len(actual), len(expected))
-#         for actual_accumulator, expected_accumulator in zip(actual, expected):
-#             self.assertTrue(torch.equal(actual_accumulator, expected_accumulator))
+        # Assert
+        self.assertEqual(len(actual), len(expected))
+        for actual_accumulator, expected_accumulator in zip(actual, expected):
+            self.assertTrue(torch.equal(actual_accumulator, expected_accumulator))
 
 
-# class TestAdaGradStep(unittest.TestCase):
-#     def test_when_called_then_accumulator_holds_squared_gradient(self):
-#         # Arrange
-#         p = torch.tensor([1.0], requires_grad=True)
-#         p.grad = torch.tensor([0.1])
-#         adagrad = AdaGrad([p], lr=0.1)
-#         expected = torch.tensor([0.01])
+class TestAdaGradStep(unittest.TestCase):
+    def test_when_called_then_accumulator_holds_squared_gradient(self):
+        # Arrange
+        p = torch.tensor([1.0], requires_grad=True)
+        p.grad = torch.tensor([0.1])
+        adagrad = AdaGrad([p], lr=0.1)
+        expected = torch.tensor([0.01])
 
-#         # Act
-#         adagrad.step()
+        # Act
+        adagrad.step()
 
-#         # Assert
-#         self.assertTrue(torch.allclose(adagrad.accumulators[0], expected))
+        # Assert
+        self.assertTrue(torch.allclose(adagrad.accumulators[0], expected))
 
-#     def test_when_called_then_updates_parameter_with_per_parameter_learning_rate(self):
-#         # Arrange
-#         p = torch.tensor([1.0], requires_grad=True)
-#         p.grad = torch.tensor([0.1])
-#         adagrad = AdaGrad([p], lr=0.1)
-#         expected = torch.tensor([0.9])
+    def test_when_called_then_updates_parameter_with_per_parameter_learning_rate(self):
+        # Arrange
+        p = torch.tensor([1.0], requires_grad=True)
+        p.grad = torch.tensor([0.1])
+        adagrad = AdaGrad([p], lr=0.1)
+        expected = torch.tensor([0.9])
 
-#         # Act
-#         adagrad.step()
+        # Act
+        adagrad.step()
 
-#         # Assert
-#         self.assertTrue(torch.allclose(p, expected, atol=1e-4))
+        # Assert
+        self.assertTrue(torch.allclose(p, expected, atol=1e-4))
 
 
 # class TestRMSpropInit(unittest.TestCase):

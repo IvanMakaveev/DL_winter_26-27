@@ -73,7 +73,6 @@ def main() -> int:
         optimizer.step()
 
     print(f"Momentum SGD on ravine final: x={x.item():.4f}, y={y.item():.4f}")
-    # plot the f function with contour plot
     x_vals = torch.linspace(-5, 5, 100)
     y_vals = torch.linspace(-5, 5, 100)
     X, Y = torch.meshgrid(x_vals, y_vals)
