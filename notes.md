@@ -7803,12 +7803,12 @@ Here's an example of sequential model definition:
 import torch.nn as nn
 
 net = nn.Sequential(
-  nn.Linear(9, 16),
-  nn.ReLU(),
-  nn.Linear(16, 8),
-  nn.ReLU(),
-  nn.Linear(8, 1),
-  nn.Sigmoid(),
+    nn.Linear(9, 16),
+    nn.ReLU(),
+    nn.Linear(16, 8),
+    nn.ReLU(),
+    nn.Linear(8, 1),
+    nn.Sigmoid(),
 )
 ```
 
@@ -7816,17 +7816,18 @@ Here's how it can be re-written using the `class-based` approach:
 
 ```python
 class Net(nn.Module):
-  def __init__(self):
-    super(Net, self).__init__()
-    self.fc1 = nn.Linear(9, 16)
-    self.fc2 = nn.Linear(16, 8)
-    self.fc3 = nn.Linear(8, 1)
-  
-  def forward(self, x):
-    x = nn.functional.relu(self.fc1(x))
-    x = nn.functional.relu(self.fc2(x))
-    x = nn.functional.sigmoid(self.fc3(x))
-    return x
+    def __init__(self):
+        super(Net, self).__init__()
+        self.fc1 = nn.Linear(9, 16)
+        self.fc2 = nn.Linear(16, 8)
+        self.fc3 = nn.Linear(8, 1)
+
+    def forward(self, x):
+        x = nn.functional.relu(self.fc1(x))
+        x = nn.functional.relu(self.fc2(x))
+        x = nn.functional.sigmoid(self.fc3(x))
+        return x
+
 
 net = Net()
 ```
@@ -7929,20 +7930,22 @@ from torchvision.datasets import ImageFolder
 from torchvision import transforms
 from torch.utils import data
 
-train_transforms = transforms.Compose([
-  transforms.ToTensor(), # convert the object into a tensor
-  transforms.Resize((128, 128)), # resize the images to be of size 128x128
-])
+train_transforms = transforms.Compose(
+    [
+        transforms.ToTensor(),  # convert the object into a tensor
+        transforms.Resize((128, 128)),  # resize the images to be of size 128x128
+    ]
+)
 
 dataset_train = ImageFolder(
-  'DATA/clouds/clouds_train',
-  transform=train_transforms,
+    "DATA/clouds/clouds_train",
+    transform=train_transforms,
 )
 
 dataloader_train = data.DataLoader(
-  dataset_train,
-  shuffle=True,
-  batch_size=1,
+    dataset_train,
+    shuffle=True,
+    batch_size=1,
 )
 
 image, label = next(iter(dataloader_train))
@@ -7978,8 +7981,9 @@ We can now, plot this using `matplotlib`:
 
 ```python
 import matplotlib.pyplot as plt
+
 plt.imshow(image)
-plt.axis('off')
+plt.axis("off")
 plt.show()
 ```
 
@@ -8064,13 +8068,17 @@ Explore, explore, explore!
 <summary>What transformations can you think of for our current task (cloud classification)?</summary>
 
 ```python
-train_transforms = transforms.Compose([
-  transforms.RandomHorizontalFlip(), # simulate different viewpoints of the sky
-  transforms.RandomRotation(45), # expose model to different angles of cloud formations
-  transforms.RandomAutocontrast(), # simulate different lighting conditions
-  transforms.ToTensor(), # convert the object into a tensor
-  transforms.Resize((128, 128)), # resize the images to be of size 128x128
-])
+train_transforms = transforms.Compose(
+    [
+        transforms.RandomHorizontalFlip(),  # simulate different viewpoints of the sky
+        transforms.RandomRotation(
+            45
+        ),  # expose model to different angles of cloud formations
+        transforms.RandomAutocontrast(),  # simulate different lighting conditions
+        transforms.ToTensor(),  # convert the object into a tensor
+        transforms.Resize((128, 128)),  # resize the images to be of size 128x128
+    ]
+)
 ```
 
 ![w08_data_augmentation.png](assets/w08_data_augmentation.png "w08_data_augmentation.png")
@@ -8787,10 +8795,10 @@ To calculate them with `torch`, we can use the classes [`torchmetrics.Recall`](h
 ```python
 from torchmetrics import Recall
 
-recall_per_class = Recall(task='multiclass', num_classes=7, average=None)
-recall_micro = Recall(task='multiclass', num_classes=7, average='micro')
-recall_macro = Recall(task='multiclass', num_classes=7, average='macro')
-recall_weighted = Recall(task='multiclass', num_classes=7, average='weighted')
+recall_per_class = Recall(task="multiclass", num_classes=7, average=None)
+recall_micro = Recall(task="multiclass", num_classes=7, average="micro")
+recall_macro = Recall(task="multiclass", num_classes=7, average="macro")
+recall_weighted = Recall(task="multiclass", num_classes=7, average="weighted")
 ```
 
 When to use each:
@@ -8999,21 +9007,17 @@ class AlexNet(nn.Module):
             # we use 5e-4 / 5 to match the paper's coefficient of 1e-4
             nn.LocalResponseNorm(size=5, alpha=5e-4, beta=0.75, k=2),
             nn.MaxPool2d(kernel_size=3, stride=2),
-
             # (N, 96, 27, 27) -> (N, 256, 13, 13)
             nn.Conv2d(96, 256, kernel_size=5, padding=2, groups=2),
             nn.ReLU(),
             nn.LocalResponseNorm(size=5, alpha=5e-4, beta=0.75, k=2),
             nn.MaxPool2d(kernel_size=3, stride=2),
-
             # (N, 256, 13, 13) -> (N, 384, 13, 13)
             nn.Conv2d(256, 384, kernel_size=3, padding=1),
             nn.ReLU(),
-
             # (N, 384, 13, 13) -> (N, 384, 13, 13)
             nn.Conv2d(384, 384, kernel_size=3, padding=1, groups=2),
             nn.ReLU(),
-
             # (N, 384, 13, 13) -> (N, 256, 6, 6)
             nn.Conv2d(384, 256, kernel_size=3, padding=1, groups=2),
             nn.ReLU(),
@@ -9021,8 +9025,13 @@ class AlexNet(nn.Module):
         )
 
         self.classifier = nn.Sequential(
-            nn.Flatten(), nn.Linear(256 * 6 * 6, 4096), nn.ReLU(), nn.Dropout(p=0.5),
-            nn.Linear(4096, 4096), nn.ReLU(), nn.Dropout(p=0.5),
+            nn.Flatten(),
+            nn.Linear(256 * 6 * 6, 4096),
+            nn.ReLU(),
+            nn.Dropout(p=0.5),
+            nn.Linear(4096, 4096),
+            nn.ReLU(),
+            nn.Dropout(p=0.5),
             nn.Linear(4096, num_classes),
         )
 
@@ -9282,8 +9291,9 @@ Let's say we have this code:
 ```python
 import torch
 import matplotlib.pyplot as plt
-x = torch.randn(1000, 10) # 1000 samples, each with 10 features
-w = torch.randn(10, 200) # turn each of the 10 features into 200
+
+x = torch.randn(1000, 10)  # 1000 samples, each with 10 features
+w = torch.randn(10, 200)  # turn each of the 10 features into 200
 y = x @ w
 print(x.mean(), x.std())
 print(y.mean(), y.std())
@@ -9323,6 +9333,7 @@ Now, let's say we have this code:
 ```python
 import torch
 import matplotlib.pyplot as plt
+
 k = 5
 x = torch.randn(1000, 10)
 w = torch.randn(10, 200) * k
@@ -9357,6 +9368,7 @@ Now, we let's say we have this code:
 ```python
 import torch
 import matplotlib.pyplot as plt
+
 k = 0.05
 x = torch.randn(1000, 10)
 w = torch.randn(10, 200) * k
@@ -9422,6 +9434,7 @@ Implemented in PyTorch as [nn.init.kaiming_normal_](https://pytorch.org/docs/sta
 ```python
 import torch
 import matplotlib.pyplot as plt
+
 x = torch.randn(1000, 10)
 w = torch.randn(10, 200) / 10**0.5
 y = x @ w
@@ -10026,13 +10039,17 @@ In PyTorch:
 import torch
 from torch import nn
 
-x = torch.tensor([[
-    [[1., 3.], [5., 7.]],  # Channel 1
-    [[2., 4.], [6., 8.]],  # Channel 2
-]])  # Shape: (batch=1, channels=2, height=2, width=2)
+x = torch.tensor(
+    [
+        [
+            [[1.0, 3.0], [5.0, 7.0]],  # Channel 1
+            [[2.0, 4.0], [6.0, 8.0]],  # Channel 2
+        ]
+    ]
+)  # Shape: (batch=1, channels=2, height=2, width=2)
 
 pooled = nn.AdaptiveAvgPool2d(1)(x)  # Shape: (1, 2, 1, 1)
-output = pooled.flatten(1)          # Shape: (1, 2)
+output = pooled.flatten(1)  # Shape: (1, 2)
 
 print(output)  # tensor([[4., 5.]])
 ```
