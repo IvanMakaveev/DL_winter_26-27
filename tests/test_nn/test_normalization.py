@@ -2,7 +2,7 @@ import unittest
 
 import torch
 
-from dl_lib.nn.normalization import BatchNorm1d  # , LayerNorm
+from dl_lib.nn.normalization import BatchNorm1d, LayerNorm
 
 
 def _make_input():
@@ -46,17 +46,17 @@ def _make_batchnorm_pair():
     return ours, reference
 
 
-# def _make_layernorm_pair():
-#     ours = LayerNorm(normalized_shape=3)
-#     reference = torch.nn.LayerNorm(normalized_shape=3)
+def _make_layernorm_pair():
+    ours = LayerNorm(normalized_shape=3)
+    reference = torch.nn.LayerNorm(normalized_shape=3)
 
-#     with torch.no_grad():
-#         ours.gamma.copy_(torch.tensor([2.0, -0.5, 0.25]))
-#         ours.beta.copy_(torch.tensor([1.0, 3.0, -2.0]))
-#         reference.weight.copy_(ours.gamma)
-#         reference.bias.copy_(ours.beta)
+    with torch.no_grad():
+        ours.gamma.copy_(torch.tensor([2.0, -0.5, 0.25]))
+        ours.beta.copy_(torch.tensor([1.0, 3.0, -2.0]))
+        reference.weight.copy_(ours.gamma)
+        reference.bias.copy_(ours.beta)
 
-#     return ours, reference
+    return ours, reference
 
 
 def _make_backward_inputs():
@@ -445,248 +445,248 @@ class TestBatchNorm1dParameters(unittest.TestCase):
         self.assertEqual(actual, expected)
 
 
-# class TestLayerNormInit(unittest.TestCase):
-#     def test_when_constructed_then_gamma_is_ones_and_beta_is_zeros(self):
-#         # Arrange
-#         normalized_shape = 6
+class TestLayerNormInit(unittest.TestCase):
+    def test_when_constructed_then_gamma_is_ones_and_beta_is_zeros(self):
+        # Arrange
+        normalized_shape = 6
 
-#         # Act
-#         layer_norm = LayerNorm(normalized_shape)
+        # Act
+        layer_norm = LayerNorm(normalized_shape)
 
-#         # Assert
-#         self.assertTrue(torch.equal(layer_norm.gamma, torch.ones(normalized_shape)))
-#         self.assertTrue(torch.equal(layer_norm.beta, torch.zeros(normalized_shape)))
+        # Assert
+        self.assertTrue(torch.equal(layer_norm.gamma, torch.ones(normalized_shape)))
+        self.assertTrue(torch.equal(layer_norm.beta, torch.zeros(normalized_shape)))
 
-#     def test_when_eps_not_given_then_defaults_to_1e_minus_5(self):
-#         # Arrange
-#         normalized_shape = 4
-#         expected = 1e-5
+    def test_when_eps_not_given_then_defaults_to_1e_minus_5(self):
+        # Arrange
+        normalized_shape = 4
+        expected = 1e-5
 
-#         # Act
-#         actual = LayerNorm(normalized_shape).eps
+        # Act
+        actual = LayerNorm(normalized_shape).eps
 
-#         # Assert
-#         self.assertEqual(actual, expected)
-
-
-# class TestLayerNormForward(unittest.TestCase):
-#     def test_when_called_then_output_is_zero_mean_and_unit_variance_per_sample(
-#         self,
-#     ):
-#         # Arrange
-#         torch.manual_seed(0)
-#         layer_norm = LayerNorm(normalized_shape=8)
-#         x = torch.randn(4, 8) * 3.0 + 1.0
-
-#         # Act
-#         actual = layer_norm(x)
-
-#         # Assert
-#         self.assertTrue(torch.allclose(actual.mean(dim=-1), torch.zeros(4), atol=1e-5))
-#         self.assertTrue(
-#             torch.allclose(
-#                 actual.var(dim=-1, unbiased=False),
-#                 torch.ones(4),
-#                 atol=1e-4,
-#             )
-#         )
-
-#     def test_when_training_or_evaluating_then_behavior_is_identical(self):
-#         # Arrange
-#         torch.manual_seed(0)
-#         layer_norm = LayerNorm(normalized_shape=6)
-#         x = torch.randn(2, 6)
-#         layer_norm.train()
-#         expected = layer_norm(x)
-#         layer_norm.eval()
-
-#         # Act
-#         actual = layer_norm(x)
-
-#         # Assert
-#         self.assertTrue(torch.equal(actual, expected))
-
-#     def test_when_given_same_weights_then_matches_torch_nn_layernorm(self):
-#         # Arrange
-#         torch.manual_seed(0)
-#         x = torch.randn(4, 5)
-#         ours = LayerNorm(normalized_shape=5)
-#         reference = torch.nn.LayerNorm(normalized_shape=5)
-
-#         # Act
-#         actual = ours(x)
-#         expected = reference(x)
-
-#         # Assert
-#         torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
-
-#     def test_when_input_has_an_extra_leading_dimension_then_still_matches_torch_nn_layernorm(
-#         self,
-#     ):
-#         # Arrange
-#         torch.manual_seed(1)
-#         x = torch.randn(2, 3, 6)
-#         ours = LayerNorm(normalized_shape=6)
-#         reference = torch.nn.LayerNorm(normalized_shape=6)
-
-#         # Act
-#         actual = ours(x)
-#         expected = reference(x)
-
-#         # Assert
-#         torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
-
-#     def test_when_training_with_nondefault_gamma_and_beta_then_matches_torch(
-#         self,
-#     ):
-#         # Arrange
-#         ours, reference = _make_layernorm_pair()
-#         x = _make_input()
-#         ours.train()
-#         reference.train()
-
-#         # Act
-#         actual = ours(x)
-#         expected = reference(x)
-
-#         # Assert
-#         torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
-
-#     def test_when_evaluating_with_nondefault_gamma_and_beta_then_matches_torch(
-#         self,
-#     ):
-#         # Arrange
-#         ours, reference = _make_layernorm_pair()
-#         x = _make_input()
-#         ours.eval()
-#         reference.eval()
-
-#         # Act
-#         actual = ours(x)
-#         expected = reference(x)
-
-#         # Assert
-#         torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
-
-#     def test_when_input_is_constant_then_output_is_finite_and_zero(self):
-#         # Arrange
-#         layer_norm = LayerNorm(normalized_shape=3)
-#         x = torch.full((4, 3), 2.0)
-#         expected = torch.zeros_like(x)
-
-#         # Act
-#         actual = layer_norm(x)
-
-#         # Assert
-#         self.assertTrue(torch.isfinite(actual).all().item())
-#         torch.testing.assert_close(actual, expected, atol=1e-6, rtol=0)
-
-#     def test_when_eps_is_custom_then_uses_it_inside_square_root(self):
-#         # Arrange
-#         eps = 0.25
-#         layer_norm = LayerNorm(normalized_shape=3, eps=eps)
-#         x = _make_nearly_constant_input()
-#         mean = x.mean(dim=-1, keepdim=True)
-#         variance = x.var(dim=-1, unbiased=False, keepdim=True)
-#         expected = (x - mean) / torch.sqrt(variance + eps)
-
-#         # Act
-#         actual = layer_norm(x)
-
-#         # Assert
-#         torch.testing.assert_close(actual, expected, atol=1e-6, rtol=1e-5)
-
-#     def test_when_backpropagating_during_training_then_gradients_match_torch(
-#         self,
-#     ):
-#         # Arrange
-#         ours, reference = _make_layernorm_pair()
-#         x, reference_x, upstream = _make_backward_inputs()
-#         ours.train()
-#         reference.train()
-
-#         # Act
-#         ours(x).backward(upstream)
-#         reference(reference_x).backward(upstream)
-
-#         # Assert
-#         _assert_gradients_match(self, ours, reference, x, reference_x)
-
-#     def test_when_backpropagating_during_evaluation_then_gradients_match_torch(
-#         self,
-#     ):
-#         # Arrange
-#         ours, reference = _make_layernorm_pair()
-#         x, reference_x, upstream = _make_backward_inputs()
-#         ours.eval()
-#         reference.eval()
-
-#         # Act
-#         ours(x).backward(upstream)
-#         reference(reference_x).backward(upstream)
-
-#         # Assert
-#         _assert_gradients_match(self, ours, reference, x, reference_x)
-
-#     def test_when_training_and_batchmates_change_then_fixed_example_output_is_unchanged(
-#         self,
-#     ):
-#         # Arrange
-#         layer_norm = LayerNorm(normalized_shape=3)
-#         fixed, batch_a, batch_b = _make_batches_with_fixed_example()
-#         layer_norm.train()
-
-#         # Act
-#         alone = layer_norm(fixed)[0]
-#         with_batch_a = layer_norm(batch_a)[0]
-#         with_batch_b = layer_norm(batch_b)[0]
-
-#         # Assert
-#         torch.testing.assert_close(alone, with_batch_a)
-#         torch.testing.assert_close(alone, with_batch_b)
-
-#     def test_when_evaluating_and_batchmates_change_then_fixed_example_output_is_unchanged(
-#         self,
-#     ):
-#         # Arrange
-#         layer_norm = LayerNorm(normalized_shape=3)
-#         fixed, batch_a, batch_b = _make_batches_with_fixed_example()
-#         layer_norm.eval()
-
-#         # Act
-#         alone = layer_norm(fixed)[0]
-#         with_batch_a = layer_norm(batch_a)[0]
-#         with_batch_b = layer_norm(batch_b)[0]
-
-#         # Assert
-#         torch.testing.assert_close(alone, with_batch_a)
-#         torch.testing.assert_close(alone, with_batch_b)
+        # Assert
+        self.assertEqual(actual, expected)
 
 
-# class TestLayerNormParameters(unittest.TestCase):
-#     def test_when_called_then_returns_gamma_and_beta(self):
-#         # Arrange
-#         layer_norm = LayerNorm(normalized_shape=4)
-#         expected = [layer_norm.gamma, layer_norm.beta]
+class TestLayerNormForward(unittest.TestCase):
+    def test_when_called_then_output_is_zero_mean_and_unit_variance_per_sample(
+        self,
+    ):
+        # Arrange
+        torch.manual_seed(0)
+        layer_norm = LayerNorm(normalized_shape=8)
+        x = torch.randn(4, 8) * 3.0 + 1.0
 
-#         # Act
-#         actual = layer_norm.parameters()
+        # Act
+        actual = layer_norm(x)
 
-#         # Assert
-#         self.assertEqual(actual, expected)
+        # Assert
+        self.assertTrue(torch.allclose(actual.mean(dim=-1), torch.zeros(4), atol=1e-5))
+        self.assertTrue(
+            torch.allclose(
+                actual.var(dim=-1, unbiased=False),
+                torch.ones(4),
+                atol=1e-4,
+            )
+        )
 
-#     def test_when_gamma_and_beta_are_updated_then_returns_their_current_values(
-#         self,
-#     ):
-#         # Arrange
-#         layer_norm = LayerNorm(normalized_shape=4)
-#         with torch.no_grad():
-#             layer_norm.gamma += 1.0
-#             layer_norm.beta += 1.0
-#         expected = [layer_norm.gamma, layer_norm.beta]
+    def test_when_training_or_evaluating_then_behavior_is_identical(self):
+        # Arrange
+        torch.manual_seed(0)
+        layer_norm = LayerNorm(normalized_shape=6)
+        x = torch.randn(2, 6)
+        layer_norm.train()
+        expected = layer_norm(x)
+        layer_norm.eval()
 
-#         # Act
-#         actual = layer_norm.parameters()
+        # Act
+        actual = layer_norm(x)
 
-#         # Assert
-#         self.assertEqual(actual, expected)
+        # Assert
+        self.assertTrue(torch.equal(actual, expected))
+
+    def test_when_given_same_weights_then_matches_torch_nn_layernorm(self):
+        # Arrange
+        torch.manual_seed(0)
+        x = torch.randn(4, 5)
+        ours = LayerNorm(normalized_shape=5)
+        reference = torch.nn.LayerNorm(normalized_shape=5)
+
+        # Act
+        actual = ours(x)
+        expected = reference(x)
+
+        # Assert
+        torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+
+    def test_when_input_has_an_extra_leading_dimension_then_still_matches_torch_nn_layernorm(
+        self,
+    ):
+        # Arrange
+        torch.manual_seed(1)
+        x = torch.randn(2, 3, 6)
+        ours = LayerNorm(normalized_shape=6)
+        reference = torch.nn.LayerNorm(normalized_shape=6)
+
+        # Act
+        actual = ours(x)
+        expected = reference(x)
+
+        # Assert
+        torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+
+    def test_when_training_with_nondefault_gamma_and_beta_then_matches_torch(
+        self,
+    ):
+        # Arrange
+        ours, reference = _make_layernorm_pair()
+        x = _make_input()
+        ours.train()
+        reference.train()
+
+        # Act
+        actual = ours(x)
+        expected = reference(x)
+
+        # Assert
+        torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+
+    def test_when_evaluating_with_nondefault_gamma_and_beta_then_matches_torch(
+        self,
+    ):
+        # Arrange
+        ours, reference = _make_layernorm_pair()
+        x = _make_input()
+        ours.eval()
+        reference.eval()
+
+        # Act
+        actual = ours(x)
+        expected = reference(x)
+
+        # Assert
+        torch.testing.assert_close(actual, expected, atol=1e-5, rtol=1e-5)
+
+    def test_when_input_is_constant_then_output_is_finite_and_zero(self):
+        # Arrange
+        layer_norm = LayerNorm(normalized_shape=3)
+        x = torch.full((4, 3), 2.0)
+        expected = torch.zeros_like(x)
+
+        # Act
+        actual = layer_norm(x)
+
+        # Assert
+        self.assertTrue(torch.isfinite(actual).all().item())
+        torch.testing.assert_close(actual, expected, atol=1e-6, rtol=0)
+
+    def test_when_eps_is_custom_then_uses_it_inside_square_root(self):
+        # Arrange
+        eps = 0.25
+        layer_norm = LayerNorm(normalized_shape=3, eps=eps)
+        x = _make_nearly_constant_input()
+        mean = x.mean(dim=-1, keepdim=True)
+        variance = x.var(dim=-1, unbiased=False, keepdim=True)
+        expected = (x - mean) / torch.sqrt(variance + eps)
+
+        # Act
+        actual = layer_norm(x)
+
+        # Assert
+        torch.testing.assert_close(actual, expected, atol=1e-6, rtol=1e-5)
+
+    def test_when_backpropagating_during_training_then_gradients_match_torch(
+        self,
+    ):
+        # Arrange
+        ours, reference = _make_layernorm_pair()
+        x, reference_x, upstream = _make_backward_inputs()
+        ours.train()
+        reference.train()
+
+        # Act
+        ours(x).backward(upstream)
+        reference(reference_x).backward(upstream)
+
+        # Assert
+        _assert_gradients_match(self, ours, reference, x, reference_x)
+
+    def test_when_backpropagating_during_evaluation_then_gradients_match_torch(
+        self,
+    ):
+        # Arrange
+        ours, reference = _make_layernorm_pair()
+        x, reference_x, upstream = _make_backward_inputs()
+        ours.eval()
+        reference.eval()
+
+        # Act
+        ours(x).backward(upstream)
+        reference(reference_x).backward(upstream)
+
+        # Assert
+        _assert_gradients_match(self, ours, reference, x, reference_x)
+
+    def test_when_training_and_batchmates_change_then_fixed_example_output_is_unchanged(
+        self,
+    ):
+        # Arrange
+        layer_norm = LayerNorm(normalized_shape=3)
+        fixed, batch_a, batch_b = _make_batches_with_fixed_example()
+        layer_norm.train()
+
+        # Act
+        alone = layer_norm(fixed)[0]
+        with_batch_a = layer_norm(batch_a)[0]
+        with_batch_b = layer_norm(batch_b)[0]
+
+        # Assert
+        torch.testing.assert_close(alone, with_batch_a)
+        torch.testing.assert_close(alone, with_batch_b)
+
+    def test_when_evaluating_and_batchmates_change_then_fixed_example_output_is_unchanged(
+        self,
+    ):
+        # Arrange
+        layer_norm = LayerNorm(normalized_shape=3)
+        fixed, batch_a, batch_b = _make_batches_with_fixed_example()
+        layer_norm.eval()
+
+        # Act
+        alone = layer_norm(fixed)[0]
+        with_batch_a = layer_norm(batch_a)[0]
+        with_batch_b = layer_norm(batch_b)[0]
+
+        # Assert
+        torch.testing.assert_close(alone, with_batch_a)
+        torch.testing.assert_close(alone, with_batch_b)
+
+
+class TestLayerNormParameters(unittest.TestCase):
+    def test_when_called_then_returns_gamma_and_beta(self):
+        # Arrange
+        layer_norm = LayerNorm(normalized_shape=4)
+        expected = [layer_norm.gamma, layer_norm.beta]
+
+        # Act
+        actual = layer_norm.parameters()
+
+        # Assert
+        self.assertEqual(actual, expected)
+
+    def test_when_gamma_and_beta_are_updated_then_returns_their_current_values(
+        self,
+    ):
+        # Arrange
+        layer_norm = LayerNorm(normalized_shape=4)
+        with torch.no_grad():
+            layer_norm.gamma += 1.0
+            layer_norm.beta += 1.0
+        expected = [layer_norm.gamma, layer_norm.beta]
+
+        # Act
+        actual = layer_norm.parameters()
+
+        # Assert
+        self.assertEqual(actual, expected)
