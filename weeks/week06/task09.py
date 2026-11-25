@@ -16,7 +16,7 @@ def main() -> int:
     xs1 = []
     for step in range(num_steps):
         optimizer.zero_grad()
-        loss = f(x1)
+        f(x1)  # loss = f(x1)
         xs1.append(x1.item())
         # loss.backward()
         optimizer.step()
@@ -28,7 +28,7 @@ def main() -> int:
     xs2 = []
     for step in range(num_steps):
         optimizer.zero_grad()
-        loss = f(x2)
+        f(x2)  # loss = f(x2)
         xs2.append(x2.item())
         # loss.backward()
         optimizer.step()
@@ -37,10 +37,14 @@ def main() -> int:
 
     steps = list(range(num_steps))
     plt.plot(steps, xs1, color="lightblue", label="AdamW (large gradient history)")
-    plt.plot(steps, xs2, color="turquoise", linestyle="--", label="AdamW (small gradient history)")
-    plt.title(
-        "AdamW decays both parameters by the same proportion"
+    plt.plot(
+        steps,
+        xs2,
+        color="turquoise",
+        linestyle="--",
+        label="AdamW (small gradient history)",
     )
+    plt.title("AdamW decays both parameters by the same proportion")
     plt.xlabel("step")
     plt.ylabel("x")
     plt.legend()
