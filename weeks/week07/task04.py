@@ -47,7 +47,16 @@ def train(
         y_hat = model(train_X)
         loss = mse_loss(y_hat, train_Y)
         loss.backward()
-        gradients.append(torch.stack([p.grad.clone() for p in module.parameters()]) for module in model.modules if isinstance(module, FullyConnected))
+        gradients.append(
+            torch.stack(
+                [
+                    (p.grad.clone() if p.grad is not None else torch.zeros_like(p))
+                    for p in module.parameters()
+                ]
+            )
+            for module in model.modules
+            if isinstance(module, FullyConnected)
+        )
         optimizer.step()
 
         train_losses.append(evaluate(model, train_X, train_Y))
@@ -90,22 +99,21 @@ def main() -> int:
 
     optimizer = SGD(mlp.parameters(), lr=0.01)
 
-    train_losses, gradients = train(
-        mlp, optimizer, x_train, y_train, 50
-    )
+    train_losses, gradients = train(mlp, optimizer, x_train, y_train, 50)
 
-    print(f"Without BatchNorm1d: loss[0] = {train_losses[0]:.4f}, loss[25] = {train_losses[25]:.4f}, loss[-1] = {train_losses[-1]:.4f}")
+    print(
+        f"Without BatchNorm1d: loss[0] = {train_losses[0]:.4f}, loss[25] = {train_losses[25]:.4f}, loss[-1] = {train_losses[-1]:.4f}"
+    )
     grad_averages = [torch.mean(torch.abs(grad)).item() for grad in gradients[-1]]
     print(f"Without BatchNorm1d: gradient magnitude per layer = {grad_averages}")
 
-    # plot grad averages per layer numbered from 1 to 13 (the number of FullyConnected layers)
-    plt.plot(range(1, len(grad_averages) + 1), grad_averages, marker='o')
-    plt.title("Gradients of a deep plain MLP")    
+    plt.plot(range(1, len(grad_averages) + 1), grad_averages, marker="o")
+    plt.title("Gradients of a deep plain MLP")
     plt.xlabel("Layer (1 = first, 12 = last)")
     plt.ylabel("Mean Gradient (log scale)")
     plt.yscale("log")
     plt.xticks(range(1, len(grad_averages) + 1))
-    plt.tight_layout() 
-    plt.show()    
+    plt.tight_layout()
+    plt.show()
 
     return 0
