@@ -45,8 +45,8 @@ def train(
     train_losses.append(evaluate(model, train_X, train_Y))
     test_losses.append(evaluate(model, test_X, test_Y))
 
-    model.train()
     for _ in range(epochs):
+        model.train()
         optimizer.zero_grad()
         y_hat = model(train_X)
         loss = mse_loss(y_hat, train_Y)
